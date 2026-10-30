@@ -31,7 +31,8 @@ data class CategoryExpenseStat(
     val categoryName: String,
     val totalAmount: Long,
     val percentage: Float,
-    val colorHex: String? = null
+    val colorHex: String? = null,
+    val iconName: String? = null
 )
 
 @Immutable
@@ -118,7 +119,8 @@ class HomeViewModel(
                         categoryName = catEntity?.name ?: "Otros",
                         totalAmount = catTotal,
                         percentage = catTotal.toFloat() / totalMonthlyExpense.toFloat(),
-                        colorHex = catEntity?.colorHex
+                        colorHex = catEntity?.colorHex,
+                        iconName = catEntity?.iconName
                     )
                 }
                 .sortedByDescending { it.totalAmount }
@@ -140,7 +142,8 @@ class HomeViewModel(
                         categoryName = catEntity?.name ?: "Otros",
                         totalAmount = catTotal,
                         percentage = catTotal.toFloat() / totalMonthlyIncome.toFloat(),
-                        colorHex = catEntity?.colorHex
+                        colorHex = catEntity?.colorHex,
+                        iconName = catEntity?.iconName
                     )
                 }
                 .sortedByDescending { it.totalAmount }

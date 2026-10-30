@@ -85,8 +85,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     onAddTransactionClick: () -> Unit,
-    onSeeMoreTransactionsClick: () -> Unit = {},
-    onNavigateToTransactionsWithFilter: (TransactionType?) -> Unit = {}
+    onSeeMoreTransactionsClick: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -217,144 +216,13 @@ fun HomeScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(spacing.hero)
                 ) {
-                    // WIDGET HERO UNIFICADO M3E CON ACCESOS DIRECTOS (72dp)
+                    // Patrimonio: suma de los saldos de todas las cuentas
                     item {
-                        val financialColors = MinicashThemeExtensions.financialColors
-                        Surface(
-                            shape = RoundedCornerShape(28.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerLow,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(72.dp).listEntrance(entranceTracker, "home_hero", 0)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Casilla 1: Patrimonio
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "Patrimonio",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1
-                                    )
-
-                                    val motionScheme = MaterialTheme.motionScheme
-
-                                    AnimatedContent(
-                                        targetState = state.totalBalance,
-                                        transitionSpec = {
-                                            if (isRestricted) {
-                                                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                                            } else {
-                                                val spatialSpec = motionScheme.defaultSpatialSpec<IntOffset>()
-                                                val effectsSpec = motionScheme.defaultEffectsSpec<Float>()
-                                                if (targetState > initialState) {
-                                                    (slideInVertically(animationSpec = spatialSpec) { height -> height } + fadeIn(animationSpec = effectsSpec)) togetherWith
-                                                    (slideOutVertically(animationSpec = spatialSpec) { height -> -height } + fadeOut(animationSpec = effectsSpec))
-                                                } else {
-                                                    (slideInVertically(animationSpec = spatialSpec) { height -> -height } + fadeIn(animationSpec = effectsSpec)) togetherWith
-                                                    (slideOutVertically(animationSpec = spatialSpec) { height -> height } + fadeOut(animationSpec = effectsSpec))
-                                                }
-                                            }
-                                        },
-                                        label = "net_worth_odometer"
-                                    ) { targetBalance ->
-                                        MoneyTextView(
-                                            amountCents = targetBalance,
-                                            type = MoneyDisplayType.NEUTRAL,
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                        )
-                                    }
-                                }
-
-                                VerticalDivider(
-                                    modifier = Modifier.height(40.dp),
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-                                )
-
-                                // Casilla 2: Ingresos (Clicable -> Filtro Ingreso)
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                            onNavigateToTransactionsWithFilter(TransactionType.INCOME)
-                                        }
-                                        .padding(horizontal = 8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .background(financialColors.income, CircleShape)
-                                        )
-                                        Text(
-                                            text = "Ingresos",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1
-                                        )
-                                    }
-                                    MoneyTextView(
-                                        amountCents = state.totalMonthlyIncome,
-                                        type = MoneyDisplayType.INCOME,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                }
-
-                                VerticalDivider(
-                                    modifier = Modifier.height(40.dp),
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
-                                )
-
-                                // Casilla 3: Gastos (Clicable -> Filtro Gasto)
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                            onNavigateToTransactionsWithFilter(TransactionType.EXPENSE)
-                                        }
-                                        .padding(horizontal = 8.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .background(financialColors.expense, CircleShape)
-                                        )
-                                        Text(
-                                            text = "Gastos",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            maxLines = 1
-                                        )
-                                    }
-                                    MoneyTextView(
-                                        amountCents = state.totalMonthlyExpense,
-                                        type = MoneyDisplayType.EXPENSE,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                    )
-                                }
-                            }
-                        }
+                        PatrimonyCard(
+                            totalBalance = state.totalBalance,
+                            accountCount = state.accounts.size,
+                            modifier = Modifier.listEntrance(entranceTracker, "home_hero", 0)
+                        )
                     }
 
                     // Sección 1: Cuentas
@@ -512,72 +380,7 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun AccountCard(account: AccountEntity) {
-    val surfaceColor = MaterialTheme.colorScheme.surfaceContainer
 
-    val accountColor = MinicashColorUtils.parseHexColor(
-        account.colorHex,
-        MaterialTheme.colorScheme.primary
-    )
-    val containerColor = MinicashColorUtils.tintedContainerColor(
-        baseColor = accountColor,
-        surfaceColor = surfaceColor,
-        ratio = 0.18f
-    )
-    val accountIcon = getIconVectorByName(account.iconName)
-
-    MinicashCard(
-        level = CardTonalLevel.LOW,
-        containerColor = containerColor,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .width(145.dp)
-            .height(72.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = accountColor.copy(alpha = 0.25f),
-                    modifier = Modifier.size(22.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = accountIcon,
-                            contentDescription = null,
-                            modifier = Modifier.size(12.dp),
-                            tint = accountColor.asIconTint()
-                        )
-                    }
-                }
-                Text(
-                    text = account.name,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
-                )
-            }
-            MoneyTextView(
-                amountCents = account.balance,
-                type = MoneyDisplayType.NEUTRAL,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

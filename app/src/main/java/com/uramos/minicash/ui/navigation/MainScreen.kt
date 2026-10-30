@@ -271,14 +271,6 @@ fun MainScreen(
                                             val targetPage = getShortestTargetPage(pagerState.currentPage, txIdx, numPages)
                                             pagerState.animateScrollToPage(targetPage)
                                         }
-                                    },
-                                    onNavigateToTransactionsWithFilter = { filterType ->
-                                        transactionsViewModel.onTypeFilterSelect(filterType)
-                                        coroutineScope.launch {
-                                            val txIdx = visibleScreens.indexOf(Screen.Transactions).coerceAtLeast(0)
-                                            val targetPage = getShortestTargetPage(pagerState.currentPage, txIdx, numPages)
-                                            pagerState.animateScrollToPage(targetPage)
-                                        }
                                     }
                                 )
                                 is Screen.Transactions -> TransactionsScreen(

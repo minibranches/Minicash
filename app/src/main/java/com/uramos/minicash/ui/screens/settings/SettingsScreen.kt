@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.Widgets
+import androidx.compose.material.icons.filled.Person
 import android.Manifest
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -175,16 +177,19 @@ fun SettingsScreen(
 
                         SettingsRowItem(
                             title = "Cuentas",
+                            icon = Icons.Default.AccountBalanceWallet,
                             subtitle = "${state.accounts.size} activas configuradas",
                             onClick = onNavigateToAccounts
                         )
                         SettingsRowItem(
                             title = "Categorías",
+                            icon = Icons.Default.Category,
                             subtitle = "${state.expenseCategories.size + state.incomeCategories.size} registradas",
                             onClick = onNavigateToCategories
                         )
                         SettingsRowItem(
                             title = "Tarjetas e instituciones",
+                            icon = Icons.Default.CreditCard,
                             subtitle = "${state.creditInstitutions.size} instituciones registradas",
                             onClick = onNavigateToInstitutions
                         )
@@ -241,6 +246,7 @@ fun SettingsScreen(
 
                         SettingsRowItem(
                             title = "Tu nombre",
+                            icon = Icons.Default.Person,
                             subtitle = state.userName.ifBlank { "Sin definir" },
                             onClick = { showNameDialog = true }
                         )
@@ -249,6 +255,7 @@ fun SettingsScreen(
                         val appearanceSubtitle = "${state.themeMode.displayName} • $fontLabel${if (state.useDynamicColor) " • Color dinámico" else ""}"
                         SettingsRowItem(
                             title = "Apariencia",
+                            icon = Icons.Default.Palette,
                             subtitle = appearanceSubtitle,
                             onClick = onNavigateToAppearance
                         )
@@ -261,6 +268,7 @@ fun SettingsScreen(
                         }
                         SettingsRowItem(
                             title = "Módulos de la app",
+                            icon = Icons.Default.Widgets,
                             subtitle = modulesSubtitle,
                             onClick = onNavigateToModules
                         )
@@ -272,6 +280,8 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            SettingsLeadingIcon(Icons.Default.Notifications)
+                            Spacer(modifier = Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(
                                     text = "Recordatorio diario",
@@ -397,6 +407,7 @@ fun SettingsScreen(
                         val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
                         SettingsRowItem(
                             title = "Copias de seguridad",
+                            icon = Icons.Default.CloudDone,
                             subtitle = backupSubtitle,
                             onClick = onNavigateToBackups
                         )
@@ -606,6 +617,7 @@ fun SettingsScreen(
 private fun SettingsRowItem(
     title: String,
     subtitle: String,
+    icon: ImageVector,
     onClick: () -> Unit
 ) {
     Row(
@@ -617,6 +629,8 @@ private fun SettingsRowItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        SettingsLeadingIcon(icon)
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = title,
@@ -887,5 +901,25 @@ fun InstitutionsManagementSheet(
             },
             shape = MinicashShapes.Hero
         )
+    }
+}
+
+/** Ícono inicial de cada fila de ajustes, en la misma forma expresiva que las categorías. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun SettingsLeadingIcon(icon: ImageVector) {
+    Surface(
+        shape = MaterialShapes.Cookie9Sided.toShape(),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        modifier = Modifier.size(44.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(22.dp)
+            )
+        }
     }
 }

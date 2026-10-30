@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.getIconVectorByName
+import com.uramos.minicash.ui.utils.asIconTint
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.Icons
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -139,14 +145,14 @@ private fun SingleDonutPage(
             }
 
             val displayStats = remember(stats) {
-                if (stats.size <= 4) {
+                if (stats.size <= 5) {
                     stats
                 } else {
-                    val top3 = stats.take(3)
-                    val rest = stats.drop(3)
+                    val top4 = stats.take(4)
+                    val rest = stats.drop(4)
                     val otherPercentage = rest.fold(0f) { acc, item -> acc + item.percentage }
                     val otherAmount = rest.fold(0L) { acc, item -> acc + item.totalAmount }
-                    top3 + CategoryExpenseStat(
+                    top4 + CategoryExpenseStat(
                         categoryName = "Otras",
                         totalAmount = otherAmount,
                         percentage = otherPercentage,
@@ -172,7 +178,7 @@ private fun SingleDonutPage(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 130.dp, max = 160.dp),
+                    .heightIn(min = 130.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -231,37 +237,55 @@ private fun SingleDonutPage(
                     }
                 }
 
-                // Lado Derecho (55% del ancho): Lista vertical de hasta 4 categorías
+                // Lado derecho: una fila por categoría con ícono, monto y porcentaje
                 Column(
-                    modifier = Modifier.weight(0.55f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier.weight(0.6f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     displayStats.forEachIndexed { index, stat ->
                         val color = parsedColors.getOrElse(index) { categoryColors[index % categoryColors.size] }
                         val percentageText = (stat.percentage * 100).roundToInt()
+                        val isOthers = stat.categoryName == "Otras" && stat.colorHex == null
 
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(color = color, shape = CircleShape)
-                            )
-                            Text(
-                                text = stat.categoryName,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Surface(
+                                shape = CircleShape,
+                                color = color.copy(alpha = 0.22f),
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = if (isOthers) Icons.Default.MoreHoriz else getIconVectorByName(stat.iconName ?: "category"),
+                                        contentDescription = null,
+                                        tint = color.asIconTint(),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stat.categoryName,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = stat.totalAmount.toCurrencyFormat(),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontFeatureSettings = "tnum"),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
                             Text(
                                 text = "$percentageText%",
-                                style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"),
-                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
+                                fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
