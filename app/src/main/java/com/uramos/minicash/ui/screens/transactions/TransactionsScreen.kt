@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashPeriodSelector
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
 import androidx.compose.animation.animateColorAsState
@@ -66,6 +69,7 @@ fun TransactionsScreen(
     val state by viewModel.uiState.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val years by viewModel.availableYears.collectAsState()
     val selectedIds by viewModel.selectedIds.collectAsState()
     val selectedTotalAmount by viewModel.selectedTotalAmount.collectAsState()
 
@@ -194,7 +198,7 @@ fun TransactionsScreen(
             val groupedTransactions = remember(state.transactions) {
                 com.uramos.minicash.ui.utils.groupTransactionsByDate(state.transactions)
             }
-            val hasActiveFilters = state.selectedTypeFilter != null || state.selectedAccountId != null
+            val hasActiveFilters = state.selectedTypeFilter != null || state.selectedAccountId != null || state.selectedCategoryIds.isNotEmpty()
 
             LazyColumn(
                 state = listState,
@@ -207,56 +211,22 @@ fun TransactionsScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(spacing.medium)
             ) {
-                // 1. Carrusel de Meses
-                item(key = "header_month_selector") {
-                    val months = remember {
-                        listOf(
-                            "enero", "febrero", "marzo", "abril", "mayo", "junio",
-                            "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
-                        )
-                    }
-                    val monthListState = rememberLazyListState()
-
-                    LaunchedEffect(state.selectedMonthIndex) {
-                        monthListState.animateScrollToItem(state.selectedMonthIndex.coerceIn(0, 11))
-                    }
-
-                    LazyRow(
-                        state = monthListState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = spacing.extraSmall),
-                        contentPadding = PaddingValues(horizontal = spacing.none),
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        itemsIndexed(months) { index, monthName ->
-                            val isSelected = index == state.selectedMonthIndex
-                            val pillColor by animateColorAsState(
-                                targetValue = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                animationSpec = minicashEffectsSpec(),
-                                label = "month_pill_color"
-                            )
-                            Surface(
-                                onClick = {
-                                    haptics.tick()
-                                    viewModel.selectMonth(index)
-                                },
-                                shape = CircleShape,
-                                color = pillColor
-                            ) {
-                                Text(
-                                    text = monthName.replaceFirstChar { it.uppercase() },
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
+                // 1. Selector de periodo: año (menú) y meses anterior, actual y siguiente
+                item(key = "header_period_selector") {
+                    MinicashPeriodSelector(
+                        year = state.selectedYear,
+                        monthIndex = state.selectedMonthIndex,
+                        years = years,
+                        onYearSelect = { year ->
+                            haptics.tick()
+                            viewModel.selectYear(year)
+                        },
+                        onShiftMonths = { delta ->
+                            haptics.tick()
+                            viewModel.shiftMonths(delta)
                         }
-                    }
+                    )
                 }
-
                 // 2. Tarjeta de Balance Mensual
                 item(key = "header_monthly_summary") {
                     MinicashCard(
@@ -377,7 +347,7 @@ fun TransactionsScreen(
                         MinicashEmptyState(
                             icon = Icons.AutoMirrored.Filled.ReceiptLong,
                             title = "Sin movimientos registrados",
-                            subtitle = if (state.searchQuery.isNotBlank() || state.selectedTypeFilter != null || state.selectedAccountId != null) {
+                            subtitle = if (state.searchQuery.isNotBlank() || hasActiveFilters) {
                                 "No se encontraron transacciones con los filtros seleccionados."
                             } else {
                                 "No hay transacciones registradas en este mes."
@@ -473,8 +443,12 @@ fun TransactionsScreen(
             selectedTypeFilter = state.selectedTypeFilter,
             accounts = accounts,
             selectedAccountId = state.selectedAccountId,
+            categories = categories,
+            selectedCategoryIds = state.selectedCategoryIds,
             onTypeFilterSelect = { type -> viewModel.onTypeFilterSelect(type) },
             onSelectAccountFilter = { accId -> viewModel.onSelectAccountFilter(accId) },
+            onToggleCategory = { catId -> viewModel.toggleCategoryFilter(catId) },
+            onClearCategories = { viewModel.clearCategoryFilter() },
             onDismiss = { showFilterSheet = false }
         )
     }

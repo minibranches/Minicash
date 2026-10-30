@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.home
 
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -72,11 +78,28 @@ class HomeViewModel(
         }.timeInMillis
     }
 
-    val uiState: StateFlow<HomeUiState> = combine(
+    /** Se recalcula a medianoche, de modo que el mes mostrado no se queda viejo si la app sigue abierta. */
+    private val monthRange: Flow<Pair<Long, Long>> = flow {
+        while (true) {
+            emit(getStartOfMonth() to getEndOfMonth())
+            val now = Calendar.getInstance()
+            val nextMidnight = (now.clone() as Calendar).apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+            delay((nextMidnight - now.timeInMillis).coerceAtLeast(1_000L))
+        }
+    }.distinctUntilChanged()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<HomeUiState> = monthRange.flatMapLatest { (monthStart, monthEnd) -> combine(
         accountDao.getAllActiveAccounts(),
         accountDao.getTotalBalance(),
         transactionDao.getRecentTransactions(),
-        transactionDao.getTransactionsBetween(getStartOfMonth(), getEndOfMonth()),
+        transactionDao.getTransactionsBetween(monthStart, monthEnd),
         categoryDao.getAllActiveCategories()
     ) { accounts, totalBalance, recentTransactions, monthTransactions, categories ->
         val categoriesMap = categories.associateBy { it.id }
@@ -135,7 +158,7 @@ class HomeViewModel(
             totalMonthlyIncome = totalMonthlyIncome,
             isLoading = false
         )
-    }.stateIn(
+    } }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState()

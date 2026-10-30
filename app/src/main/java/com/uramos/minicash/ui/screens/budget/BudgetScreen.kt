@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
 import com.uramos.minicash.ui.components.DiscardChangesDialog
@@ -154,55 +155,57 @@ fun BudgetScreen(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.surfaceContainerLow
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.small, vertical = spacing.extraSmall),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FilledTonalIconButton(
-                        onClick = { viewModel.previousMonth() },
-                        modifier = Modifier.size(36.dp)
+                WithoutMinTouchTarget {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Mes anterior",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                    val isRestricted = LocalAnimationRestriction.current
-                    val motionScheme = MaterialTheme.motionScheme
+                        FilledTonalIconButton(
+                            onClick = { viewModel.previousMonth() },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Mes anterior",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        val isRestricted = LocalAnimationRestriction.current
+                        val motionScheme = MaterialTheme.motionScheme
 
-                    AnimatedContent(
-                        targetState = state.currentMonthLabel,
-                        transitionSpec = {
-                            if (isRestricted) {
-                                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                            } else {
-                                val spatialSpec = motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
-                                val effectsSpec = motionScheme.defaultEffectsSpec<Float>()
-                                (slideInHorizontally(animationSpec = spatialSpec) { width -> width / 2 } + fadeIn(animationSpec = effectsSpec)) togetherWith
-                                (slideOutHorizontally(animationSpec = spatialSpec) { width -> -width / 2 } + fadeOut(animationSpec = effectsSpec))
-                            }
-                        },
-                        label = "budget_month_transition"
-                    ) { monthLabel ->
-                        Text(
-                            text = monthLabel,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    FilledTonalIconButton(
-                        onClick = { viewModel.nextMonth() },
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Mes siguiente",
-                            modifier = Modifier.size(18.dp)
-                        )
+                        AnimatedContent(
+                            targetState = state.currentMonthLabel,
+                            transitionSpec = {
+                                if (isRestricted) {
+                                    fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
+                                } else {
+                                    val spatialSpec = motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
+                                    val effectsSpec = motionScheme.defaultEffectsSpec<Float>()
+                                    (slideInHorizontally(animationSpec = spatialSpec) { width -> width / 2 } + fadeIn(animationSpec = effectsSpec)) togetherWith
+                                    (slideOutHorizontally(animationSpec = spatialSpec) { width -> -width / 2 } + fadeOut(animationSpec = effectsSpec))
+                                }
+                            },
+                            label = "budget_month_transition"
+                        ) { monthLabel ->
+                            Text(
+                                text = monthLabel,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        FilledTonalIconButton(
+                            onClick = { viewModel.nextMonth() },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Mes siguiente",
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

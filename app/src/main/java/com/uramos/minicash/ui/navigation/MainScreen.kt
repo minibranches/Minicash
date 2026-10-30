@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.navigation
 
+import com.uramos.minicash.ui.components.WithoutMinTouchTarget
+import androidx.compose.foundation.layout.height
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -392,80 +394,82 @@ fun MainScreen(
                                         animationSpec = spatialSize
                                     )
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                    ) {
-                                        visibleScreens.forEachIndexed { index, screen ->
-                                            val isSelected = currentScreenIndex == index
-                                            val iconScale by animateFloatAsState(
-                                                targetValue = if (isSelected) 1.05f else 1.0f,
-                                                animationSpec = spatialFloat,
-                                                label = "icon_scale"
-                                            )
-
-                                            Surface(
-                                                onClick = { onNavClick(index, screen) },
-                                                shape = MinicashShapes.Pill,
-                                                color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                                modifier = Modifier.animateContentSize(
-                                                    animationSpec = spatialSize
+                                    WithoutMinTouchTarget {
+                                        Row(
+                                            modifier = Modifier.padding(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            visibleScreens.forEachIndexed { index, screen ->
+                                                val isSelected = currentScreenIndex == index
+                                                val iconScale by animateFloatAsState(
+                                                    targetValue = if (isSelected) 1.05f else 1.0f,
+                                                    animationSpec = spatialFloat,
+                                                    label = "icon_scale"
                                                 )
-                                            ) {
-                                                if (isSelected) {
-                                                    Row(
-                                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = screen.selectedIcon,
-                                                            contentDescription = screen.title,
-                                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                            modifier = Modifier
-                                                                .size(22.dp)
-                                                                .graphicsLayer {
-                                                                    scaleX = iconScale
-                                                                    scaleY = iconScale
-                                                                }
-                                                        )
-                                                        AnimatedVisibility(
-                                                            visible = isSelected,
-                                                            enter = expandHorizontally(animationSpec = spatialSize) + fadeIn(animationSpec = effectsFloat),
-                                                            exit = shrinkHorizontally(animationSpec = spatialSize) + fadeOut(animationSpec = effectsFloat)
+
+                                                Surface(
+                                                    onClick = { onNavClick(index, screen) },
+                                                    shape = MinicashShapes.Pill,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                                    modifier = Modifier.animateContentSize(
+                                                        animationSpec = spatialSize
+                                                    )
+                                                ) {
+                                                    if (isSelected) {
+                                                        Row(
+                                                            modifier = Modifier.height(40.dp).padding(horizontal = 14.dp),
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.Center
                                                         ) {
-                                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                                Spacer(modifier = Modifier.width(6.dp))
-                                                                Text(
-                                                                    text = screen.title,
-                                                                    style = MaterialTheme.typography.labelMedium,
-                                                                    fontWeight = FontWeight.SemiBold,
-                                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                    maxLines = 1,
-                                                                    softWrap = false
-                                                                )
+                                                            Icon(
+                                                                imageVector = screen.selectedIcon,
+                                                                contentDescription = screen.title,
+                                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                modifier = Modifier
+                                                                    .size(22.dp)
+                                                                    .graphicsLayer {
+                                                                        scaleX = iconScale
+                                                                        scaleY = iconScale
+                                                                    }
+                                                            )
+                                                            AnimatedVisibility(
+                                                                visible = isSelected,
+                                                                enter = expandHorizontally(animationSpec = spatialSize) + fadeIn(animationSpec = effectsFloat),
+                                                                exit = shrinkHorizontally(animationSpec = spatialSize) + fadeOut(animationSpec = effectsFloat)
+                                                            ) {
+                                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                    Spacer(modifier = Modifier.width(6.dp))
+                                                                    Text(
+                                                                        text = screen.title,
+                                                                        style = MaterialTheme.typography.labelMedium,
+                                                                        fontWeight = FontWeight.SemiBold,
+                                                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                        maxLines = 1,
+                                                                        softWrap = false
+                                                                    )
+                                                                }
                                                             }
                                                         }
-                                                    }
-                                                } else {
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .size(40.dp)
-                                                            .padding(8.dp),
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = screen.unselectedIcon,
-                                                            contentDescription = screen.title,
-                                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                                    } else {
+                                                        Box(
                                                             modifier = Modifier
-                                                                .size(22.dp)
-                                                                .graphicsLayer {
-                                                                    scaleX = iconScale
-                                                                    scaleY = iconScale
-                                                                }
-                                                        )
+                                                                .size(40.dp)
+                                                                .padding(8.dp),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = screen.unselectedIcon,
+                                                                contentDescription = screen.title,
+                                                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                                                modifier = Modifier
+                                                                    .size(22.dp)
+                                                                    .graphicsLayer {
+                                                                        scaleX = iconScale
+                                                                        scaleY = iconScale
+                                                                    }
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }

@@ -18,6 +18,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC, id DESC LIMIT 10")
     fun getRecentTransactions(): Flow<List<TransactionEntity>>
 
+    @Query("SELECT MIN(date) FROM transactions")
+    fun getEarliestTransactionDate(): Flow<Long?>
+
     // Para la pantalla de transacciones mensual
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsBetween(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>

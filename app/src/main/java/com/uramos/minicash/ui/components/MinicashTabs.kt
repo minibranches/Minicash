@@ -36,35 +36,37 @@ fun MinicashPillTabs(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            labels.forEachIndexed { index, label ->
-                val selected = index == selectedIndex
-                val pillColor by animateColorAsState(
-                    targetValue = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                    animationSpec = minicashEffectsSpec(),
-                    label = "pill_tab_color"
-                )
-                Surface(
-                    onClick = { onSelect(index) },
-                    shape = CircleShape,
-                    color = pillColor,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Box(
-                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
-                        contentAlignment = Alignment.Center
+        WithoutMinTouchTarget {
+            Row(
+                modifier = Modifier.padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                labels.forEachIndexed { index, label ->
+                    val selected = index == selectedIndex
+                    val pillColor by animateColorAsState(
+                        targetValue = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                        animationSpec = minicashEffectsSpec(),
+                        label = "pill_tab_color"
+                    )
+                    Surface(
+                        onClick = { onSelect(index) },
+                        shape = CircleShape,
+                        color = pillColor,
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
-                            color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        Box(
+                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

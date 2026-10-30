@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,13 +35,22 @@ data class MonthSummary(
 data class TransactionsUiState(
     val currentMonthLabel: String = "",
     val selectedMonthIndex: Int = Calendar.getInstance().get(Calendar.MONTH),
+    val selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR),
     val summary: MonthSummary = MonthSummary(),
     val transactions: List<TransactionEntity> = emptyList(),
     val searchQuery: String = "",
     val selectedTypeFilter: TransactionType? = null,
     val accounts: List<AccountEntity> = emptyList(),
     val selectedAccountId: Long? = null,
+    val selectedCategoryIds: Set<Long> = emptySet(),
     val isLoading: Boolean = false
+)
+
+private data class TransactionFilters(
+    val query: String,
+    val type: TransactionType?,
+    val accountId: Long?,
+    val categoryIds: Set<Long>
 )
 
 class TransactionsViewModel(
@@ -59,9 +69,14 @@ class TransactionsViewModel(
     private val searchQuery = MutableStateFlow("")
     private val selectedTypeFilter = MutableStateFlow<TransactionType?>(null)
     private val selectedAccountId = MutableStateFlow<Long?>(null)
+    private val selectedCategoryIds = MutableStateFlow<Set<Long>>(emptySet())
 
     private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedIds: StateFlow<Set<Long>> = _selectedIds.asStateFlow()
+
+    private val filters = combine(searchQuery, selectedTypeFilter, selectedAccountId, selectedCategoryIds) { query, type, account, categories ->
+        TransactionFilters(query, type, account, categories)
+    }
 
     val uiState: StateFlow<TransactionsUiState> = currentCalendar.flatMapLatest { cal ->
         val startOfMonth = (cal.clone() as Calendar).apply {
@@ -85,11 +100,10 @@ class TransactionsViewModel(
 
         combine(
             transactionDao.getTransactionsBetween(startOfMonth, endOfMonth),
-            searchQuery,
-            selectedTypeFilter,
-            selectedAccountId,
+            filters,
             accounts
-        ) { txList, query, typeFilter, accountIdFilter, allAccounts ->
+        ) { txList, activeFilters, allAccounts ->
+            val (query, typeFilter, accountIdFilter, categoryIdFilter) = activeFilters
             val income = txList.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
             val expense = txList.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
             val net = income - expense
@@ -102,18 +116,21 @@ class TransactionsViewModel(
                 val matchesAccount = accountIdFilter == null ||
                         tx.sourceAccountId == accountIdFilter ||
                         tx.destinationAccountId == accountIdFilter
-                matchesQuery && matchesType && matchesAccount
+                val matchesCategory = categoryIdFilter.isEmpty() || tx.categoryId in categoryIdFilter
+                matchesQuery && matchesType && matchesAccount && matchesCategory
             }
 
             TransactionsUiState(
                 currentMonthLabel = monthLabel,
                 selectedMonthIndex = cal.get(Calendar.MONTH),
+                selectedYear = cal.get(Calendar.YEAR),
                 summary = MonthSummary(totalIncome = income, totalExpense = expense, netBalance = net),
                 transactions = filteredList,
                 searchQuery = query,
                 selectedTypeFilter = typeFilter,
                 accounts = allAccounts,
                 selectedAccountId = accountIdFilter,
+                selectedCategoryIds = categoryIdFilter,
                 isLoading = false
             )
         }
@@ -167,15 +184,60 @@ class TransactionsViewModel(
 
     fun onTypeFilterSelect(type: TransactionType?) {
         selectedTypeFilter.value = if (selectedTypeFilter.value == type) null else type
+        selectedCategoryIds.value = emptySet() // las categorías pertenecen a un tipo; al cambiarlo dejan de aplicar
     }
 
     fun onSelectAccountFilter(accountId: Long?) {
         selectedAccountId.value = if (selectedAccountId.value == accountId) null else accountId
     }
 
+    fun toggleCategoryFilter(categoryId: Long) {
+        selectedCategoryIds.update { if (categoryId in it) it - categoryId else it + categoryId }
+    }
+
+    fun clearCategoryFilter() {
+        selectedCategoryIds.value = emptySet()
+    }
+
+    /** Años que se pueden elegir: desde el del primer movimiento hasta el próximo año. */
+    val availableYears: StateFlow<List<Int>> = transactionDao.getEarliestTransactionDate()
+        .map { earliest ->
+            val current = Calendar.getInstance().get(Calendar.YEAR)
+            val first = earliest?.let { Calendar.getInstance().apply { timeInMillis = it }.get(Calendar.YEAR) } ?: current
+            (minOf(first, current)..current + 1).toList().reversed()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf(Calendar.getInstance().get(Calendar.YEAR)))
+
+    fun selectYear(year: Int) {
+        val next = (currentCalendar.value.clone() as Calendar).apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.YEAR, year)
+        }
+        currentCalendar.value = next
+    }
+
+    /** Mueve el periodo [delta] meses, cruzando de año si hace falta. */
+    fun shiftMonths(delta: Int) {
+        val next = (currentCalendar.value.clone() as Calendar).apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            add(Calendar.MONTH, delta)
+        }
+        currentCalendar.value = next
+    }
+
+    /** Se fija el día 1 antes de cambiar mes o año para que un día 31 no salte al mes siguiente. */
     fun selectMonth(monthIndex: Int) {
         val next = (currentCalendar.value.clone() as Calendar).apply {
+            set(Calendar.DAY_OF_MONTH, 1)
             set(Calendar.MONTH, monthIndex)
+        }
+        currentCalendar.value = next
+    }
+
+    fun shiftYear(delta: Int) {
+        val next = (currentCalendar.value.clone() as Calendar).apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            add(Calendar.YEAR, delta)
         }
         currentCalendar.value = next
     }
