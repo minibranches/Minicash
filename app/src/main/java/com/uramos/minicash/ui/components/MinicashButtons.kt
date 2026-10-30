@@ -2,6 +2,8 @@ package com.uramos.minicash.ui.components
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.runtime.getValue
@@ -42,7 +44,7 @@ fun MinicashButton(
         contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
         modifier = modifier.heightIn(min = ButtonDefaults.MediumContainerHeight)
     ) {
-        Text(text, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, autoSize = buttonTextAutoSize)
     }
 }
 
@@ -61,7 +63,7 @@ fun MinicashTonalButton(
         contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.MediumContainerHeight),
         modifier = modifier.heightIn(min = ButtonDefaults.MediumContainerHeight)
     ) {
-        Text(text, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, autoSize = buttonTextAutoSize)
     }
 }
 
@@ -128,3 +130,6 @@ private fun rememberMorphingShapes(enabled: Boolean): ButtonShapes {
     )
     return ButtonDefaults.shapes(shape = RoundedCornerShape(radius))
 }
+
+/** El texto se reduce (hasta 11 sp) antes de truncarse, para pantallas angostas o con fuente grande. */
+private val buttonTextAutoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 14.sp)

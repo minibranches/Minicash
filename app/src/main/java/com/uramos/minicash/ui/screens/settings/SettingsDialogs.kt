@@ -214,7 +214,7 @@ fun EditAccountSheet(
             ) {
                 MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Guardar cambios",
+                    text = "Guardar",
                     onClick = {
                         val parsedDouble = balanceText.toDoubleOrNull() ?: 0.0
                         val balanceCents = parsedDouble.toCents()
