@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Minicash</string>
+    <string name="shortcut_expense_short">Nuevo gasto</string>
+    <string name="shortcut_expense_long">Registrar nuevo gasto</string>
+    <string name="shortcut_income_short">Nuevo ingreso</string>
+    <string name="shortcut_income_long">Registrar nuevo ingreso</string>
+    <string name="shortcut_transfer_short">Transferencia</string>
+    <string name="shortcut_transfer_long">Registrar transferencia entre cuentas</string>
+</resources>

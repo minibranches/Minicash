@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.75"
+        android:scaleY="0.75">
+        <!-- Anillo exterior azul oficial #1A73E8 -->
+        <path
+            android:fillColor="#1A73E8"
+            android:pathData="M 54,20 A 34,34 0 1,1 53.999,20 Z" />
+
+        <!-- Disco interior concéntrico azul celeste pastel #D2E3FC -->
+        <path
+            android:fillColor="#D2E3FC"
+            android:pathData="M 54,29 A 25,25 0 1,1 53.999,29 Z" />
+
+        <!-- Monograma 'm' central oficial Minicash -->
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#1A73E8"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M 44,62 V 50 C 44,44.5 54,44.5 54,50 V 62 M 54,50 C 54,44.5 64,44.5 64,50 V 62" />
+    </group>
+</vector>

@@ -1,0 +1,223 @@
+package com.uramos.minicash.ui.screens.home
+
+import androidx.compose.runtime.Immutable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.uramos.minicash.data.local.dao.AccountDao
+import com.uramos.minicash.data.local.dao.CategoryDao
+import com.uramos.minicash.data.local.dao.TransactionDao
+import com.uramos.minicash.data.local.entities.AccountEntity
+import com.uramos.minicash.data.local.entities.CategoryEntity
+import com.uramos.minicash.data.local.entities.TransactionEntity
+import com.uramos.minicash.data.local.entities.TransactionType
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.util.Calendar
+
+@Immutable
+data class CategoryExpenseStat(
+    val categoryName: String,
+    val totalAmount: Long,
+    val percentage: Float,
+    val colorHex: String? = null
+)
+
+@Immutable
+data class HomeUiState(
+    val accounts: List<AccountEntity> = emptyList(),
+    val totalBalance: Long = 0L,
+    val recentTransactions: List<TransactionEntity> = emptyList(),
+    val monthlyExpenseStats: List<CategoryExpenseStat> = emptyList(),
+    val totalMonthlyExpense: Long = 0L,
+    val monthlyIncomeStats: List<CategoryExpenseStat> = emptyList(),
+    val totalMonthlyIncome: Long = 0L,
+    val isLoading: Boolean = true
+)
+
+class HomeViewModel(
+    private val accountDao: AccountDao,
+    private val transactionDao: TransactionDao,
+    private val categoryDao: CategoryDao
+) : ViewModel() {
+
+    val categories: StateFlow<List<CategoryEntity>> = categoryDao.getAllActiveCategories()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedIds: StateFlow<Set<Long>> = _selectedIds.asStateFlow()
+
+    private fun getStartOfMonth(): Long {
+        return Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    private fun getEndOfMonth(): Long {
+        return Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+    }
+
+    val uiState: StateFlow<HomeUiState> = combine(
+        accountDao.getAllActiveAccounts(),
+        accountDao.getTotalBalance(),
+        transactionDao.getRecentTransactions(),
+        transactionDao.getTransactionsBetween(getStartOfMonth(), getEndOfMonth()),
+        categoryDao.getAllActiveCategories()
+    ) { accounts, totalBalance, recentTransactions, monthTransactions, categories ->
+        val categoriesMap = categories.associateBy { it.id }
+
+        // Gastos
+        val expenseTransactions = monthTransactions.filter { it.type == TransactionType.EXPENSE }
+        val totalMonthlyExpense = expenseTransactions.sumOf { it.amount }
+        val monthlyExpenseStats = if (totalMonthlyExpense > 0L) {
+            expenseTransactions
+                .groupBy { tx ->
+                    tx.categoryId?.let { categoriesMap[it] }
+                }
+                .map { (catEntity, txList) ->
+                    val catTotal = txList.sumOf { it.amount }
+                    CategoryExpenseStat(
+                        categoryName = catEntity?.name ?: "Otros",
+                        totalAmount = catTotal,
+                        percentage = catTotal.toFloat() / totalMonthlyExpense.toFloat(),
+                        colorHex = catEntity?.colorHex
+                    )
+                }
+                .sortedByDescending { it.totalAmount }
+        } else {
+            emptyList()
+        }
+
+        // Ingresos
+        val incomeTransactions = monthTransactions.filter { it.type == TransactionType.INCOME }
+        val totalMonthlyIncome = incomeTransactions.sumOf { it.amount }
+        val monthlyIncomeStats = if (totalMonthlyIncome > 0L) {
+            incomeTransactions
+                .groupBy { tx ->
+                    tx.categoryId?.let { categoriesMap[it] }
+                }
+                .map { (catEntity, txList) ->
+                    val catTotal = txList.sumOf { it.amount }
+                    CategoryExpenseStat(
+                        categoryName = catEntity?.name ?: "Otros",
+                        totalAmount = catTotal,
+                        percentage = catTotal.toFloat() / totalMonthlyIncome.toFloat(),
+                        colorHex = catEntity?.colorHex
+                    )
+                }
+                .sortedByDescending { it.totalAmount }
+        } else {
+            emptyList()
+        }
+
+        HomeUiState(
+            accounts = accounts,
+            totalBalance = totalBalance ?: 0L,
+            recentTransactions = recentTransactions,
+            monthlyExpenseStats = monthlyExpenseStats,
+            totalMonthlyExpense = totalMonthlyExpense,
+            monthlyIncomeStats = monthlyIncomeStats,
+            totalMonthlyIncome = totalMonthlyIncome,
+            isLoading = false
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeUiState()
+    )
+
+    val selectedTotalAmount: StateFlow<Long> = combine(
+        _selectedIds,
+        uiState
+    ) { ids, state ->
+        state.recentTransactions.filter { it.id in ids }.sumOf { tx ->
+            when (tx.type) {
+                TransactionType.INCOME -> tx.amount
+                TransactionType.EXPENSE -> -tx.amount
+                TransactionType.TRANSFER -> 0L
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0L)
+
+    fun toggleSelection(id: Long) {
+        _selectedIds.update { current ->
+            if (id in current) current - id else current + id
+        }
+    }
+
+    fun clearSelection() {
+        _selectedIds.value = emptySet()
+    }
+
+    fun deleteSelectedTransactions() {
+        viewModelScope.launch {
+            val selectedTxs = uiState.value.recentTransactions.filter { it.id in _selectedIds.value }
+            selectedTxs.forEach { transaction ->
+                when (transaction.type) {
+                    TransactionType.INCOME -> accountDao.updateBalance(transaction.sourceAccountId, -transaction.amount)
+                    TransactionType.EXPENSE -> accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
+                    TransactionType.TRANSFER -> {
+                        accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
+                        transaction.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, -transaction.amount) }
+                    }
+                }
+                transactionDao.deleteTransaction(transaction)
+            }
+            clearSelection()
+        }
+    }
+
+    fun updateTransaction(original: TransactionEntity, updated: TransactionEntity, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            when (original.type) {
+                TransactionType.INCOME -> accountDao.updateBalance(original.sourceAccountId, -original.amount)
+                TransactionType.EXPENSE -> accountDao.updateBalance(original.sourceAccountId, original.amount)
+                TransactionType.TRANSFER -> {
+                    accountDao.updateBalance(original.sourceAccountId, original.amount)
+                    original.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, -original.amount) }
+                }
+            }
+
+            when (updated.type) {
+                TransactionType.INCOME -> accountDao.updateBalance(updated.sourceAccountId, updated.amount)
+                TransactionType.EXPENSE -> accountDao.updateBalance(updated.sourceAccountId, -updated.amount)
+                TransactionType.TRANSFER -> {
+                    accountDao.updateBalance(updated.sourceAccountId, -updated.amount)
+                    updated.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, updated.amount) }
+                }
+            }
+
+            transactionDao.updateTransaction(updated)
+            onSuccess()
+        }
+    }
+
+    fun deleteTransaction(transaction: TransactionEntity) {
+        viewModelScope.launch {
+            when (transaction.type) {
+                TransactionType.INCOME -> accountDao.updateBalance(transaction.sourceAccountId, -transaction.amount)
+                TransactionType.EXPENSE -> accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
+                TransactionType.TRANSFER -> {
+                    accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
+                    transaction.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, -transaction.amount) }
+                }
+            }
+            transactionDao.deleteTransaction(transaction)
+        }
+    }
+}

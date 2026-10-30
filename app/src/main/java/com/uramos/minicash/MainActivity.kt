@@ -1,0 +1,230 @@
+package com.uramos.minicash
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
+import com.uramos.minicash.data.local.MinicashDatabase
+import com.uramos.minicash.data.local.backup.AutoBackupManager
+import com.uramos.minicash.data.preferences.UserPreferences
+import com.uramos.minicash.ui.navigation.MainScreen
+import com.uramos.minicash.ui.screens.budget.BudgetViewModel
+import com.uramos.minicash.ui.screens.credits.CreditsViewModel
+import com.uramos.minicash.ui.screens.home.HomeViewModel
+import com.uramos.minicash.ui.screens.onboarding.OnboardingScreen
+import com.uramos.minicash.ui.screens.onboarding.OnboardingViewModel
+import com.uramos.minicash.ui.screens.settings.SettingsViewModel
+import com.uramos.minicash.ui.screens.transactions.TransactionsViewModel
+import com.uramos.minicash.ui.theme.MinicashTheme
+import com.uramos.minicash.ui.transactions.AddTransactionViewModel
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+
+class MainActivity : ComponentActivity() {
+
+    private var shortcutActionState by mutableStateOf<String?>(null)
+    private lateinit var db: MinicashDatabase
+    private lateinit var userPreferences: UserPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        shortcutActionState = intent.extractShortcutAction()
+
+        db = MinicashDatabase.getDatabase(applicationContext)
+
+        userPreferences = UserPreferences(applicationContext)
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val enabled = userPreferences.dailyReminderEnabled.first()
+            if (enabled) {
+                val hour = userPreferences.dailyReminderHour.first()
+                val minute = userPreferences.dailyReminderMinute.first()
+                com.uramos.minicash.data.worker.ReminderScheduler.scheduleDailyReminder(applicationContext, hour, minute)
+            }
+        }
+
+        val onboardingViewModel = OnboardingViewModel(
+            accountDao = db.accountDao(),
+            categoryDao = db.categoryDao(),
+            userPreferences = userPreferences
+        )
+
+        val homeViewModel = HomeViewModel(
+            accountDao = db.accountDao(),
+            transactionDao = db.transactionDao(),
+            categoryDao = db.categoryDao()
+        )
+
+        val addTransactionViewModel = AddTransactionViewModel(
+            accountDao = db.accountDao(),
+            categoryDao = db.categoryDao(),
+            transactionDao = db.transactionDao()
+        )
+
+        val transactionsViewModel = TransactionsViewModel(
+            transactionDao = db.transactionDao(),
+            accountDao = db.accountDao(),
+            categoryDao = db.categoryDao()
+        )
+
+        val budgetViewModel = BudgetViewModel(
+            budgetDao = db.budgetDao(),
+            accountDao = db.accountDao(),
+            transactionDao = db.transactionDao(),
+            categoryDao = db.categoryDao()
+        )
+
+        val creditsViewModel = CreditsViewModel(
+            creditDao = db.creditDao(),
+            accountDao = db.accountDao(),
+            transactionDao = db.transactionDao(),
+            creditInstitutionDao = db.creditInstitutionDao(),
+            database = db
+        )
+
+        val settingsViewModel = SettingsViewModel(
+            accountDao = db.accountDao(),
+            categoryDao = db.categoryDao(),
+            userPreferences = userPreferences,
+            database = db
+        )
+
+        setContent {
+            val themeMode by userPreferences.themeMode.collectAsState(initial = com.uramos.minicash.data.preferences.ThemeMode.SYSTEM)
+            val fontPreference by userPreferences.fontPreference.collectAsState(initial = com.uramos.minicash.data.preferences.FontPreference.ROUNDED_QUICKSAND)
+            val useDynamicColor by userPreferences.useDynamicColor.collectAsState(initial = false)
+            val isAmoledMode by userPreferences.isAmoledMode.collectAsState(initial = false)
+            val accentColorHex by userPreferences.accentColorHex.collectAsState(initial = "#1A73E8")
+
+            MinicashTheme(
+                themeMode = themeMode,
+                dynamicColor = useDynamicColor,
+                isAmoledMode = isAmoledMode,
+                accentColorHex = accentColorHex,
+                fontPreference = fontPreference
+            ) {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AppNavigation(
+                        shortcutAction = shortcutActionState,
+                        onShortcutActionHandled = { shortcutActionState = null },
+                        userPreferences = userPreferences,
+                        onboardingViewModel = onboardingViewModel,
+                        homeViewModel = homeViewModel,
+                        addTransactionViewModel = addTransactionViewModel,
+                        transactionsViewModel = transactionsViewModel,
+                        budgetViewModel = budgetViewModel,
+                        creditsViewModel = creditsViewModel,
+                        settingsViewModel = settingsViewModel
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        checkAutoBackup()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        checkAutoBackup()
+    }
+
+    private fun checkAutoBackup() {
+        if (::db.isInitialized && ::userPreferences.isInitialized) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                AutoBackupManager.checkAndTriggerAutoBackup(
+                    context = applicationContext,
+                    database = db,
+                    userPreferences = userPreferences
+                )
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        shortcutActionState = intent.extractShortcutAction()
+    }
+
+    private fun Intent?.extractShortcutAction(): String? {
+        if (this == null) return null
+        return when (action) {
+            "com.uramos.minicash.ACTION_NEW_EXPENSE" -> "EXPENSE"
+            "com.uramos.minicash.ACTION_NEW_INCOME" -> "INCOME"
+            "com.uramos.minicash.ACTION_NEW_TRANSFER" -> "TRANSFER"
+            else -> getStringExtra("shortcut_action")
+        }
+    }
+}
+
+@Composable
+fun AppNavigation(
+    shortcutAction: String? = null,
+    onShortcutActionHandled: () -> Unit = {},
+    userPreferences: UserPreferences,
+    onboardingViewModel: OnboardingViewModel,
+    homeViewModel: HomeViewModel,
+    addTransactionViewModel: AddTransactionViewModel,
+    transactionsViewModel: TransactionsViewModel,
+    budgetViewModel: BudgetViewModel,
+    creditsViewModel: CreditsViewModel,
+    settingsViewModel: SettingsViewModel
+) {
+    val isOnboardingCompleted by remember { userPreferences.isOnboardingCompleted }
+        .collectAsState(initial = null)
+    val userName by remember { userPreferences.userName }
+        .collectAsState(initial = "")
+
+    when (isOnboardingCompleted) {
+        null -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        false -> {
+            OnboardingScreen(
+                viewModel = onboardingViewModel,
+                onFinished = {}
+            )
+        }
+        true -> {
+            MainScreen(
+                userName = userName,
+                shortcutAction = shortcutAction,
+                onShortcutActionHandled = onShortcutActionHandled,
+                homeViewModel = homeViewModel,
+                addTransactionViewModel = addTransactionViewModel,
+                transactionsViewModel = transactionsViewModel,
+                budgetViewModel = budgetViewModel,
+                creditsViewModel = creditsViewModel,
+                settingsViewModel = settingsViewModel
+            )
+        }
+    }
+}
