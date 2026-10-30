@@ -244,25 +244,12 @@ class BudgetViewModel(
         }
     }
 
-    fun moveItem(item: BudgetItemEntity, direction: Int) {
-        val currentItems = uiState.value.items.toMutableList()
-        val currentIndex = currentItems.indexOfFirst { it.id == item.id }
-        if (currentIndex == -1) return
-
-        val targetIndex = currentIndex + direction
-        if (targetIndex !in 0 until currentItems.size) return
-
-        // 1. Intercambiar posiciones en la lista en memoria
-        java.util.Collections.swap(currentItems, currentIndex, targetIndex)
-
-        // 2. Normalizar displayOrder secuencialmente (0, 1, 2, 3...)
-        val reindexedList = currentItems.mapIndexed { index, budgetItem ->
-            budgetItem.copy(displayOrder = index)
-        }
-
-        // 3. Persistir atómicamente en Room
+    /** Guarda el orden definitivo de las partidas al terminar de arrastrar. */
+    fun saveItemOrder(orderedIds: List<Long>) {
         viewModelScope.launch {
-            budgetDao.updateItems(reindexedList)
+            val byId = uiState.value.items.associateBy { it.id }
+            val reindexed = orderedIds.mapIndexedNotNull { index, id -> byId[id]?.copy(displayOrder = index) }
+            if (reindexed.isNotEmpty()) budgetDao.updateItems(reindexed)
         }
     }
 

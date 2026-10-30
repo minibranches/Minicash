@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.foundation.lazy.rememberLazyListState
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.background
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.foundation.layout.*
@@ -51,6 +55,20 @@ fun AccountsManagementScreen(
     var showAddAccountDialog by remember { mutableStateOf(false) }
     var accountToEdit by remember { mutableStateOf<AccountEntity?>(null) }
     var accountToDelete by remember { mutableStateOf<AccountEntity?>(null) }
+
+    // Orden local mientras se arrastra; se guarda en la base al soltar
+    var orderedAccounts by remember(state.accounts) { mutableStateOf(state.accounts) }
+    val lazyListState = rememberLazyListState()
+    val reorderState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        val list = orderedAccounts.toMutableList()
+        val fromIdx = list.indexOfFirst { it.id == from.key }
+        val toIdx = list.indexOfFirst { it.id == to.key }
+        if (fromIdx >= 0 && toIdx >= 0) {
+            list.add(toIdx, list.removeAt(fromIdx))
+            orderedAccounts = list
+            haptics.tick()
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -129,6 +147,7 @@ fun AccountsManagementScreen(
             }
         } else {
             LazyColumn(
+                state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
@@ -145,131 +164,119 @@ fun AccountsManagementScreen(
                     )
                 }
 
-                itemsIndexed(state.accounts, key = { _, acc -> acc.id }) { index, account ->
-                    val itemShape = rememberSegmentedShape(index = index, count = state.accounts.size)
-                    val cardAccentColor = MinicashColorUtils.parseHexColor(
-                        account.colorHex,
-                        MaterialTheme.colorScheme.primary
-                    )
-                    val accountIcon = getIconVectorByName(account.iconName)
+                itemsIndexed(orderedAccounts, key = { _, acc -> acc.id }) { index, account ->
+                    ReorderableItem(reorderState, key = account.id) { isDragging ->
+                        val itemShape = rememberSegmentedShape(index = index, count = state.accounts.size)
+                        val cardAccentColor = MinicashColorUtils.parseHexColor(
+                            account.colorHex,
+                            MaterialTheme.colorScheme.primary
+                        )
+                        val accountIcon = getIconVectorByName(account.iconName)
 
-                    MinicashCard(
-                        level = CardTonalLevel.LOW,
-                        shape = itemShape,
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            accountToEdit = account
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .defaultMinSize(minHeight = 72.dp)
-                            .animateItem()
-                    ) {
-                        Row(
+                        MinicashCard(
+                            level = CardTonalLevel.LOW,
+                            shape = itemShape,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                accountToEdit = account
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .defaultMinSize(minHeight = 72.dp)
                         ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = cardAccentColor.copy(alpha = 0.18f),
-                                modifier = Modifier.size(38.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = accountIcon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = cardAccentColor.asIconTint()
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Text(
-                                    text = account.name,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = account.type.displayName,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            MoneyTextView(
-                                amountCents = account.balance,
-                                type = MoneyDisplayType.NEUTRAL,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
                             Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
-                                    IconButton(
-                                        onClick = { viewModel.moveAccountOrder(index, index - 1) },
-                                        enabled = index > 0,
-                                        modifier = Modifier.size(28.dp)
-                                    ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = cardAccentColor.copy(alpha = 0.18f),
+                                    modifier = Modifier.size(38.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
                                         Icon(
-                                            imageVector = Icons.Default.KeyboardArrowUp,
-                                            contentDescription = "Subir",
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = { viewModel.moveAccountOrder(index, index + 1) },
-                                        enabled = index < state.accounts.size - 1,
-                                        modifier = Modifier.size(28.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = "Bajar",
-                                            modifier = Modifier.size(18.dp)
+                                            imageVector = accountIcon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = cardAccentColor.asIconTint()
                                         )
                                     }
                                 }
 
-                                IconButton(
-                                    onClick = { viewModel.toggleAccountVisibility(account) },
-                                    modifier = Modifier.size(32.dp)
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = if (account.isVisibleInHome) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                        contentDescription = "Visibilidad",
-                                        tint = if (account.isVisibleInHome) cardAccentColor.asIconTint() else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(20.dp)
+                                    Text(
+                                        text = account.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = account.type.displayName,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
 
-                                IconButton(
-                                    onClick = { accountToEdit = account },
-                                    modifier = Modifier.size(32.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                MoneyTextView(
+                                    amountCents = account.balance,
+                                    type = MoneyDisplayType.NEUTRAL,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Editar cuenta",
-                                        tint = cardAccentColor.asIconTint(),
-                                        modifier = Modifier.size(18.dp)
+                                        imageVector = Icons.Default.DragHandle,
+                                        contentDescription = "Mantén presionado y arrastra para reordenar",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .padding(6.dp)
+                                            .draggableHandle(
+                                                onDragStopped = { viewModel.saveAccountOrder(orderedAccounts.map { it.id }) }
+                                            )
                                     )
+
+                                    IconButton(
+                                        onClick = { viewModel.toggleAccountVisibility(account) },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (account.isVisibleInHome) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = "Visibilidad",
+                                            tint = if (account.isVisibleInHome) cardAccentColor.asIconTint() else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { accountToEdit = account },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Editar cuenta",
+                                            tint = cardAccentColor.asIconTint(),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

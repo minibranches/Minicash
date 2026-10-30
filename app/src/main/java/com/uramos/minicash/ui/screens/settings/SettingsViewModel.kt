@@ -341,18 +341,12 @@ class SettingsViewModel(
         }
     }
 
-    fun moveAccountOrder(fromIndex: Int, toIndex: Int) {
+    /** Guarda el orden definitivo de las cuentas al terminar de arrastrar. */
+    fun saveAccountOrder(orderedIds: List<Long>) {
         viewModelScope.launch {
-            val accounts = uiState.value.accounts.toMutableList()
-            if (fromIndex in accounts.indices && toIndex in accounts.indices) {
-                val item = accounts.removeAt(fromIndex)
-                accounts.add(toIndex, item)
-                
-                val updated = accounts.mapIndexed { index, acc -> 
-                    acc.copy(displayOrder = index)
-                }
-                accountDao.updateAccounts(updated)
-            }
+            val byId = uiState.value.accounts.associateBy { it.id }
+            val updated = orderedIds.mapIndexedNotNull { index, id -> byId[id]?.copy(displayOrder = index) }
+            if (updated.isNotEmpty()) accountDao.updateAccounts(updated)
         }
     }
 

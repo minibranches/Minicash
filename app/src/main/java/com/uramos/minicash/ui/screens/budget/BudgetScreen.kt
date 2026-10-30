@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.material.icons.filled.DragHandle
+import sh.calvin.reorderable.rememberReorderableLazyListState
+import sh.calvin.reorderable.ReorderableItem
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
@@ -111,6 +114,19 @@ fun BudgetScreen(
     var itemToPay by remember { mutableStateOf<BudgetItemEntity?>(null) }
     var itemToDelete by remember { mutableStateOf<BudgetItemEntity?>(null) }
     var itemToEdit by remember { mutableStateOf<BudgetItemEntity?>(null) }
+
+    // Orden local mientras se arrastra; se guarda en la base al soltar
+    var orderedItems by remember(state.items) { mutableStateOf(state.items) }
+    val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+        val list = orderedItems.toMutableList()
+        val fromIdx = list.indexOfFirst { it.id == from.key }
+        val toIdx = list.indexOfFirst { it.id == to.key }
+        if (fromIdx >= 0 && toIdx >= 0) {
+            list.add(toIdx, list.removeAt(fromIdx))
+            orderedItems = list
+            haptics.tick()
+        }
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -390,27 +406,25 @@ fun BudgetScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    itemsIndexed(state.items, key = { _, item -> item.id }) { index, item ->
-                        val itemShape = rememberSegmentedShape(index = index, count = state.items.size)
-                        val isFirst = index == 0
-                        val isLast = index == state.items.lastIndex
+                    itemsIndexed(orderedItems, key = { _, item -> item.id }) { index, item ->
+                        ReorderableItem(reorderState, key = item.id) { _ ->
+                            val itemShape = rememberSegmentedShape(index = index, count = orderedItems.size)
 
-                        BudgetItemRow(
-                            item = item,
-                            shape = itemShape,
-                            canMoveUp = !isFirst,
-                            canMoveDown = !isLast,
-                            onMoveUp = { viewModel.moveItem(item, -1) },
-                            onMoveDown = { viewModel.moveItem(item, 1) },
-                            onClick = { itemToEdit = item },
-                            onToggleExecuted = { itemToPay = item },
-                            onDelete = { itemToDelete = item },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp)
-                                .animateItem()
-                                .listEntrance(entranceTracker, item.id, index)
-                        )
+                            BudgetItemRow(
+                                item = item,
+                                shape = itemShape,
+                                dragModifier = Modifier.draggableHandle(
+                                    onDragStopped = { viewModel.saveItemOrder(orderedItems.map { it.id }) }
+                                ),
+                                onClick = { itemToEdit = item },
+                                onToggleExecuted = { itemToPay = item },
+                                onDelete = { itemToDelete = item },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                                    .listEntrance(entranceTracker, item.id, index)
+                            )
+                        }
                     }
                 }
             }
@@ -527,10 +541,8 @@ fun BudgetItemRow(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     shape: androidx.compose.ui.graphics.Shape? = null,
-    canMoveUp: Boolean = true,
-    canMoveDown: Boolean = true,
-    onMoveUp: () -> Unit = {},
-    onMoveDown: () -> Unit = {}
+    /** Modificador de arrastre (draggableHandle) que se aplica al asa de reordenamiento. */
+    dragModifier: Modifier = Modifier
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val colorScheme = MaterialTheme.colorScheme
@@ -618,32 +630,14 @@ fun BudgetItemRow(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                Column {
-                    IconButton(
-                        onClick = onMoveUp,
-                        enabled = canMoveUp,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Subir",
-                            modifier = Modifier.size(18.dp),
-                            tint = if (canMoveUp) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        )
-                    }
-                    IconButton(
-                        onClick = onMoveDown,
-                        enabled = canMoveDown,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = "Bajar",
-                            modifier = Modifier.size(18.dp),
-                            tint = if (canMoveDown) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        )
-                    }
-                }
+                Icon(
+                    imageVector = Icons.Default.DragHandle,
+                    contentDescription = "Mantén presionado y arrastra para reordenar",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = dragModifier
+                        .size(36.dp)
+                        .padding(6.dp)
+                )
 
                 IconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
                     Icon(

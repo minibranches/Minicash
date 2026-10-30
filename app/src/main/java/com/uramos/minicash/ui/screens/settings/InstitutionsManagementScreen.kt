@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.Edit
 import com.uramos.minicash.ui.components.MinicashTonalButton
 import com.uramos.minicash.ui.components.MinicashButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
@@ -47,6 +48,7 @@ fun InstitutionsManagementScreen(
 
     var showAddSheet by remember { mutableStateOf(false) }
     var instToDelete by remember { mutableStateOf<CreditInstitutionEntity?>(null) }
+    var instToEdit by remember { mutableStateOf<CreditInstitutionEntity?>(null) }
 
     if (instToDelete != null) {
         val inst = instToDelete!!
@@ -83,6 +85,17 @@ fun InstitutionsManagementScreen(
             onConfirm = { name, colorHex ->
                 viewModel.addCreditInstitution(name, colorHex)
                 showAddSheet = false
+            }
+        )
+    }
+
+    instToEdit?.let { editing ->
+        AddInstitutionSheet(
+            institution = editing,
+            onDismiss = { instToEdit = null },
+            onConfirm = { name, colorHex ->
+                viewModel.updateCreditInstitution(editing, name, colorHex)
+                instToEdit = null
             }
         )
     }
@@ -192,6 +205,10 @@ fun InstitutionsManagementScreen(
                     MinicashCard(
                         level = CardTonalLevel.LOW,
                         shape = itemShape,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            instToEdit = inst
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp)
@@ -226,6 +243,18 @@ fun InstitutionsManagementScreen(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f)
                             )
+
+                            IconButton(
+                                onClick = { instToEdit = inst },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar",
+                                    tint = instColor.asIconTint(),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
 
                             IconButton(
                                 onClick = { instToDelete = inst },
@@ -285,13 +314,16 @@ fun InstitutionsManagementScreen(
 @Composable
 fun AddInstitutionSheet(
     onDismiss: () -> Unit,
-    onConfirm: (name: String, colorHex: String) -> Unit
+    onConfirm: (name: String, colorHex: String) -> Unit,
+    /** Si se indica, la hoja edita esa institución en lugar de crear una nueva. */
+    institution: CreditInstitutionEntity? = null
 ) {
-    
-    var name by remember { mutableStateOf("") }
-    var selectedColorHex by remember { mutableStateOf("#1A73E8") }
+    val initialName = institution?.name ?: ""
+    val initialColor = institution?.colorHex ?: "#1A73E8"
+    var name by remember(institution) { mutableStateOf(initialName) }
+    var selectedColorHex by remember(institution) { mutableStateOf(initialColor) }
 
-    val guard = rememberDiscardGuard(isDirty = name.isNotBlank() || selectedColorHex != "#1A73E8", onDismiss = onDismiss)
+    val guard = rememberDiscardGuard(isDirty = name != initialName || selectedColorHex != initialColor, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
         ModalBottomSheet(
         onDismissRequest = guard::requestDismiss,
@@ -308,7 +340,7 @@ fun AddInstitutionSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nueva institución",
+                text = if (institution == null) "Nueva institución" else "Editar institución",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -341,7 +373,7 @@ fun AddInstitutionSheet(
                             onConfirm(name.trim(), selectedColorHex)
                         }
                     },
-                    enabled = name.isNotBlank(),
+                    enabled = name.isNotBlank() && (name.trim() != initialName || selectedColorHex != initialColor),
                     modifier = Modifier.weight(1f)
                 )
             }
