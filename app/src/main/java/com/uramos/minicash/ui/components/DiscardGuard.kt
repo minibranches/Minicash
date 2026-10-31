@@ -75,7 +75,7 @@ fun rememberDiscardGuard(isDirty: Boolean, onDismiss: () -> Unit): DiscardGuard 
 @Composable
 fun DiscardChangesDialog(guard: DiscardGuard) {
     if (!guard.showConfirm) return
-    AlertDialog(
+    MinicashAlertDialog(
         onDismissRequest = { guard.showConfirm = false },
         title = { Text("¿Descartar cambios?", fontWeight = FontWeight.Bold) },
         text = { Text("Tienes cambios sin guardar. Si sales ahora se perderán.") },

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -465,7 +466,7 @@ fun BudgetScreen(
 
     if (itemToDelete != null) {
         val item = itemToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { itemToDelete = null },
             title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Estás seguro de que deseas eliminar la partida '${item.concept}' de ${item.amount.toCurrencyFormat()}?") },
@@ -671,7 +672,7 @@ fun ReactivateBudgetItemDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    AlertDialog(
+    MinicashAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("¿Reactivar partida?", fontWeight = FontWeight.Bold) },
         text = {
@@ -704,7 +705,7 @@ fun ConfirmPaymentDialog(
 ) {
     var createTransaction by remember { mutableStateOf(true) }
 
-    AlertDialog(
+    MinicashAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Confirmar ${item.concept}", fontWeight = FontWeight.Bold) },
         text = {
@@ -978,7 +979,7 @@ fun EditBudgetItemSheet(
     
 
     if (showDeleteConfirmDialog) {
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
             title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${item.concept}' de tus partidas de presupuesto?") },

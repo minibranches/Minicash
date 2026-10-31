@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -55,7 +56,7 @@ fun InstitutionsManagementScreen(
 
     if (instToDelete != null) {
         val inst = instToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { instToDelete = null },
             title = { Text("¿Eliminar institución?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${inst.name}' de tus instituciones de crédito?") },

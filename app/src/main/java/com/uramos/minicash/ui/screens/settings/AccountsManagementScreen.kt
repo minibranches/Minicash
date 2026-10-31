@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -351,7 +352,7 @@ fun AccountsManagementScreen(
 
     if (accountToDelete != null) {
         val acc = accountToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { accountToDelete = null },
             title = { Text("¿Eliminar cuenta?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Estás seguro de eliminar la cuenta '${acc.name}'? Esta acción eliminará permanentemente la cuenta.") },

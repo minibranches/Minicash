@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Notifications
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -104,7 +105,7 @@ fun CreditsScreen(
 
     if (creditToDelete != null) {
         val targetCredit = creditToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { creditToDelete = null },
             title = {
                 Text(
@@ -394,7 +395,7 @@ fun ConfirmCreditPaymentDialog(
     var createExpenseTransaction by remember { mutableStateOf(true) }
     val nextInstallment = credit.paidInstallments + 1
 
-    AlertDialog(
+    MinicashAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Abonar a ${credit.article}", fontWeight = FontWeight.Bold) },
         text = {
@@ -805,7 +806,7 @@ fun InstitutionSelectionSheet(
         var newInstName by remember { mutableStateOf("") }
         var selectedColorHex by remember { mutableStateOf("#1A73E8") }
 
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showAddDialog = false },
             title = { Text("Nueva institución", fontWeight = FontWeight.Bold) },
             text = {

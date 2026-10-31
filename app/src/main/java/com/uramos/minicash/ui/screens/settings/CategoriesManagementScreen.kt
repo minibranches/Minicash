@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashPillTabs
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -347,7 +348,7 @@ fun CategoriesManagementScreen(
 
     if (categoryToDelete != null) {
         val cat = categoryToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { categoryToDelete = null },
             title = { Text("¿Eliminar categoría?", fontWeight = FontWeight.Bold) },
             text = {

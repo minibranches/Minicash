@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Payments
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -457,7 +458,7 @@ fun SettingsScreen(
     if (showNameDialog) {
         var draft by rememberSaveable { mutableStateOf(state.userName) }
         val canSave = draft.isNotBlank() && draft.trim() != state.userName
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showNameDialog = false },
             title = { Text("Tu nombre", fontWeight = FontWeight.Bold) },
             text = {
@@ -502,7 +503,7 @@ fun SettingsScreen(
         val uri = pendingRestoreUri!!
         var isRestoring by remember { mutableStateOf(false) }
 
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { if (!isRestoring) pendingRestoreUri = null },
             title = { Text("¿Restaurar copia de seguridad?", fontWeight = FontWeight.Bold) },
             text = {
@@ -555,7 +556,7 @@ fun SettingsScreen(
             initialMinute = state.dailyReminderMinute,
             is24Hour = true
         )
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showTimePickerDialog = false },
             confirmButton = {
                 MinicashFilledButton(
@@ -591,7 +592,7 @@ fun SettingsScreen(
             initialMinute = creditReminderTime.second,
             is24Hour = true
         )
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showCreditTimePickerDialog = false },
             confirmButton = {
                 MinicashFilledButton(
@@ -627,7 +628,7 @@ fun SettingsScreen(
             initialMinute = state.autoBackupMinute,
             is24Hour = true
         )
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showAutoBackupTimePickerDialog = false },
             confirmButton = {
                 MinicashFilledButton(
@@ -876,7 +877,7 @@ fun InstitutionsManagementSheet(
         var name by remember { mutableStateOf("") }
         var selectedColorHex by remember { mutableStateOf("#1A73E8") }
 
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showAddDialog = false },
             title = { Text("Nueva institución", fontWeight = FontWeight.Bold) },
             text = {
@@ -919,7 +920,7 @@ fun InstitutionsManagementSheet(
 
     if (instToDelete != null) {
         val inst = instToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { instToDelete = null },
             title = { Text("¿Eliminar institución?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${inst.name}' de tus instituciones de crédito?") },

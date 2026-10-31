@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -315,7 +316,7 @@ fun BackupSettingsScreen(
         val uri = pendingRestoreUri!!
         var isRestoring by remember { mutableStateOf(false) }
 
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { if (!isRestoring) pendingRestoreUri = null },
             title = { Text("¿Restaurar copia de seguridad?", fontWeight = FontWeight.Bold) },
             text = {
@@ -368,7 +369,7 @@ fun BackupSettingsScreen(
             initialMinute = state.autoBackupMinute,
             is24Hour = true
         )
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showTimePickerDialog = false },
             confirmButton = {
                 MinicashFilledButton(

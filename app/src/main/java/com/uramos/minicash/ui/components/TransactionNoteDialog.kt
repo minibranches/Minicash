@@ -16,7 +16,7 @@ fun TransactionNoteDialog(
     note: String,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    MinicashAlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(

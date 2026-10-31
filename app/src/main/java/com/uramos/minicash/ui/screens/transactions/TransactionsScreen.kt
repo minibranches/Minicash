@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashTonalIconButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -112,7 +113,7 @@ fun TransactionsScreen(
 
     if (transactionToDelete != null) {
         val tx = transactionToDelete!!
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { transactionToDelete = null },
             title = {
                 Text(
@@ -154,7 +155,7 @@ fun TransactionsScreen(
     }
 
     if (showBatchDeleteDialog) {
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showBatchDeleteDialog = false },
             title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
             text = { Text("Esta acción eliminará las transacciones seleccionadas y reajustará automáticamente los saldos correspondientes de las cuentas. ¿Proceder?") },

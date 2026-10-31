@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -940,7 +941,7 @@ fun EditTransactionSheet(
     }
 
     if (showDeleteConfirmation && onDeleteTransaction != null) {
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text("¿Eliminar movimiento?", fontWeight = FontWeight.Bold) },
             text = { Text("Esta acción eliminará permanentemente la transacción y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },

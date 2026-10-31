@@ -1,5 +1,12 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.MinicashAlertDialog
+import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
@@ -422,7 +429,7 @@ fun CreditFormSheet(
     }
 
     if (showDeleteConfirm && credit != null && onDelete != null) {
-        AlertDialog(
+        MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text("Eliminar crédito", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
             text = {
@@ -691,6 +698,7 @@ private fun PlanStep(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun PaymentStep(
     paymentDayStr: String,
@@ -720,42 +728,48 @@ private fun PaymentStep(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Text(
-            text = "Avisarme",
-            style = MaterialTheme.typography.labelLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        AnimatedVisibility(visible = hasPaymentDay) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "Avisarme",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-        if (hasPaymentDay) {
-            MinicashSegmentedChoice(
-                options = REMINDER_OPTIONS,
-                isSelected = { it == reminderDays },
-                onSelect = onReminderChange,
-                label = {
-                    when (it) {
-                        NO_REMINDER -> "No"
-                        0 -> "Ese día"
-                        else -> "$it d"
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    REMINDER_OPTIONS.forEach { option ->
+                        ToggleButton(
+                            checked = option == reminderDays,
+                            onCheckedChange = { onReminderChange(option) }
+                        ) {
+                            Text(
+                                text = when (option) {
+                                    NO_REMINDER -> "Sin aviso"
+                                    0 -> "El mismo día"
+                                    1 -> "1 día antes"
+                                    else -> "$option días antes"
+                                },
+                                maxLines = 1
+                            )
+                        }
                     }
                 }
-            )
-            Text(
-                text = when (reminderDays) {
-                    NO_REMINDER -> "No recibirás aviso de este pago."
-                    0 -> "Recibirás el aviso el mismo día del pago."
-                    1 -> "Recibirás el aviso 1 día antes del pago."
-                    else -> "Recibirás el aviso $reminderDays días antes del pago."
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            Text(
-                text = "Indica un día de pago para poder activar el aviso.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+
+                Text(
+                    text = when (reminderDays) {
+                        NO_REMINDER -> "No recibirás aviso de este pago."
+                        0 -> "Recibirás el aviso el mismo día del pago."
+                        1 -> "Recibirás el aviso 1 día antes del pago."
+                        else -> "Recibirás el aviso $reminderDays días antes del pago."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
