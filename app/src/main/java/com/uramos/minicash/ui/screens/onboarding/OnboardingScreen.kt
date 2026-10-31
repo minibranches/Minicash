@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.onboarding
 
+import com.uramos.minicash.ui.components.MinicashLogo
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -353,10 +354,9 @@ private fun WelcomePage(
                     .size(44.dp)
                     .background(MaterialTheme.colorScheme.secondaryContainer, MaterialShapes.Clover4Leaf.toShape())
             )
-            Image(
-                painter = painterResource(id = R.drawable.ic_minicash_coin),
-                contentDescription = "Moneda Minicash",
-                modifier = Modifier.size(104.dp)
+            MinicashLogo(
+                size = 104.dp,
+                discColor = MaterialTheme.colorScheme.surface
             )
         }
 

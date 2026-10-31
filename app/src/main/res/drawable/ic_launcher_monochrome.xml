@@ -3,6 +3,12 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Mismo tamaño que la capa a color (75 %), dentro de la zona segura del ícono adaptativo -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.75"
+        android:scaleY="0.75">
     <!-- Anillo exterior de la moneda en blanco -->
     <path
         android:fillColor="@android:color/white"
@@ -16,4 +22,5 @@
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
         android:pathData="M 44,62 V 50 C 44,44.5 54,44.5 54,50 V 62 M 54,50 C 54,44.5 64,44.5 64,50 V 62" />
+    </group>
 </vector>
