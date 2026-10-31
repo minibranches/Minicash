@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashIconButton
+import com.uramos.minicash.ui.components.MinicashTextButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,7 +95,7 @@ fun CategoryPickerSheet(
                     fontWeight = FontWeight.Bold
                 )
                 if (selectedIds.isNotEmpty()) {
-                    TextButton(onClick = onClear) {
+                    MinicashTextButton(onClick = onClear) {
                         Text("Limpiar", fontWeight = FontWeight.Bold)
                     }
                 }
@@ -107,7 +109,7 @@ fun CategoryPickerSheet(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
+                        MinicashIconButton(onClick = { query = "" }) {
                             Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
                         }
                     }

@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -80,7 +83,7 @@ fun BackupSettingsScreen(
                             .padding(start = spacing.small)
                             .size(40.dp)
                     ) {
-                        IconButton(onClick = onBackClick) {
+                        MinicashIconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
@@ -333,7 +336,7 @@ fun BackupSettingsScreen(
             },
             confirmButton = {
                 if (!isRestoring) {
-                    Button(
+                    MinicashFilledButton(
                         onClick = {
                             isRestoring = true
                             viewModel.importBackup(context, uri)
@@ -343,7 +346,6 @@ fun BackupSettingsScreen(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        shape = CircleShape
                     ) {
                         Text("Restaurar", fontWeight = FontWeight.Bold)
                     }
@@ -351,7 +353,7 @@ fun BackupSettingsScreen(
             },
             dismissButton = {
                 if (!isRestoring) {
-                    TextButton(onClick = { pendingRestoreUri = null }) {
+                    MinicashTextButton(onClick = { pendingRestoreUri = null }) {
                         Text("Cancelar")
                     }
                 }
@@ -369,18 +371,17 @@ fun BackupSettingsScreen(
         AlertDialog(
             onDismissRequest = { showTimePickerDialog = false },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         viewModel.setAutoBackupTime(context, timePickerState.hour, timePickerState.minute)
                         showTimePickerDialog = false
                     },
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePickerDialog = false }) {
+                MinicashTextButton(onClick = { showTimePickerDialog = false }) {
                     Text("Cancelar")
                 }
             },

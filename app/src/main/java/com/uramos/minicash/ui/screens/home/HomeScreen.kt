@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
 import androidx.compose.animation.animateColorAsState
@@ -142,7 +145,7 @@ fun HomeScreen(
             title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
             text = { Text("Esta acción eliminará las transacciones seleccionadas y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteSelectedTransactions()
@@ -152,13 +155,12 @@ fun HomeScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBatchDeleteDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showBatchDeleteDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -342,7 +344,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { viewModel.clearSelection() }) {
+                        MinicashIconButton(onClick = { viewModel.clearSelection() }) {
                             Icon(Icons.Default.Close, contentDescription = "Cancelar")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -366,7 +368,7 @@ fun HomeScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        IconButton(onClick = { showBatchDeleteDialog = true }) {
+                        MinicashIconButton(onClick = { showBatchDeleteDialog = true }) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Eliminar seleccionados",
@@ -612,7 +614,7 @@ fun CompactTransactionRow(
                 )
 
                 if (extraNote.isNotBlank()) {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             haptics.tick()
                             showNoteDialog = true
@@ -643,7 +645,7 @@ fun CompactTransactionRow(
         )
 
         if (onDeleteClick != null && !isSelectionActive) {
-            IconButton(
+            MinicashIconButton(
                 onClick = onDeleteClick,
                 modifier = Modifier.size(28.dp)
             ) {

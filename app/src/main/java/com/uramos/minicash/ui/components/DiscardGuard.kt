@@ -80,12 +80,12 @@ fun DiscardChangesDialog(guard: DiscardGuard) {
         title = { Text("¿Descartar cambios?", fontWeight = FontWeight.Bold) },
         text = { Text("Tienes cambios sin guardar. Si sales ahora se perderán.") },
         confirmButton = {
-            TextButton(onClick = { guard.discard() }) {
+            MinicashTextButton(onClick = { guard.discard() }) {
                 Text("Descartar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = { guard.showConfirm = false }) { Text("Seguir editando") }
+            MinicashTextButton(onClick = { guard.showConfirm = false }) { Text("Seguir editando") }
         },
         shape = RoundedCornerShape(28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh

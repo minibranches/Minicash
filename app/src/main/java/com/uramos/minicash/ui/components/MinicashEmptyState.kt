@@ -33,9 +33,8 @@ fun MinicashEmptyState(
     onAction: (() -> Unit)? = null,
     actionButton: (@Composable () -> Unit)? = if (!actionLabel.isNullOrBlank() && onAction != null) {
         {
-            Button(
+            MinicashFilledButton(
                 onClick = onAction,
-                shape = CircleShape
             ) {
                 Text(text = actionLabel)
             }

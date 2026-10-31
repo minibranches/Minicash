@@ -65,6 +65,14 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
     }
 }
 
+/** Día de pago y aviso de las compras a meses. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE credits ADD COLUMN paymentDay INTEGER")
+        db.execSQL("ALTER TABLE credits ADD COLUMN reminderDaysBefore INTEGER")
+    }
+}
+
 @Database(
     entities = [
         AccountEntity::class,
@@ -74,7 +82,7 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         CreditEntity::class,
         CreditInstitutionEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class MinicashDatabase : RoomDatabase() {
@@ -96,7 +104,7 @@ abstract class MinicashDatabase : RoomDatabase() {
                     MinicashDatabase::class.java,
                     "minicash.db"
                 )
-                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .build()
                 INSTANCE = instance
                 instance

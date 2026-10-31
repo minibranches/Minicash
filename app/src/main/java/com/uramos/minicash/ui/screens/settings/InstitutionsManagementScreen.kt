@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.material.icons.filled.Edit
 import com.uramos.minicash.ui.components.MinicashTonalButton
 import com.uramos.minicash.ui.components.MinicashButton
@@ -57,7 +60,7 @@ fun InstitutionsManagementScreen(
             title = { Text("¿Eliminar institución?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${inst.name}' de tus instituciones de crédito?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteCreditInstitution(inst)
@@ -67,13 +70,12 @@ fun InstitutionsManagementScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { instToDelete = null }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { instToDelete = null }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -115,7 +117,7 @@ fun InstitutionsManagementScreen(
                             .padding(start = spacing.small)
                             .size(40.dp)
                     ) {
-                        IconButton(onClick = onNavigateBack) {
+                        MinicashIconButton(onClick = onNavigateBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Regresar",
@@ -132,7 +134,7 @@ fun InstitutionsManagementScreen(
                     )
                 },
                 actions = {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             showAddSheet = true
@@ -161,9 +163,8 @@ fun InstitutionsManagementScreen(
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
                     actionButton = {
-                        Button(
+                        MinicashFilledButton(
                             onClick = { showAddSheet = true },
-                            shape = CircleShape,
                             modifier = Modifier
                                 .padding(top = 8.dp)
                                 .heightIn(min = 48.dp)
@@ -244,7 +245,7 @@ fun InstitutionsManagementScreen(
                                 modifier = Modifier.weight(1f)
                             )
 
-                            IconButton(
+                            MinicashIconButton(
                                 onClick = { instToEdit = inst },
                                 modifier = Modifier.size(32.dp)
                             ) {
@@ -256,7 +257,7 @@ fun InstitutionsManagementScreen(
                                 )
                             }
 
-                            IconButton(
+                            MinicashIconButton(
                                 onClick = { instToDelete = inst },
                                 modifier = Modifier.size(32.dp)
                             ) {

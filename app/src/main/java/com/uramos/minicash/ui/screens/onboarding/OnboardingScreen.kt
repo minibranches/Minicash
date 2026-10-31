@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.onboarding
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.utils.toCents
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -73,7 +76,7 @@ fun OnboardingScreen(
             ) {
                 // Botón Atrás
                 if (pagerState.currentPage > 0) {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             scope.launch {
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
@@ -119,7 +122,7 @@ fun OnboardingScreen(
 
                 // Botón Omitir
                 if (pagerState.currentPage < 2) {
-                    TextButton(
+                    MinicashTextButton(
                         onClick = {
                             scope.launch {
                                 pagerState.animateScrollToPage(2)
@@ -235,10 +238,9 @@ private fun WelcomePage(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.padding(bottom = 32.dp, top = 24.dp)
         ) {
-            Button(
+            MinicashFilledButton(
                 onClick = onNext,
                 enabled = state.userName.isNotBlank(),
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 52.dp)
@@ -403,10 +405,9 @@ private fun AccountPage(
         }
 
         Box(modifier = Modifier.padding(bottom = 32.dp, top = 20.dp)) {
-            Button(
+            MinicashFilledButton(
                 onClick = onNext,
                 enabled = state.accountName.isNotBlank(),
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 52.dp)
@@ -550,9 +551,8 @@ private fun CategoriesPage(
         }
 
         Box(modifier = Modifier.padding(bottom = 32.dp, top = 24.dp)) {
-            Button(
+            MinicashFilledButton(
                 onClick = onFinish,
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 52.dp)

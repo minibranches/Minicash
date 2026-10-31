@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.Payments
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Person
 import android.Manifest
@@ -94,6 +98,8 @@ fun SettingsScreen(
     var showInstitutionsDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
     var showAutoBackupTimePickerDialog by remember { mutableStateOf(false) }
+    var showCreditTimePickerDialog by remember { mutableStateOf(false) }
+    val creditReminderTime by viewModel.creditReminderTime.collectAsState()
 
     val postNotificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -271,6 +277,13 @@ fun SettingsScreen(
                             icon = Icons.Default.Widgets,
                             subtitle = modulesSubtitle,
                             onClick = onNavigateToModules
+                        )
+
+                        SettingsRowItem(
+                            title = "Avisos de pago",
+                            icon = Icons.Default.Payments,
+                            subtitle = "Cada día a las ${creditReminderTime.first.toString().padStart(2, '0')}:${creditReminderTime.second.toString().padStart(2, '0')} hrs",
+                            onClick = { showCreditTimePickerDialog = true }
                         )
 
                         Row(
@@ -459,19 +472,18 @@ fun SettingsScreen(
                 )
             },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         viewModel.setUserName(draft)
                         showNameDialog = false
                     },
                     enabled = canSave,
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold, maxLines = 1)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showNameDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showNameDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -511,7 +523,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 if (!isRestoring) {
-                    Button(
+                    MinicashFilledButton(
                         onClick = {
                             isRestoring = true
                             viewModel.importBackup(context, uri)
@@ -521,7 +533,6 @@ fun SettingsScreen(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                        shape = CircleShape
                     ) {
                         Text("Restaurar", fontWeight = FontWeight.Bold)
                     }
@@ -529,7 +540,7 @@ fun SettingsScreen(
             },
             dismissButton = {
                 if (!isRestoring) {
-                    TextButton(onClick = { pendingRestoreUri = null }) {
+                    MinicashTextButton(onClick = { pendingRestoreUri = null }) {
                         Text("Cancelar")
                     }
                 }
@@ -547,22 +558,57 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showTimePickerDialog = false },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         viewModel.setDailyReminderTime(context, timePickerState.hour, timePickerState.minute)
                         showTimePickerDialog = false
                     },
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showTimePickerDialog = false }) {
+                MinicashTextButton(onClick = { showTimePickerDialog = false }) {
                     Text("Cancelar")
                 }
             },
             title = { Text("Hora del recordatorio", fontWeight = FontWeight.Bold) },
+            text = {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    TimePicker(state = timePickerState)
+                }
+            },
+            shape = MinicashShapes.Hero
+        )
+    }
+
+    if (showCreditTimePickerDialog) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = creditReminderTime.first,
+            initialMinute = creditReminderTime.second,
+            is24Hour = true
+        )
+        AlertDialog(
+            onDismissRequest = { showCreditTimePickerDialog = false },
+            confirmButton = {
+                MinicashFilledButton(
+                    onClick = {
+                        viewModel.setCreditReminderTime(context, timePickerState.hour, timePickerState.minute)
+                        showCreditTimePickerDialog = false
+                    },
+                ) {
+                    Text("Guardar", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                MinicashTextButton(onClick = { showCreditTimePickerDialog = false }) {
+                    Text("Cancelar")
+                }
+            },
+            title = { Text("Hora de los avisos de pago", fontWeight = FontWeight.Bold) },
             text = {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -584,18 +630,17 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showAutoBackupTimePickerDialog = false },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         viewModel.setAutoBackupTime(context, timePickerState.hour, timePickerState.minute)
                         showAutoBackupTimePickerDialog = false
                     },
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAutoBackupTimePickerDialog = false }) {
+                MinicashTextButton(onClick = { showAutoBackupTimePickerDialog = false }) {
                     Text("Cancelar")
                 }
             },
@@ -799,7 +844,7 @@ fun InstitutionsManagementSheet(
                                     modifier = Modifier.weight(1f)
                                 )
 
-                                IconButton(
+                                MinicashIconButton(
                                     onClick = { instToDelete = inst },
                                     modifier = Modifier.size(32.dp)
                                 ) {
@@ -816,9 +861,8 @@ fun InstitutionsManagementSheet(
                 }
             }
 
-            Button(
+            MinicashFilledButton(
                 onClick = { showAddDialog = true },
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
@@ -855,20 +899,19 @@ fun InstitutionsManagementSheet(
                 }
             },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         if (name.isNotBlank()) {
                             onAdd(name.trim(), selectedColorHex)
                             showAddDialog = false
                         }
                     },
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -881,7 +924,7 @@ fun InstitutionsManagementSheet(
             title = { Text("¿Eliminar institución?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${inst.name}' de tus instituciones de crédito?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         onDelete(inst)
@@ -891,13 +934,12 @@ fun InstitutionsManagementSheet(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { instToDelete = null }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { instToDelete = null }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )

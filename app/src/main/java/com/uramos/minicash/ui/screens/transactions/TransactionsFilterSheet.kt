@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
@@ -80,7 +82,7 @@ fun TransactionsFilterSheet(
                 )
 
                 if (hasActiveFilters) {
-                    TextButton(
+                    MinicashTextButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             onTypeFilterSelect(null)
@@ -301,9 +303,8 @@ fun TransactionsFilterSheet(
             Spacer(modifier = Modifier.height(spacing.small))
 
             // Botón Cerrar / Aplicar
-            Button(
+            MinicashFilledButton(
                 onClick = onDismiss,
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)

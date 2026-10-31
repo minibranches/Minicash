@@ -55,6 +55,11 @@ class MainActivity : ComponentActivity() {
         userPreferences = UserPreferences(applicationContext)
 
         lifecycleScope.launch(Dispatchers.IO) {
+            com.uramos.minicash.data.worker.CreditPaymentScheduler.schedule(
+                applicationContext,
+                userPreferences.creditReminderHour.first(),
+                userPreferences.creditReminderMinute.first()
+            )
             val enabled = userPreferences.dailyReminderEnabled.first()
             if (enabled) {
                 val hour = userPreferences.dailyReminderHour.first()

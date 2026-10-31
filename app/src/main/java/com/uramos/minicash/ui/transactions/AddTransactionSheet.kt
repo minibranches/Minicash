@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
 import com.uramos.minicash.ui.components.rememberDiscardGuard
 import androidx.compose.animation.AnimatedContent
@@ -917,13 +919,12 @@ fun AddTransactionSheet(
                             Spacer(modifier = Modifier.height(spacing.extraSmall))
 
                             // Botón Añadir al Pie Ancho Completo
-                            Button(
+                            MinicashFilledButton(
                                 onClick = {
                                     haptics.confirm()
                                     viewModel.saveTransaction(onSuccess = handleDismiss)
                                 },
                                 enabled = canSave,
-                                shape = CircleShape,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -988,7 +989,7 @@ fun AddTransactionSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             viewModel.onDateChange(normalizeUtcToLocalMillis(millis))
@@ -1000,7 +1001,7 @@ fun AddTransactionSheet(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                MinicashTextButton(onClick = { showDatePicker = false }) {
                     Text("Cancelar")
                 }
             }

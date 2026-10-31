@@ -122,7 +122,7 @@ private fun RowScope.ChoiceButton(
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun rememberMorphingShapes(enabled: Boolean): ButtonShapes {
+internal fun rememberMorphingShapes(enabled: Boolean): ButtonShapes {
     val radius by animateDpAsState(
         targetValue = if (enabled) 28.dp else 14.dp,
         animationSpec = minicashSpatialSpec(),

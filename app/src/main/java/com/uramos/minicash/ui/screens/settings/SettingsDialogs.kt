@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.MinicashTonalButton
 import com.uramos.minicash.ui.components.MinicashButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
@@ -195,9 +196,8 @@ fun EditAccountSheet(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-            OutlinedButton(
+            MinicashOutlinedButton(
                 onClick = onDelete,
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp),

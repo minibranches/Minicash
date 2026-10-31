@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
+import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
 import com.uramos.minicash.ui.components.rememberDiscardGuard
 import com.uramos.minicash.ui.utils.normalizeUtcToLocalMillis
@@ -334,7 +338,7 @@ fun EditTransactionSheet(
                     }
 
                     if (onDeleteTransaction != null) {
-                        IconButton(onClick = { showDeleteConfirmation = true }) {
+                        MinicashIconButton(onClick = { showDeleteConfirmation = true }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Eliminar movimiento",
@@ -811,7 +815,7 @@ fun EditTransactionSheet(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Button(
+                        MinicashFilledButton(
                             onClick = {
                                 haptics.confirm()
                                 val finalNote = when {
@@ -821,7 +825,7 @@ fun EditTransactionSheet(
                                     else -> if (type == TransactionType.TRANSFER) "Transferencia entre cuentas" else null
                                 }
 
-                                val sourceId = selectedAccountId ?: accounts.firstOrNull()?.id ?: return@Button
+                                val sourceId = selectedAccountId ?: accounts.firstOrNull()?.id ?: return@MinicashFilledButton
 
                                 val updatedTx = transaction.copy(
                                     type = type,
@@ -837,7 +841,6 @@ fun EditTransactionSheet(
                                 onDismiss()
                             },
                             enabled = canSave,
-                            shape = CircleShape,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -854,9 +857,8 @@ fun EditTransactionSheet(
                         }
 
                         if (onDeleteTransaction != null) {
-                            OutlinedButton(
+                            MinicashOutlinedButton(
                                 onClick = { showDeleteConfirmation = true },
-                                shape = CircleShape,
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = MaterialTheme.colorScheme.error
                                 ),
@@ -887,7 +889,7 @@ fun EditTransactionSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             selectedDateMillis = normalizeUtcToLocalMillis(millis)
@@ -899,7 +901,7 @@ fun EditTransactionSheet(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -948,7 +950,7 @@ fun EditTransactionSheet(
             title = { Text("¿Eliminar movimiento?", fontWeight = FontWeight.Bold) },
             text = { Text("Esta acción eliminará permanentemente la transacción y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         onDeleteTransaction(transaction)
@@ -959,13 +961,12 @@ fun EditTransactionSheet(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )

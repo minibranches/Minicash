@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.material.icons.filled.Notifications
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashTonalIconButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
 import com.uramos.minicash.ui.utils.toCents
@@ -81,7 +86,7 @@ fun CreditsScreen(
     val accounts by viewModel.accounts.collectAsState()
     val institutions by viewModel.institutions.collectAsState()
     val haptic = LocalHapticFeedback.current
-    val haptics = rememberMinicashHaptics()
+    val haptics = rememberMinicashHaptics()
     val entranceTracker = rememberEntranceTracker()
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -115,7 +120,7 @@ fun CreditsScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteCredit(targetCredit)
@@ -129,7 +134,7 @@ fun CreditsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { creditToDelete = null }) {
+                MinicashTextButton(onClick = { creditToDelete = null }) {
                     Text("Cancelar")
                 }
             },
@@ -225,13 +230,12 @@ fun CreditsScreen(
                 )
 
                 Box {
-                    FilledTonalIconButton(
+                    MinicashTonalIconButton(
                         onClick = {
                             haptics.tick()
                             showFilterSheet = true
                         },
                         modifier = Modifier.size(48.dp),
-                        shape = CircleShape
                     ) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
@@ -322,7 +326,8 @@ fun CreditsScreen(
                 val price = if (v.originalPrice > 0.0) v.originalPrice else v.monthlyAmount * v.totalInstallments
                 viewModel.addCredit(
                     v.article, v.institution, v.responsible, v.totalInstallments,
-                    v.monthlyAmount, price, v.purchaseDate, v.paidInstallments
+                    v.monthlyAmount, price, v.purchaseDate, v.paidInstallments,
+                    v.paymentDay, v.reminderDaysBefore
                 )
             }
         )
@@ -346,7 +351,9 @@ fun CreditsScreen(
                         totalInstallments = v.totalInstallments,
                         monthlyAmount = monthlyCents,
                         totalAmount = monthlyCents * v.totalInstallments,
-                        originalPrice = if (v.originalPrice > 0.0) v.originalPrice.toCents() else editing.originalPrice
+                        originalPrice = if (v.originalPrice > 0.0) v.originalPrice.toCents() else editing.originalPrice,
+                        paymentDay = v.paymentDay,
+                        reminderDaysBefore = v.reminderDaysBefore
                     )
                 )
             },
@@ -433,15 +440,14 @@ fun ConfirmCreditPaymentDialog(
             }
         },
         confirmButton = {
-            Button(
+            MinicashFilledButton(
                 onClick = { onConfirm(createExpenseTransaction) },
-                shape = CircleShape
             ) {
                 Text("Confirmar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
+            MinicashTextButton(onClick = onDismiss) { Text("Cancelar") }
         },
         shape = MinicashShapes.Hero
     )
@@ -474,6 +480,14 @@ fun CreditItemCard(
 
     val purchaseLabel = remember(credit.purchaseDate) {
         SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(credit.purchaseDate)
+    }
+
+    val nextPaymentLabel = remember(credit.paymentDay, isCompleted) {
+        credit.paymentDay?.takeIf { !isCompleted }?.let { day ->
+            val next = com.uramos.minicash.data.util.PaymentSchedule.nextPayment(day, java.time.LocalDate.now())
+            SimpleDateFormat("d MMM", Locale.forLanguageTag("es-MX"))
+                .format(java.util.Date.from(next.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()))
+        }
     }
 
     val remainingMonths = (credit.totalInstallments - credit.paidInstallments).coerceAtLeast(0)
@@ -530,10 +544,31 @@ fun CreditItemCard(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (nextPaymentLabel != null) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                if (credit.reminderDaysBefore != null) {
+                                    Icon(
+                                        imageVector = Icons.Default.Notifications,
+                                        contentDescription = "Con aviso de pago",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "Próximo pago: $nextPaymentLabel",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onEdit) {
+                    MinicashIconButton(onClick = onEdit) {
                         Icon(
                             Icons.Default.Edit,
                             contentDescription = "Editar compra",
@@ -541,7 +576,7 @@ fun CreditItemCard(
                             modifier = Modifier.size(20.dp)
                         )
                     }
-                    IconButton(onClick = onDelete) {
+                    MinicashIconButton(onClick = onDelete) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = "Eliminar",
@@ -603,9 +638,8 @@ fun CreditItemCard(
                         )
                     }
 
-                    Button(
+                    MinicashFilledButton(
                         onClick = onPayClick,
-                        shape = CircleShape,
                         contentPadding = PaddingValues(horizontal = spacing.medium, vertical = spacing.extraSmall)
                     ) {
                         Text("Pagar mes")
@@ -756,9 +790,8 @@ fun InstitutionSelectionSheet(
                 }
             }
 
-            Button(
+            MinicashFilledButton(
                 onClick = { showAddDialog = true },
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
@@ -795,7 +828,7 @@ fun InstitutionSelectionSheet(
                 }
             },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         if (newInstName.isNotBlank()) {
                             val trimmed = newInstName.trim()
@@ -806,13 +839,12 @@ fun InstitutionSelectionSheet(
                             onDismiss()
                         }
                     },
-                    shape = CircleShape
                 ) {
                     Text("Guardar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )

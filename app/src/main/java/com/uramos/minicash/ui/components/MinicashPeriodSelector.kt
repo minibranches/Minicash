@@ -145,7 +145,7 @@ private fun YearSelect(year: Int, years: List<Int>, onYearSelect: (Int) -> Unit)
 
 @Composable
 private fun PeriodArrow(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, onClick: () -> Unit) {
-    IconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
+    MinicashIconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
         Icon(icon, contentDescription = description, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

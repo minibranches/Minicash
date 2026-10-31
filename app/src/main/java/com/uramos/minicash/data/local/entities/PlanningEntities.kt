@@ -49,5 +49,11 @@ data class CreditEntity(
     val monthlyAmount: Long,
     val originalPrice: Long,
     val totalAmount: Long,
-    val institutionId: Long? = null
+    val institutionId: Long? = null,
+    /** Día del mes (1 a 31) en que se paga la mensualidad; 
+ull si no se registró. */
+    val paymentDay: Int? = null,
+    /** Días de anticipación del aviso de pago (0 = el mismo día); 
+ull si no hay aviso. */
+    val reminderDaysBefore: Int? = null
 )

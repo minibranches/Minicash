@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
+import com.uramos.minicash.ui.components.MinicashOutlinedButton
+import com.uramos.minicash.ui.components.MinicashTonalIconButton
 import androidx.compose.material.icons.filled.DragHandle
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import sh.calvin.reorderable.ReorderableItem
@@ -144,7 +149,7 @@ fun BudgetScreen(
                     )
                 },
                 actions = {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             showSelectiveCloneDialog = true
                         }
@@ -179,7 +184,7 @@ fun BudgetScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        FilledTonalIconButton(
+                        MinicashTonalIconButton(
                             onClick = { viewModel.previousMonth() },
                             modifier = Modifier.size(36.dp)
                         ) {
@@ -212,7 +217,7 @@ fun BudgetScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        FilledTonalIconButton(
+                        MinicashTonalIconButton(
                             onClick = { viewModel.nextMonth() },
                             modifier = Modifier.size(36.dp)
                         ) {
@@ -464,7 +469,7 @@ fun BudgetScreen(
             title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Estás seguro de que deseas eliminar la partida '${item.concept}' de ${item.amount.toCurrencyFormat()}?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteItem(item)
@@ -474,13 +479,12 @@ fun BudgetScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { itemToDelete = null }) {
+                MinicashTextButton(onClick = { itemToDelete = null }) {
                     Text("Cancelar")
                 }
             },
@@ -578,7 +582,7 @@ fun BudgetItemRow(
                 horizontalArrangement = Arrangement.spacedBy(spacing.medium),
                 modifier = Modifier.weight(1f)
             ) {
-                IconButton(
+                MinicashIconButton(
                     onClick = onToggleExecuted,
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = if (item.isPaid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
@@ -639,7 +643,7 @@ fun BudgetItemRow(
                         .padding(6.dp)
                 )
 
-                IconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
+                MinicashIconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Editar partida",
@@ -647,7 +651,7 @@ fun BudgetItemRow(
                         modifier = Modifier.size(18.dp)
                     )
                 }
-                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                MinicashIconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Eliminar partida",
@@ -676,15 +680,14 @@ fun ReactivateBudgetItemDialog(
             )
         },
         confirmButton = {
-            Button(
+            MinicashFilledButton(
                 onClick = onConfirm,
-                shape = CircleShape
             ) {
                 Text("Reactivar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            MinicashTextButton(onClick = onDismiss) {
                 Text("Cancelar")
             }
         },
@@ -726,15 +729,14 @@ fun ConfirmPaymentDialog(
             }
         },
         confirmButton = {
-            Button(
+            MinicashFilledButton(
                 onClick = { onConfirm(createTransaction) },
-                shape = CircleShape
             ) {
                 Text("Confirmar", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            MinicashTextButton(onClick = onDismiss) {
                 Text("Cancelar")
             }
         },
@@ -926,7 +928,7 @@ fun AddBudgetItemDialog(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let {
                             selectedDateMillis = normalizeUtcToLocalMillis(it)
@@ -938,7 +940,7 @@ fun AddBudgetItemDialog(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                MinicashTextButton(onClick = { showDatePicker = false }) {
                     Text("Cancelar")
                 }
             }
@@ -986,7 +988,7 @@ fun EditBudgetItemSheet(
             title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Deseas eliminar '${item.concept}' de tus partidas de presupuesto?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         onDelete(item)
@@ -997,13 +999,12 @@ fun EditBudgetItemSheet(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirmDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDeleteConfirmDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -1153,13 +1154,12 @@ fun EditBudgetItemSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedButton(
+            MinicashOutlinedButton(
                 onClick = { showDeleteConfirmDialog = true },
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.error
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
@@ -1178,7 +1178,7 @@ fun EditBudgetItemSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let {
                             selectedDateMillis = normalizeUtcToLocalMillis(it)
@@ -1190,7 +1190,7 @@ fun EditBudgetItemSheet(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                MinicashTextButton(onClick = { showDatePicker = false }) {
                     Text("Cancelar")
                 }
             }
@@ -1238,10 +1238,9 @@ fun FortnightSelectorRow(
             // Month Dropdown
             var monthExpanded by remember { mutableStateOf(false) }
             Box(modifier = Modifier.weight(1.2f)) {
-                OutlinedButton(
+                MinicashOutlinedButton(
                     onClick = { monthExpanded = true },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = CircleShape
                 ) {
                     Text(monthNames[month - 1], style = MaterialTheme.typography.labelMedium)
                 }
@@ -1268,10 +1267,9 @@ fun FortnightSelectorRow(
                 ((cur - 2)..(cur + 2)).toList()
             }
             Box(modifier = Modifier.weight(0.8f)) {
-                OutlinedButton(
+                MinicashOutlinedButton(
                     onClick = { yearExpanded = true },
                     modifier = Modifier.fillMaxWidth(),
-                    shape = CircleShape
                 ) {
                     Text(year.toString(), style = MaterialTheme.typography.labelMedium)
                 }
@@ -1471,7 +1469,7 @@ fun CopyFortnightSheet(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Button(
+            MinicashFilledButton(
                 onClick = {
                     haptics.confirm()
                     viewModel.copyFortnight(
@@ -1485,7 +1483,6 @@ fun CopyFortnightSheet(
                     }
                 },
                 enabled = previewItems.isNotEmpty() && !isSameKey,
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)

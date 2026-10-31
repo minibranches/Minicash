@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.toShape
@@ -79,7 +82,7 @@ fun CategoriesManagementScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    MinicashIconButton(onClick = onNavigateBack) {
                         Surface(
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -96,7 +99,7 @@ fun CategoriesManagementScreen(
                     }
                 },
                 actions = {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             showAddCategoryDialog = true
@@ -127,7 +130,7 @@ fun CategoriesManagementScreen(
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
+                        MinicashIconButton(onClick = { searchQuery = "" }) {
                             Icon(Icons.Default.Clear, contentDescription = "Limpiar búsqueda")
                         }
                     }
@@ -178,9 +181,8 @@ fun CategoriesManagementScreen(
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
                     actionButton = {
-                        Button(
+                        MinicashFilledButton(
                             onClick = { showAddCategoryDialog = true },
-                            shape = CircleShape,
                             modifier = Modifier
                                 .padding(top = 8.dp)
                                 .heightIn(min = 48.dp)
@@ -266,7 +268,7 @@ fun CategoriesManagementScreen(
                                 }
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(
+                                    MinicashIconButton(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                             categoryToEditName = category
@@ -279,7 +281,7 @@ fun CategoriesManagementScreen(
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
-                                    IconButton(
+                                    MinicashIconButton(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                             categoryToDelete = category
@@ -368,7 +370,7 @@ fun CategoriesManagementScreen(
                 Text("Esta acción eliminará la categoría '${cat.name}'. Los movimientos asociados no se borrarán y pasarán a estar sin categoría asignada.")
             },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteCategory(cat)
@@ -378,13 +380,12 @@ fun CategoriesManagementScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { categoryToDelete = null }) {
+                MinicashTextButton(onClick = { categoryToDelete = null }) {
                     Text("Cancelar")
                 }
             },

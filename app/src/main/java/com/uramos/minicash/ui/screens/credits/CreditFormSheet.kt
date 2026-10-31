@@ -1,5 +1,14 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.os.Build
+import android.content.pm.PackageManager
+import android.Manifest
+import com.uramos.minicash.ui.components.MinicashOutlinedButton
+import com.uramos.minicash.ui.components.MinicashTextButton
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -90,16 +99,22 @@ data class CreditFormValues(
     val monthlyAmount: Double,
     /** 0.0 si el campo "Precio de contado" quedó vacío. */
     val originalPrice: Double,
-    val purchaseDate: Long
+    val purchaseDate: Long,
+    /** Día del mes (1 a 31) del pago; null si no se indicó. */
+    val paymentDay: Int?,
+    /** Días de anticipación del aviso (0 = el mismo día); null si no hay aviso. */
+    val reminderDaysBefore: Int?
 )
 
 private const val CUSTOM_MONTHS = -1
 private val PRESET_MONTHS = listOf(3, 6, 9, 12)
-private const val LAST_STEP = 1
+private const val LAST_STEP = 2
+private const val NO_REMINDER = -1
+private val REMINDER_OPTIONS = listOf(NO_REMINDER, 0, 1, 2, 3, 5, 7)
 
 /**
- * Formulario de alta y edición de compras a meses en dos pasos:
- * 1) datos de la compra, 2) plan de pagos y monto mensual. Con [credit] en `null` es un alta.
+ * Formulario de alta y edición de compras a meses en tres pasos:
+ * 1) datos de la compra, 2) plan de pagos y monto mensual, 3) día de pago y aviso. Con [credit] en `null` es un alta.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,6 +143,8 @@ fun CreditFormSheet(
     val initialTotal = credit?.totalInstallments?.toString() ?: "12"
     val initialPaid = credit?.paidInstallments?.toString() ?: "0"
     val initialCustom = credit != null && credit.totalInstallments !in PRESET_MONTHS
+    val initialPaymentDay = credit?.paymentDay?.toString() ?: ""
+    val initialReminder = credit?.reminderDaysBefore ?: NO_REMINDER
 
     var step by rememberSaveable { mutableIntStateOf(0) }
     var article by rememberSaveable { mutableStateOf(credit?.article ?: "") }
@@ -139,6 +156,8 @@ fun CreditFormSheet(
     var paidInstallmentsStr by rememberSaveable { mutableStateOf(initialPaid) }
     var isCustomMonths by rememberSaveable { mutableStateOf(initialCustom) }
     var monthlyAmountExpression by rememberSaveable { mutableStateOf(initialMonthly) }
+    var paymentDayStr by rememberSaveable { mutableStateOf(initialPaymentDay) }
+    var reminderDays by rememberSaveable { mutableIntStateOf(initialReminder) }
     var showInstitutionSheet by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
@@ -157,17 +176,35 @@ fun CreditFormSheet(
         originalPriceStr != initialPrice ||
         totalInstallmentsStr != initialTotal ||
         paidInstallmentsStr != initialPaid ||
-        monthlyAmountExpression != initialMonthly
+        monthlyAmountExpression != initialMonthly ||
+        paymentDayStr != initialPaymentDay ||
+        reminderDays != initialReminder
 
     val guard = rememberDiscardGuard(isDirty = isDirty, onDismiss = onDismiss)
     val haptics = rememberMinicashHaptics()
     val keyboard = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    val step1Valid = article.isNotBlank() && selectedInstitution.isNotBlank()
-    val canSubmit = step1Valid && totalInstallments > 0 && calculatedMonthlyAmount > 0.0 && !paidInvalid
+    val paymentDay = paymentDayStr.toIntOrNull()
+    val paymentInvalid = paymentDayStr.isNotEmpty() && (paymentDay == null || paymentDay !in 1..31)
+    // El aviso solo tiene sentido con un día de pago válido
+    val effectiveReminder = if (paymentDay != null && !paymentInvalid) reminderDays else NO_REMINDER
 
-    BackHandler(enabled = step > 0) { step = 0 }
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+    fun ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    val step1Valid = article.isNotBlank() && selectedInstitution.isNotBlank()
+    val step2Valid = totalInstallments > 0 && calculatedMonthlyAmount > 0.0 && !paidInvalid
+    val canSubmit = step1Valid && step2Valid && !paymentInvalid
+
+    BackHandler(enabled = step > 0) { step -= 1 }
 
     ModalBottomSheet(
         onDismissRequest = guard::requestDismiss,
@@ -234,7 +271,7 @@ fun CreditFormSheet(
                             }
                         }
                     )
-                } else {
+                } else if (currentStep == 1) {
                     PlanStep(
                         isCustomMonths = isCustomMonths,
                         onCustomMonthsChange = { isCustomMonths = it },
@@ -248,6 +285,17 @@ fun CreditFormSheet(
                         onExpressionChange = { monthlyAmountExpression = it },
                         monthlyCents = monthlyCents
                     )
+                } else {
+                    PaymentStep(
+                        paymentDayStr = paymentDayStr,
+                        onPaymentDayChange = { paymentDayStr = it.filter(Char::isDigit).take(2) },
+                        paymentInvalid = paymentInvalid,
+                        reminderDays = effectiveReminder,
+                        onReminderChange = {
+                            reminderDays = it
+                            if (it != NO_REMINDER) ensureNotificationPermission()
+                        }
+                    )
                 }
             }
 
@@ -256,72 +304,93 @@ fun CreditFormSheet(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (step == 0) {
-                    MinicashTonalButton(
-                        text = "Cancelar",
-                        onClick = guard::requestDismiss,
-                        modifier = Modifier.weight(1f)
-                    )
-                    MinicashButton(
-                        text = "Siguiente",
-                        onClick = {
-                            haptics.tick()
-                            keyboard?.hide()
-                            focusManager.clearFocus()
-                            step = 1
-                        },
-                        enabled = step1Valid,
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    if (isEdit && onDelete != null) {
-                        // Solo ícono: deja todo el ancho restante a los botones principales en cualquier densidad/escala de fuente
-                        OutlinedButton(
-                            onClick = { showDeleteConfirm = true },
-                            shape = CircleShape,
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Eliminar crédito", modifier = Modifier.size(20.dp))
-                        }
-                    }
-                    MinicashTonalButton(
-                        text = "Atrás",
-                        onClick = { step = 0 },
-                        modifier = Modifier.weight(1f)
-                    )
-                    MinicashButton(
-                        text = if (isEdit) "Guardar" else "Guardar compra",
-                        onClick = {
-                            if (canSubmit) {
-                                haptics.confirm()
+                when (step) {
+                    0 -> {
+                        MinicashTonalButton(
+                            text = "Cancelar",
+                            onClick = guard::requestDismiss,
+                            modifier = Modifier.weight(1f)
+                        )
+                        MinicashButton(
+                            text = "Siguiente",
+                            onClick = {
+                                haptics.tick()
                                 keyboard?.hide()
                                 focusManager.clearFocus()
-                                onSubmit(
-                                    CreditFormValues(
-                                        article = article.trim(),
-                                        institution = selectedInstitution.trim(),
-                                        responsible = responsible.trim(),
-                                        totalInstallments = totalInstallments,
-                                        paidInstallments = paidInstallments ?: 0,
-                                        monthlyAmount = calculatedMonthlyAmount,
-                                        originalPrice = originalPriceStr.toDoubleOrNull() ?: 0.0,
-                                        purchaseDate = purchaseDate
-                                    )
-                                )
-                                onDismiss()
+                                step = 1
+                            },
+                            enabled = step1Valid,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    1 -> {
+                        MinicashTonalButton(
+                            text = "Atrás",
+                            onClick = { step = 0 },
+                            modifier = Modifier.weight(1f)
+                        )
+                        MinicashButton(
+                            text = "Siguiente",
+                            onClick = {
+                                haptics.tick()
+                                keyboard?.hide()
+                                focusManager.clearFocus()
+                                step = 2
+                            },
+                            enabled = step2Valid,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    else -> {
+                        if (isEdit && onDelete != null) {
+                            // Solo ícono: deja todo el ancho restante a los botones principales en cualquier densidad/escala de fuente
+                            MinicashOutlinedButton(
+                                onClick = { showDeleteConfirm = true },
+                                contentPadding = PaddingValues(0.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Eliminar crédito", modifier = Modifier.size(20.dp))
                             }
-                        },
-                        enabled = canSubmit,
-                        modifier = Modifier.weight(1.4f)
-                    )
+                        }
+                        MinicashTonalButton(
+                            text = "Atrás",
+                            onClick = { step = 1 },
+                            modifier = Modifier.weight(1f)
+                        )
+                        MinicashButton(
+                            text = if (isEdit) "Guardar" else "Guardar compra",
+                            onClick = {
+                                if (canSubmit) {
+                                    haptics.confirm()
+                                    keyboard?.hide()
+                                    focusManager.clearFocus()
+                                    onSubmit(
+                                        CreditFormValues(
+                                            article = article.trim(),
+                                            institution = selectedInstitution.trim(),
+                                            responsible = responsible.trim(),
+                                            totalInstallments = totalInstallments,
+                                            paidInstallments = paidInstallments ?: 0,
+                                            monthlyAmount = calculatedMonthlyAmount,
+                                            originalPrice = originalPriceStr.toDoubleOrNull() ?: 0.0,
+                                            purchaseDate = purchaseDate,
+                                            paymentDay = paymentDay?.takeIf { !paymentInvalid },
+                                            reminderDaysBefore = effectiveReminder.takeIf { it != NO_REMINDER }
+                                        )
+                                    )
+                                    onDismiss()
+                                }
+                            },
+                            enabled = canSubmit,
+                            modifier = Modifier.weight(1.4f)
+                        )
+                    }
                 }
             }
         }
     }
-
     DiscardChangesDialog(guard)
 
     if (showInstitutionSheet) {
@@ -339,14 +408,14 @@ fun CreditFormSheet(
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { purchaseDate = normalizeUtcToLocalMillis(it) }
                         showDatePicker = false
                     }
                 ) { Text("Aceptar", fontWeight = FontWeight.Bold) }
             },
-            dismissButton = { TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") } }
+            dismissButton = { MinicashTextButton(onClick = { showDatePicker = false }) { Text("Cancelar") } }
         ) {
             DatePicker(state = datePickerState)
         }
@@ -363,7 +432,7 @@ fun CreditFormSheet(
                 )
             },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         showDeleteConfirm = false
@@ -372,7 +441,7 @@ fun CreditFormSheet(
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) { Text("Eliminar", fontWeight = FontWeight.Bold) }
             },
-            dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancelar") } },
+            dismissButton = { MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text("Cancelar") } },
             shape = MinicashShapes.Hero,
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
@@ -619,5 +688,74 @@ private fun PlanStep(
             amountExpression = expression,
             onExpressionChange = { expr, _ -> onExpressionChange(expr) }
         )
+    }
+}
+
+@Composable
+private fun PaymentStep(
+    paymentDayStr: String,
+    onPaymentDayChange: (String) -> Unit,
+    paymentInvalid: Boolean,
+    reminderDays: Int,
+    onReminderChange: (Int) -> Unit
+) {
+    val hasPaymentDay = paymentDayStr.isNotEmpty() && !paymentInvalid
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        OutlinedTextField(
+            value = paymentDayStr,
+            onValueChange = onPaymentDayChange,
+            label = { Text("Día de pago del mes (opcional)") },
+            placeholder = { Text("Por ejemplo, 5") },
+            supportingText = {
+                Text(
+                    if (paymentInvalid) "Escribe un día entre 1 y 31"
+                    else "Si el mes no tiene ese día, se usa el último"
+                )
+            },
+            isError = paymentInvalid,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(
+            text = "Avisarme",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (hasPaymentDay) {
+            MinicashSegmentedChoice(
+                options = REMINDER_OPTIONS,
+                isSelected = { it == reminderDays },
+                onSelect = onReminderChange,
+                label = {
+                    when (it) {
+                        NO_REMINDER -> "No"
+                        0 -> "Ese día"
+                        else -> "$it d"
+                    }
+                }
+            )
+            Text(
+                text = when (reminderDays) {
+                    NO_REMINDER -> "No recibirás aviso de este pago."
+                    0 -> "Recibirás el aviso el mismo día del pago."
+                    1 -> "Recibirás el aviso 1 día antes del pago."
+                    else -> "Recibirás el aviso $reminderDays días antes del pago."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Text(
+                text = "Indica un día de pago para poder activar el aviso.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

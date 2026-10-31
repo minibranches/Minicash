@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashTonalIconButton
+import com.uramos.minicash.ui.components.MinicashIconButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashPeriodSelector
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -124,7 +128,7 @@ fun TransactionsScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.Confirm)
                         viewModel.deleteTransaction(tx)
@@ -138,7 +142,7 @@ fun TransactionsScreen(
                 }
             },
             dismissButton = {
-                TextButton(
+                MinicashTextButton(
                     onClick = { transactionToDelete = null }
                 ) {
                     Text("Cancelar")
@@ -155,7 +159,7 @@ fun TransactionsScreen(
             title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
             text = { Text("Esta acción eliminará las transacciones seleccionadas y reajustará automáticamente los saldos correspondientes de las cuentas. ¿Proceder?") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteSelectedTransactions()
@@ -165,13 +169,12 @@ fun TransactionsScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBatchDeleteDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showBatchDeleteDialog = false }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )
@@ -298,7 +301,7 @@ fun TransactionsScreen(
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                             trailingIcon = {
                                 if (state.searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                    MinicashIconButton(onClick = { viewModel.onSearchQueryChange("") }) {
                                         Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
                                     }
                                 }
@@ -315,13 +318,12 @@ fun TransactionsScreen(
                         )
 
                         Box {
-                            FilledTonalIconButton(
+                            MinicashTonalIconButton(
                                 onClick = {
                                     haptics.tick()
                                     showFilterSheet = true
                                 },
                                 modifier = Modifier.size(48.dp),
-                                shape = CircleShape
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.FilterList,
@@ -401,7 +403,7 @@ fun TransactionsScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { viewModel.clearSelection() }) {
+                        MinicashIconButton(onClick = { viewModel.clearSelection() }) {
                             Icon(Icons.Default.Close, contentDescription = "Cancelar")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
@@ -425,7 +427,7 @@ fun TransactionsScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        IconButton(onClick = { showBatchDeleteDialog = true }) {
+                        MinicashIconButton(onClick = { showBatchDeleteDialog = true }) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Eliminar seleccionados",

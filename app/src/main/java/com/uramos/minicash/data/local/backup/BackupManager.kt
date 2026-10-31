@@ -10,6 +10,7 @@ import com.uramos.minicash.data.local.entities.CreditInstitutionEntity
 import com.uramos.minicash.data.local.entities.TransactionType
 import com.uramos.minicash.data.preferences.UserPreferences
 import com.uramos.minicash.data.worker.AutoBackupScheduler
+import com.uramos.minicash.data.worker.CreditPaymentScheduler
 import com.uramos.minicash.data.worker.ReminderScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -130,6 +131,11 @@ class BackupManager(
     }
 
     private suspend fun rescheduleWorkers(context: Context) {
+        CreditPaymentScheduler.schedule(
+            context,
+            userPreferences.creditReminderHour.first(),
+            userPreferences.creditReminderMinute.first()
+        )
         if (userPreferences.dailyReminderEnabled.first()) {
             ReminderScheduler.scheduleDailyReminder(
                 context,

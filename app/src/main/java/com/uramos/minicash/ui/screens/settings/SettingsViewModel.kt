@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 import com.uramos.minicash.data.worker.AutoBackupScheduler
+import com.uramos.minicash.data.worker.CreditPaymentScheduler
 import com.uramos.minicash.data.worker.ReminderScheduler
 
 import com.uramos.minicash.data.preferences.FontPreference
@@ -257,6 +258,19 @@ class SettingsViewModel(
 
     val navBarStyle: StateFlow<NavBarStyle> = userPreferences.navBarStyle
         .stateIn(viewModelScope, SharingStarted.Eagerly, NavBarStyle.INTEGRATED)
+
+    val creditReminderTime: StateFlow<Pair<Int, Int>> = combine(
+        userPreferences.creditReminderHour,
+        userPreferences.creditReminderMinute
+    ) { hour, minute -> hour to minute }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 9 to 0)
+
+    fun setCreditReminderTime(context: Context, hour: Int, minute: Int) {
+        viewModelScope.launch {
+            userPreferences.setCreditReminderTime(hour, minute)
+            CreditPaymentScheduler.schedule(context, hour, minute)
+        }
+    }
 
     fun setNavBarStyle(style: NavBarStyle) {
         viewModelScope.launch {

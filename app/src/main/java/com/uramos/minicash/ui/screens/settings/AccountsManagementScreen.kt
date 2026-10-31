@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
+import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.foundation.lazy.rememberLazyListState
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -85,7 +88,7 @@ fun AccountsManagementScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    MinicashIconButton(onClick = onNavigateBack) {
                         Surface(
                             shape = CircleShape,
                             color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -102,7 +105,7 @@ fun AccountsManagementScreen(
                     }
                 },
                 actions = {
-                    IconButton(
+                    MinicashIconButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             showAddAccountDialog = true
@@ -131,9 +134,8 @@ fun AccountsManagementScreen(
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
                     actionButton = {
-                        Button(
+                        MinicashFilledButton(
                             onClick = { showAddAccountDialog = true },
-                            shape = CircleShape,
                             modifier = Modifier
                                 .padding(top = 8.dp)
                                 .heightIn(min = 48.dp)
@@ -254,7 +256,7 @@ fun AccountsManagementScreen(
                                             )
                                     )
 
-                                    IconButton(
+                                    MinicashIconButton(
                                         onClick = { viewModel.toggleAccountVisibility(account) },
                                         modifier = Modifier.size(32.dp)
                                     ) {
@@ -266,7 +268,7 @@ fun AccountsManagementScreen(
                                         )
                                     }
 
-                                    IconButton(
+                                    MinicashIconButton(
                                         onClick = { accountToEdit = account },
                                         modifier = Modifier.size(32.dp)
                                     ) {
@@ -354,7 +356,7 @@ fun AccountsManagementScreen(
             title = { Text("¿Eliminar cuenta?", fontWeight = FontWeight.Bold) },
             text = { Text("¿Estás seguro de eliminar la cuenta '${acc.name}'? Esta acción eliminará permanentemente la cuenta.") },
             confirmButton = {
-                Button(
+                MinicashFilledButton(
                     onClick = {
                         haptics.heavyOrDelete()
                         viewModel.deleteAccount(acc)
@@ -364,13 +366,12 @@ fun AccountsManagementScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
-                    shape = CircleShape
                 ) {
                     Text("Eliminar", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { accountToDelete = null }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { accountToDelete = null }) { Text("Cancelar") }
             },
             shape = MinicashShapes.Hero
         )

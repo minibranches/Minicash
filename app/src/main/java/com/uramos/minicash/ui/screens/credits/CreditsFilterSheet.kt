@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.MinicashTextButton
+import com.uramos.minicash.ui.components.MinicashFilledButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -63,7 +65,7 @@ fun CreditsFilterSheet(
                 )
 
                 if (hasActiveFilters) {
-                    TextButton(
+                    MinicashTextButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             onClearFilters()
@@ -247,9 +249,8 @@ fun CreditsFilterSheet(
             Spacer(modifier = Modifier.height(spacing.small))
 
             // Botón Cerrar / Aplicar
-            Button(
+            MinicashFilledButton(
                 onClick = onDismiss,
-                shape = CircleShape,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)

@@ -49,6 +49,8 @@ class UserPreferences(private val context: Context) {
         val SHOW_CREDITS_TAB = booleanPreferencesKey("show_credits_tab")
         val ACCENT_COLOR_HEX = stringPreferencesKey("accent_color_hex")
         val NAV_BAR_STYLE_KEY = stringPreferencesKey("nav_bar_style")
+        val CREDIT_REMINDER_HOUR = androidx.datastore.preferences.core.intPreferencesKey("credit_reminder_hour")
+        val CREDIT_REMINDER_MINUTE = androidx.datastore.preferences.core.intPreferencesKey("credit_reminder_minute")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -120,6 +122,21 @@ class UserPreferences(private val context: Context) {
     val navBarStyle: Flow<NavBarStyle> = context.dataStore.data.map { prefs ->
         val rawName = prefs[NAV_BAR_STYLE_KEY] ?: NavBarStyle.INTEGRATED.name
         runCatching { NavBarStyle.valueOf(rawName) }.getOrDefault(NavBarStyle.INTEGRATED)
+    }
+
+    val creditReminderHour: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[CREDIT_REMINDER_HOUR] ?: 9
+    }
+
+    val creditReminderMinute: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[CREDIT_REMINDER_MINUTE] ?: 0
+    }
+
+    suspend fun setCreditReminderTime(hour: Int, minute: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[CREDIT_REMINDER_HOUR] = hour
+            prefs[CREDIT_REMINDER_MINUTE] = minute
+        }
     }
 
     suspend fun saveOnboardingState(completed: Boolean, name: String) {
@@ -232,7 +249,9 @@ class UserPreferences(private val context: Context) {
             autoBackupMinute = prefs[AUTO_BACKUP_MINUTE],
             showBudgetTab = prefs[SHOW_BUDGET_TAB],
             showCreditsTab = prefs[SHOW_CREDITS_TAB],
-            navBarStyle = prefs[NAV_BAR_STYLE_KEY]
+            navBarStyle = prefs[NAV_BAR_STYLE_KEY],
+            creditReminderHour = prefs[CREDIT_REMINDER_HOUR],
+            creditReminderMinute = prefs[CREDIT_REMINDER_MINUTE]
         )
     }
 
@@ -253,6 +272,8 @@ class UserPreferences(private val context: Context) {
             snapshot.autoBackupMinute?.takeIf { it in 0..59 }?.let { prefs[AUTO_BACKUP_MINUTE] = it }
             snapshot.showBudgetTab?.let { prefs[SHOW_BUDGET_TAB] = it }
             snapshot.showCreditsTab?.let { prefs[SHOW_CREDITS_TAB] = it }
+            snapshot.creditReminderHour?.takeIf { it in 0..23 }?.let { prefs[CREDIT_REMINDER_HOUR] = it }
+            snapshot.creditReminderMinute?.takeIf { it in 0..59 }?.let { prefs[CREDIT_REMINDER_MINUTE] = it }
             snapshot.navBarStyle?.takeIf { v -> NavBarStyle.entries.any { it.name == v } }?.let { prefs[NAV_BAR_STYLE_KEY] = it }
         }
     }
@@ -273,5 +294,7 @@ data class PreferencesSnapshot(
     val autoBackupMinute: Int? = null,
     val showBudgetTab: Boolean? = null,
     val showCreditsTab: Boolean? = null,
-    val navBarStyle: String? = null
+    val navBarStyle: String? = null,
+    val creditReminderHour: Int? = null,
+    val creditReminderMinute: Int? = null
 )

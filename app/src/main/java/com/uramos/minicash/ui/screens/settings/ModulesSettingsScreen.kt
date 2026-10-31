@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.foundation.shape.CircleShape
@@ -46,7 +47,7 @@ fun ModulesSettingsScreen(
                             .padding(start = spacing.small)
                             .size(40.dp)
                     ) {
-                        IconButton(onClick = onBackClick) {
+                        MinicashIconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver",
