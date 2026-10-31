@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -278,9 +279,8 @@ fun EditTransactionSheet(
     val initialAmountExpression = remember(transaction) { if (transaction.amount % 100 == 0L) (transaction.amount / 100).toString() else String.format(Locale.US, "%.2f", transaction.amount / 100.0) }
     val guard = rememberDiscardGuard(isDirty = type != transaction.type || amountExpression != initialAmountExpression || conceptText != parts.first || noteText != parts.second || selectedAccountId != transaction.sourceAccountId || selectedDestinationAccountId != transaction.destinationAccountId || selectedCategoryId != transaction.categoryId || selectedDateMillis != transaction.date, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {

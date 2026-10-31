@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -327,9 +328,8 @@ fun AddInstitutionSheet(
 
     val guard = rememberDiscardGuard(isDirty = name != initialName || selectedColorHex != initialColor, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)

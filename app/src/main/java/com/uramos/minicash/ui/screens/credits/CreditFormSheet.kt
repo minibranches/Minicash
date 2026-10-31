@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.ToggleButton
@@ -213,9 +214,8 @@ fun CreditFormSheet(
 
     BackHandler(enabled = step > 0) { step -= 1 }
 
-    ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+    GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)

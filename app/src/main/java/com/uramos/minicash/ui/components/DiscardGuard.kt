@@ -1,5 +1,14 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
+import androidx.compose.material3.ModalBottomSheetProperties
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +41,9 @@ class DiscardGuard internal constructor(
     private val onDiscard: () -> Unit
 ) {
     internal var showConfirm by mutableStateOf(false)
+
+    /** Verdadero si hay cambios sin guardar. Se lee en composición, así que la hoja reacciona al instante. */
+    val hasChanges: Boolean get() = isDirty()
 
     /** Úsalo para `onDismissRequest` y para los botones "Cancelar". */
     fun requestDismiss() {
@@ -90,4 +102,36 @@ fun DiscardChangesDialog(guard: DiscardGuard) {
         shape = RoundedCornerShape(28.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
+}
+
+/**
+ * `ModalBottomSheet` para formularios con [DiscardGuard]. Con cambios sin guardar, el botón o gesto atrás
+ * se intercepta aquí en lugar de cerrar la hoja: dejar que la hoja lo gestione hacía que intentara cerrarse
+ * una y otra vez mientras el diálogo de confirmación estaba abierto (la hoja subía y bajaba).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GuardedModalBottomSheet(
+    guard: DiscardGuard,
+    modifier: Modifier = Modifier,
+    shape: Shape = BottomSheetDefaults.ExpandedShape,
+    containerColor: Color = BottomSheetDefaults.ContainerColor,
+    dragHandle: @Composable (() -> Unit)? = { BottomSheetDefaults.DragHandle() },
+    contentWindowInsets: @Composable () -> WindowInsets = { BottomSheetDefaults.modalWindowInsets },
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val hasChanges = guard.hasChanges
+    ModalBottomSheet(
+        onDismissRequest = guard::requestDismiss,
+        modifier = modifier,
+        sheetState = guard.sheetState,
+        shape = shape,
+        containerColor = containerColor,
+        dragHandle = dragHandle,
+        contentWindowInsets = contentWindowInsets,
+        properties = ModalBottomSheetProperties(shouldDismissOnBackPress = !hasChanges)
+    ) {
+        BackHandler(enabled = hasChanges) { guard.requestDismiss() }
+        content()
+    }
 }

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
@@ -199,9 +200,8 @@ fun AddTransactionSheet(
     val initialFormSnapshot = remember { Triple(state.concept, state.amountExpression, state.note) }
     val guard = rememberDiscardGuard(isDirty = Triple(state.concept, state.amountExpression, state.note) != initialFormSnapshot, onDismiss = handleDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         contentWindowInsets = { BottomSheetDefaults.windowInsets },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -777,9 +778,8 @@ fun AddBudgetItemDialog(
 
     val guard = rememberDiscardGuard(isDirty = concept.isNotBlank() || amountExpression.isNotBlank() || responsible.isNotBlank(), onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {
@@ -1008,9 +1008,8 @@ fun EditBudgetItemSheet(
 
     val guard = rememberDiscardGuard(isDirty = concept != item.concept || amountExpression != initialVal || responsible != item.responsible || itemType != item.type || (item.dueDate != null && selectedDateMillis != item.dueDate), onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
     ) {

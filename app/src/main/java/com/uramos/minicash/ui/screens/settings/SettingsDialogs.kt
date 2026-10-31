@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.MinicashTonalButton
 import com.uramos.minicash.ui.components.MinicashButton
@@ -133,9 +134,8 @@ fun EditAccountSheet(
 
     val guard = rememberDiscardGuard(isDirty = name != account.name || balanceText != initialAmountStr(account.balance) || selectedType != account.type || selectedColorHex != account.colorHex || selectedIconName != account.iconName, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -264,9 +264,8 @@ fun EditCategorySheet(
 
     val guard = rememberDiscardGuard(isDirty = name != category.name || selectedColorHex != category.colorHex || selectedIconName != category.iconName, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -345,9 +344,8 @@ fun AddAccountSheet(
 
     val guard = rememberDiscardGuard(isDirty = name.isNotBlank() || balanceText.isNotBlank() || selectedType != AccountType.CASH || selectedColorHex != "#1A73E8" || selectedIconName != "account_balance_wallet", onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -450,9 +448,8 @@ fun AddCategorySheet(
 
     val guard = rememberDiscardGuard(isDirty = name.isNotBlank() || selectedType != initialType || selectedColorHex != "#1A73E8" || selectedIconName != "category", onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        ModalBottomSheet(
-        onDismissRequest = guard::requestDismiss,
-        sheetState = guard.sheetState,
+        GuardedModalBottomSheet(
+        guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
