@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashPillTabs
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -144,32 +145,15 @@ fun CategoriesManagementScreen(
             )
 
             // Selector Segmentado de Gastos vs Ingresos
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.small)
-            ) {
-                SegmentedButton(
-                    selected = selectedTab == 0,
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        selectedTab = 0
-                    },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                ) {
-                    Text("Gastos (${state.expenseCategories.size})", fontWeight = FontWeight.Bold)
-                }
-                SegmentedButton(
-                    selected = selectedTab == 1,
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        selectedTab = 1
-                    },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                ) {
-                    Text("Ingresos (${state.incomeCategories.size})", fontWeight = FontWeight.Bold)
-                }
-            }
+            MinicashPillTabs(
+                labels = listOf("Gastos (${state.expenseCategories.size})", "Ingresos (${state.incomeCategories.size})"),
+                selectedIndex = selectedTab,
+                onSelect = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    selectedTab = it
+                },
+                modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.small)
+            )
 
             // Lista de Categorías
             if (filteredCategories.isEmpty()) {

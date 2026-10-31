@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -833,18 +834,12 @@ fun AddBudgetItemDialog(
             }
 
             // Selector superior en píldora: [ Gasto | Ingreso | Reembolso ]
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                val types = BudgetItemType.entries
-                types.forEachIndexed { index, type ->
-                    SegmentedButton(
-                        selected = itemType == type,
-                        onClick = { itemType = type },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = types.size)
-                    ) {
-                        Text(type.displayName, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
+            MinicashSegmentedChoice(
+                options = BudgetItemType.entries,
+                isSelected = { itemType == it },
+                onSelect = { itemType = it },
+                label = { it.displayName }
+            )
 
             // Importe destacado
             Surface(
@@ -1070,18 +1065,12 @@ fun EditBudgetItemSheet(
             }
 
             // Selector superior en píldora: [ Gasto | Ingreso | Reembolso ]
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                val types = BudgetItemType.entries
-                types.forEachIndexed { index, type ->
-                    SegmentedButton(
-                        selected = itemType == type,
-                        onClick = { itemType = type },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = types.size)
-                    ) {
-                        Text(type.displayName, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.SemiBold)
-                    }
-                }
-            }
+            MinicashSegmentedChoice(
+                options = BudgetItemType.entries,
+                isSelected = { itemType == it },
+                onSelect = { itemType = it },
+                label = { it.displayName }
+            )
 
             // Importe destacado
             Surface(
@@ -1291,22 +1280,12 @@ fun FortnightSelectorRow(
         }
 
         // Fortnight Segmented Selector: [ 1ª Quincena | 2ª Quincena ]
-        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            SegmentedButton(
-                selected = fortnight == 1,
-                onClick = { onFortnightChange(1) },
-                shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-            ) {
-                Text("1ª Quincena", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-            }
-            SegmentedButton(
-                selected = fortnight == 2,
-                onClick = { onFortnightChange(2) },
-                shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-            ) {
-                Text("2ª Quincena", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
-            }
-        }
+        MinicashSegmentedChoice(
+            options = listOf(1, 2),
+            isSelected = { fortnight == it },
+            onSelect = onFortnightChange,
+            label = { "${it}ª Quincena" }
+        )
     }
 }
 

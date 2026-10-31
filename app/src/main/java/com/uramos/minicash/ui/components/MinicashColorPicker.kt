@@ -12,7 +12,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.toShape
+import androidx.compose.runtime.getValue
+import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -83,6 +89,7 @@ fun MinicashColorPicker(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ColorSwatch(
     hexColor: String,
@@ -93,16 +100,22 @@ private fun ColorSwatch(
     val parsedColor = MinicashColorUtils.parseHexColor(hexColor, MaterialTheme.colorScheme.primary)
     val contentColor = MinicashColorUtils.getContrastingContentColor(parsedColor, isDarkTheme)
 
+    val size by animateDpAsState(
+        targetValue = if (isSelected) 44.dp else 38.dp,
+        animationSpec = minicashSpatialSpec(),
+        label = "swatch_size"
+    )
+
     Surface(
         onClick = onClick,
-        shape = CircleShape,
+        shape = if (isSelected) MaterialShapes.Cookie9Sided.toShape() else CircleShape,
         color = parsedColor,
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(2.5.dp, MaterialTheme.colorScheme.primary)
         } else {
             androidx.compose.foundation.BorderStroke(1.dp, Color.Black.copy(alpha = 0.12f))
         },
-        modifier = Modifier.size(38.dp)
+        modifier = Modifier.size(size)
     ) {
         Box(contentAlignment = Alignment.Center) {
             AnimatedVisibility(

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -395,32 +396,26 @@ fun EditTransactionSheet(
             }
 
             // Selector Segmentado: Gasto, Ingreso, Transferencia
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                val types = listOf(TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER)
-                types.forEachIndexed { index, itemType ->
-                    SegmentedButton(
-                        selected = type == itemType,
-                        onClick = {
-                            haptics.click()
-                            type = itemType
-                            if (itemType == TransactionType.TRANSFER) {
-                                selectedCategoryId = null
-                                if (selectedDestinationAccountId == null) {
-                                    selectedDestinationAccountId = accounts.firstOrNull { it.id != selectedAccountId }?.id
-                                }
-                            } else {
-                                selectedDestinationAccountId = null
-                                if (selectedCategoryId == null || categories.none { it.id == selectedCategoryId && it.type == itemType }) {
-                                    selectedCategoryId = categories.firstOrNull { it.type == itemType }?.id
-                                }
-                            }
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = types.size)
-                    ) {
-                        Text(itemType.displayName, fontWeight = FontWeight.SemiBold)
+            MinicashSegmentedChoice(
+                options = listOf(TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
+                isSelected = { type == it },
+                onSelect = { itemType ->
+                    haptics.click()
+                    type = itemType
+                    if (itemType == TransactionType.TRANSFER) {
+                        selectedCategoryId = null
+                        if (selectedDestinationAccountId == null) {
+                            selectedDestinationAccountId = accounts.firstOrNull { it.id != selectedAccountId }?.id
+                        }
+                    } else {
+                        selectedDestinationAccountId = null
+                        if (selectedCategoryId == null || categories.none { it.id == selectedCategoryId && it.type == itemType }) {
+                            selectedCategoryId = categories.firstOrNull { it.type == itemType }?.id
+                        }
                     }
-                }
-            }
+                },
+                label = { it.displayName }
+            )
 
             // Campos de Texto para Concepto y Notas (Ocultos en Transferencia)
             AnimatedVisibility(visible = !isTransfer) {

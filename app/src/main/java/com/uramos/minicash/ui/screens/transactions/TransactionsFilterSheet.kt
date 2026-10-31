@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import androidx.compose.runtime.setValue
@@ -108,47 +109,22 @@ fun TransactionsFilterSheet(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(42.dp),
-                horizontalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-                val types = listOf(
-                    null to "Todos",
-                    TransactionType.EXPENSE to "Gasto",
-                    TransactionType.INCOME to "Ingreso",
-                    TransactionType.TRANSFER to "Transferencia"
-                )
-                types.forEachIndexed { index, (type, label) ->
-                    val isSelected = selectedTypeFilter == type
-                    val shape = when (index) {
-                        0 -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp, topEnd = 4.dp, bottomEnd = 4.dp)
-                        types.size - 1 -> RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp, topEnd = 20.dp, bottomEnd = 20.dp)
-                        else -> RoundedCornerShape(4.dp)
-                    }
-                    Surface(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                            onTypeFilterSelect(type)
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = shape,
-                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+            MinicashSegmentedChoice(
+                options = listOf<TransactionType?>(null, TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
+                isSelected = { selectedTypeFilter == it },
+                onSelect = {
+                    haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    onTypeFilterSelect(it)
+                },
+                label = {
+                    when (it) {
+                        null -> "Todos"
+                        TransactionType.EXPENSE -> "Gasto"
+                        TransactionType.INCOME -> "Ingreso"
+                        TransactionType.TRANSFER -> "Transfer."
                     }
                 }
-            }
+            )
 
             Spacer(modifier = Modifier.height(spacing.extraSmall))
 

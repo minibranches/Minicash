@@ -25,7 +25,7 @@ data class IconCategoryGroup(
     val icons: List<Pair<String, ImageVector>>
 )
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun IconSelectionSheet(
     selectedIconName: String,
@@ -170,7 +170,7 @@ fun IconSelectionSheet(
             Text(
                 text = "Seleccionar icono",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold
             )
 
             LazyColumn(
@@ -203,7 +203,7 @@ fun IconSelectionSheet(
                                             onIconSelected(iconName)
                                             onDismiss()
                                         },
-                                        shape = CircleShape,
+                                        shape = if (isSelected) MaterialShapes.Cookie9Sided.toShape() else CircleShape,
                                         color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
                                         modifier = Modifier.size(48.dp)
                                     ) {

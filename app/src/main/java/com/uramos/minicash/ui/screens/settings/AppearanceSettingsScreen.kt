@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
@@ -104,29 +105,15 @@ fun AppearanceSettingsScreen(
                         )
 
                         // Selector de Tema de la Aplicación
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val modes = listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK)
-                            modes.forEachIndexed { index, mode ->
-                                SegmentedButton(
-                                    selected = state.themeMode == mode,
-                                    onClick = {
-                                        haptics.click()
-                                        viewModel.setThemeMode(mode)
-                                    },
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                                    label = {
-                                        Text(
-                                            text = mode.displayName,
-                                            fontWeight = FontWeight.SemiBold,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                )
-                            }
-                        }
+                        MinicashSegmentedChoice(
+                            options = listOf(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK),
+                            isSelected = { state.themeMode == it },
+                            onSelect = {
+                                haptics.click()
+                                viewModel.setThemeMode(it)
+                            },
+                            label = { it.displayName }
+                        )
 
                         Spacer(modifier = Modifier.height(spacing.small))
 
@@ -138,32 +125,15 @@ fun AppearanceSettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            val fonts = listOf(
-                                FontPreference.ROUNDED_QUICKSAND to "Redondeada",
-                                FontPreference.GOOGLE_SANS_FLEX to "Google Sans Flex"
-                            )
-                            fonts.forEachIndexed { index, (pref, label) ->
-                                SegmentedButton(
-                                    selected = state.fontPreference == pref,
-                                    onClick = {
-                                        haptics.tick()
-                                        viewModel.setFontPreference(pref)
-                                    },
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = fonts.size),
-                                    label = {
-                                        Text(
-                                            text = label,
-                                            fontWeight = FontWeight.SemiBold,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                )
-                            }
-                        }
+                        MinicashSegmentedChoice(
+                            options = listOf(FontPreference.ROUNDED_QUICKSAND, FontPreference.GOOGLE_SANS_FLEX),
+                            isSelected = { state.fontPreference == it },
+                            onSelect = {
+                                haptics.tick()
+                                viewModel.setFontPreference(it)
+                            },
+                            label = { if (it == FontPreference.ROUNDED_QUICKSAND) "Redondeada" else "Google Sans Flex" }
+                        )
 
                         Spacer(modifier = Modifier.height(spacing.small))
 
@@ -176,20 +146,15 @@ fun AppearanceSettingsScreen(
                         )
 
                         val navBarStyle by viewModel.navBarStyle.collectAsState()
-                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                            val styles = listOf(NavBarStyle.INTEGRATED to "Integrada", NavBarStyle.FLOATING to "Flotante")
-                            styles.forEachIndexed { index, (style, label) ->
-                                SegmentedButton(
-                                    selected = navBarStyle == style,
-                                    onClick = {
-                                        haptics.tick()
-                                        viewModel.setNavBarStyle(style)
-                                    },
-                                    shape = SegmentedButtonDefaults.itemShape(index = index, count = styles.size),
-                                    label = { Text(label, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                                )
-                            }
-                        }
+                        MinicashSegmentedChoice(
+                            options = listOf(NavBarStyle.INTEGRATED, NavBarStyle.FLOATING),
+                            isSelected = { navBarStyle == it },
+                            onSelect = {
+                                haptics.tick()
+                                viewModel.setNavBarStyle(it)
+                            },
+                            label = { if (it == NavBarStyle.INTEGRATED) "Integrada" else "Flotante" }
+                        )
 
                         Spacer(modifier = Modifier.height(spacing.small))
 
