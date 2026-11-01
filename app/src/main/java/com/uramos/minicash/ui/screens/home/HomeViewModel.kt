@@ -1,6 +1,7 @@
 package com.uramos.minicash.ui.screens.home
 
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +25,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Calendar
 
 @Immutable
@@ -79,8 +82,31 @@ class HomeViewModel(
         }.timeInMillis
     }
 
+    /** Mes elegido a mano para las gráficas de distribución; null sigue al mes en curso. */
+    private val _chartMonth = MutableStateFlow<YearMonth?>(null)
+    val chartMonth: StateFlow<YearMonth?> = _chartMonth.asStateFlow()
+
+    fun shiftChartMonth(delta: Int) {
+        _chartMonth.update { current ->
+            val target = (current ?: YearMonth.now()).plusMonths(delta.toLong())
+            // Sin meses futuros; llegar al mes en curso vuelve al modo automático
+            if (!target.isBefore(YearMonth.now())) null else target
+        }
+    }
+
+    fun resetChartMonth() {
+        _chartMonth.value = null
+    }
+
+    private fun rangeOf(month: YearMonth): Pair<Long, Long> {
+        val zone = ZoneId.systemDefault()
+        val start = month.atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = month.plusMonths(1).atDay(1).atStartOfDay(zone).toInstant().toEpochMilli() - 1
+        return start to end
+    }
+
     /** Se recalcula a medianoche, de modo que el mes mostrado no se queda viejo si la app sigue abierta. */
-    private val monthRange: Flow<Pair<Long, Long>> = flow {
+    private val currentMonthRange: Flow<Pair<Long, Long>> = flow {
         while (true) {
             emit(getStartOfMonth() to getEndOfMonth())
             val now = Calendar.getInstance()
@@ -94,6 +120,11 @@ class HomeViewModel(
             delay((nextMidnight - now.timeInMillis).coerceAtLeast(1_000L))
         }
     }.distinctUntilChanged()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val monthRange: Flow<Pair<Long, Long>> = _chartMonth.flatMapLatest { month ->
+        if (month == null) currentMonthRange else flowOf(rangeOf(month))
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val uiState: StateFlow<HomeUiState> = monthRange.flatMapLatest { (monthStart, monthEnd) -> combine(

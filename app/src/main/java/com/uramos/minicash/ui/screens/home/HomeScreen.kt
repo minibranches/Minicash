@@ -6,6 +6,7 @@ import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.listEntrance
 import com.uramos.minicash.ui.components.rememberEntranceTracker
+import java.time.YearMonth
 import androidx.compose.animation.animateColorAsState
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import androidx.activity.compose.BackHandler
@@ -102,7 +103,8 @@ fun HomeScreen(
     var showBatchDeleteDialog by remember { mutableStateOf(false) }
 
     val haptic = LocalHapticFeedback.current
-    val haptics = rememberMinicashHaptics()
+    val haptics = rememberMinicashHaptics()
+
     val entranceTracker = rememberEntranceTracker()
     val isRestricted = LocalAnimationRestriction.current
 
@@ -248,7 +250,16 @@ fun HomeScreen(
                     item {
                         Column(modifier = Modifier.listEntrance(entranceTracker, "home_stats", 2)) {
                             MinicashSectionTitle("Distribución de gastos del mes")
-                            Spacer(modifier = Modifier.height(spacing.medium))
+                            Spacer(modifier = Modifier.height(spacing.small))
+                            val chartMonthOverride by viewModel.chartMonth.collectAsState()
+                            ChartMonthSelector(
+                                month = chartMonthOverride ?: YearMonth.now(),
+                                isCurrent = chartMonthOverride == null,
+                                onPrevious = { viewModel.shiftChartMonth(-1) },
+                                onNext = { viewModel.shiftChartMonth(1) },
+                                onReset = viewModel::resetChartMonth
+                            )
+                            Spacer(modifier = Modifier.height(spacing.small))
                             TwoFacedStatsChartWidget(
                                 monthlyExpenseStats = state.monthlyExpenseStats,
                                 totalMonthlyExpense = state.totalMonthlyExpense,

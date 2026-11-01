@@ -1,5 +1,13 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import androidx.compose.foundation.layout.height
 import androidx.activity.compose.BackHandler
@@ -152,6 +160,19 @@ fun MainScreen(
     val currentScreenIndex = pagerState.currentPage % numPages
     val currentScreen = visibleScreens[currentScreenIndex]
 
+    // Al mostrar u ocultar módulos cambia el número de páginas: se reubica el pager para seguir en la misma pestaña
+    val previousScreens = remember { arrayOf(visibleScreens) }
+    LaunchedEffect(visibleScreens) {
+        val previous = previousScreens[0]
+        if (previous != visibleScreens) {
+            val page = pagerState.currentPage
+            val staying = previous[page % previous.size]
+            val newIndex = visibleScreens.indexOf(staying).takeIf { it >= 0 } ?: visibleScreens.lastIndex
+            previousScreens[0] = visibleScreens
+            pagerState.scrollToPage((page / visibleScreens.size) * visibleScreens.size + newIndex)
+        }
+    }
+
     val homeListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val transactionsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val budgetListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
@@ -163,6 +184,21 @@ fun MainScreen(
     var showAddBudgetItemFromMain by remember { mutableStateOf(false) }
     var showAddCreditFromMain by remember { mutableStateOf(false) }
     var activeSettingsSubScreen by remember { mutableStateOf<String?>(null) }
+
+    // La barra flotante se oculta al bajar por la página y reaparece al subir, al cambiar de pestaña y en el tope
+    var navBarScrollVisible by remember { mutableStateOf(true) }
+    val navBarScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (consumed.y < -NAV_SCROLL_THRESHOLD) navBarScrollVisible = false
+                else if (consumed.y > NAV_SCROLL_THRESHOLD) navBarScrollVisible = true
+                return Offset.Zero
+            }
+        }
+    }
+    LaunchedEffect(currentScreenIndex) { navBarScrollVisible = true }
+    // El submenú solo oculta la barra mientras se está en Ajustes
+    val inSubScreen = activeSettingsSubScreen != null && currentScreen is Screen.Settings
 
     LaunchedEffect(shortcutAction) {
         if (!shortcutAction.isNullOrBlank()) {
@@ -243,6 +279,7 @@ fun MainScreen(
                         .padding(top = innerPadding.calculateTopPadding())
                         .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                        .nestedScroll(navBarScrollConnection)
                 ) {
                     HorizontalPager(
                         state = pagerState,
@@ -366,10 +403,15 @@ fun MainScreen(
 
                     if (navBarStyle == NavBarStyle.FLOATING) {
                         // Capa Overlaid Flotante Desacoplada (Alineación simétrica de insets y ancho optimizado)
-                        Box(
+                        SlideVisibility(
+                            visible = navBarScrollVisible && !inSubScreen,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter)
+                        ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .navigationBarsPadding()
                                 .padding(horizontal = 12.dp, vertical = 16.dp),
                             contentAlignment = Alignment.Center
@@ -480,6 +522,7 @@ fun MainScreen(
                                 ContextualFab(currentScreen = currentScreen, leadingSpacer = true, onClick = onFabClick)
                             }
                         }
+                        }
                     }
 
                     if (navBarStyle == NavBarStyle.INTEGRATED) {
@@ -487,42 +530,22 @@ fun MainScreen(
                             ContextualFab(currentScreen = currentScreen, leadingSpacer = false, onClick = onFabClick)
                         }
                     }
-
-                    // Capa Modal Superpuesta para Subpantallas de Configuración (dentro del panel, con el mismo fondo)
-                    SettingsSubScreenOverlay(
-                        activeSubScreen = activeSettingsSubScreen,
-                        settingsViewModel = settingsViewModel,
-                        onClose = { activeSettingsSubScreen = null }
-                    )
                 }
 
                 if (navBarStyle == NavBarStyle.INTEGRATED) {
-                    IntegratedNavBar(
-                        screens = visibleScreens,
-                        selectedIndex = currentScreenIndex,
-                        onItemClick = onNavClick
-                    )
+                    AnimatedVisibility(
+                        visible = !inSubScreen,
+                        enter = expandVertically(animationSpec = minicashSpatialSpec()) + fadeIn(animationSpec = minicashEffectsSpec()),
+                        exit = shrinkVertically(animationSpec = minicashSpatialSpec()) + fadeOut(animationSpec = minicashEffectsSpec())
+                    ) {
+                        IntegratedNavBar(
+                            screens = visibleScreens,
+                            selectedIndex = currentScreenIndex,
+                            onItemClick = onNavClick
+                        )
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SettingsSubScreenOverlay(
-    activeSubScreen: String?,
-    settingsViewModel: SettingsViewModel,
-    onClose: () -> Unit
-) {
-    AnimatedVisibility(
-        visible = activeSubScreen != null,
-        enter = slideInHorizontally { width -> width } + fadeIn(),
-        exit = slideOutHorizontally { width -> width } + fadeOut(),
-        modifier = Modifier.fillMaxSize()
-    ) {
-        when (activeSubScreen) {
-            "accounts" -> AccountsManagementScreen(viewModel = settingsViewModel, onNavigateBack = onClose)
-            "categories" -> CategoriesManagementScreen(viewModel = settingsViewModel, onNavigateBack = onClose)
         }
     }
 }
@@ -534,8 +557,11 @@ private fun IntegratedNavBar(
     selectedIndex: Int,
     onItemClick: (Int, Screen) -> Unit
 ) {
+    // El marco oscuro queda solo arriba: la barra es una hoja con esquinas superiores curvas sobre el fondo de la página
+    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)) {
     ShortNavigationBar(
-        containerColor = minicashFrameColor(),
+        modifier = Modifier.clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)),
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
     ) {
         screens.forEachIndexed { index, screen ->
@@ -559,6 +585,20 @@ private fun IntegratedNavBar(
             )
         }
     }
+    }
+}
+
+private const val NAV_SCROLL_THRESHOLD = 2f
+
+/** Entra y sale deslizándose desde el borde inferior; vive fuera del Column para evitar la ambigüedad de receptores. */
+@Composable
+private fun SlideVisibility(visible: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(animationSpec = minicashSpatialSpec()) { it } + fadeIn(animationSpec = minicashEffectsSpec()),
+        exit = slideOutVertically(animationSpec = minicashSpatialSpec()) { it } + fadeOut(animationSpec = minicashEffectsSpec()),
+        modifier = modifier
+    ) { content() }
 }
 
 /** Botón de agregar contextual: aparece en todas las pestañas excepto Ajustes. */

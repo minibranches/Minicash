@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.home
 
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import com.uramos.minicash.ui.utils.getIconVectorByName
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.material3.Surface
@@ -290,6 +292,68 @@ private fun SingleDonutPage(
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/** Mes de las gráficas de distribución: por defecto el actual; las flechas permiten ver meses anteriores. */
+@Composable
+fun ChartMonthSelector(
+    month: java.time.YearMonth,
+    isCurrent: Boolean,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onReset: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val label = remember(month) {
+        month.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.forLanguageTag("es-MX"))
+            .replaceFirstChar { it.uppercase() } + " ${month.year}"
+    }
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        com.uramos.minicash.ui.components.WithoutMinTouchTarget {
+            Row(
+                modifier = Modifier.padding(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                com.uramos.minicash.ui.components.MinicashIconButton(onClick = onPrevious, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
+                }
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
+                if (!isCurrent) {
+                    Surface(
+                        onClick = onReset,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    ) {
+                        Text(
+                            text = "Hoy",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+                com.uramos.minicash.ui.components.MinicashIconButton(
+                    onClick = onNext,
+                    enabled = !isCurrent,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
                 }
             }
         }
