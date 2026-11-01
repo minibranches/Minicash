@@ -180,7 +180,8 @@ class CreditsViewModel(
         purchaseDate: Long = System.currentTimeMillis(),
         paidInstallments: Int = 0,
         paymentDay: Int? = null,
-        reminderDaysBefore: Int? = null
+        reminderDaysBefore: Int? = null,
+        paymentOverride: Boolean = false
     ) {
         val monthlyCents = monthlyAmountDouble.toCents()
         val originalCents = originalPriceDouble.toCents()
@@ -202,7 +203,8 @@ class CreditsViewModel(
                     originalPrice = originalCents,
                     totalAmount = totalCents,
                     paymentDay = paymentDay,
-                    reminderDaysBefore = reminderDaysBefore
+                    reminderDaysBefore = reminderDaysBefore,
+                    paymentOverride = paymentOverride
                 )
             )
         }

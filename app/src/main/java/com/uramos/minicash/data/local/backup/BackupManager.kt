@@ -104,7 +104,9 @@ class BackupManager(
                             } else null
                         credit.copy(
                             institution = match?.name ?: credit.institution,
-                            institutionId = match?.id
+                            institutionId = match?.id,
+                            // Antes de v5 el día de pago era siempre propio de la compra.
+                            paymentOverride = credit.paymentOverride || (backup.version < 5 && credit.paymentDay != null)
                         )
                     }
                     database.creditDao().insertCredits(linked)

@@ -1,11 +1,21 @@
 package com.uramos.minicash.data.util
 
+import com.uramos.minicash.data.local.entities.CreditEntity
+import com.uramos.minicash.data.local.entities.CreditInstitutionEntity
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 
 /** Cálculo de fechas de pago de compras a meses con un día fijo del mes. */
 object PaymentSchedule {
+
+    /**
+     * Día de pago y aviso que aplican a [credit]: los propios si los sobrescribe, y si no los de su
+     * [institution] (null si la compra no tiene institución).
+     */
+    fun effectivePayment(credit: CreditEntity, institution: CreditInstitutionEntity?): Pair<Int?, Int?> =
+        if (credit.paymentOverride) credit.paymentDay to credit.reminderDaysBefore
+        else institution?.let { it.paymentDay to it.reminderDaysBefore } ?: (null to null)
 
     /** Fecha del pago en [month]; si el mes no tiene ese día (29, 30, 31) se usa el último día del mes. */
     fun dateIn(month: YearMonth, paymentDay: Int): LocalDate =

@@ -1,5 +1,7 @@
 package com.uramos.minicash
 
+import com.uramos.minicash.data.local.entities.CreditEntity
+import com.uramos.minicash.data.local.entities.CreditInstitutionEntity
 import com.uramos.minicash.data.util.PaymentSchedule
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
@@ -55,5 +57,34 @@ class PaymentScheduleTest {
         // Pago el día 2; aviso 3 días antes cae el 30 del mes anterior
         assertTrue(PaymentSchedule.shouldNotify(2, 3, LocalDate.of(2026, 11, 29)))
         assertTrue(PaymentSchedule.shouldNotify(2, 3, LocalDate.of(2026, 12, 30)))
+    }
+
+    private fun credit(override: Boolean, day: Int? = null, reminder: Int? = null) = CreditEntity(
+        article = "TV", institution = "BBVA", responsible = "Yo", purchaseDate = 0L,
+        totalInstallments = 12, monthlyAmount = 100, originalPrice = 0, totalAmount = 1200,
+        institutionId = 1, paymentDay = day, reminderDaysBefore = reminder, paymentOverride = override
+    )
+
+    private val bank = CreditInstitutionEntity(id = 1, name = "BBVA", paymentDay = 5, reminderDaysBefore = 3)
+
+    @Test
+    fun inheritsInstitutionPayment() {
+        assertEquals(5 to 3, PaymentSchedule.effectivePayment(credit(override = false), bank))
+    }
+
+    @Test
+    fun overrideUsesOwnPayment() {
+        assertEquals(20 to null, PaymentSchedule.effectivePayment(credit(override = true, day = 20), bank))
+    }
+
+    @Test
+    fun institutionWithoutDayGivesNothing() {
+        val empty = bank.copy(paymentDay = null, reminderDaysBefore = null)
+        assertEquals(null to null, PaymentSchedule.effectivePayment(credit(override = false), empty))
+    }
+
+    @Test
+    fun creditWithoutInstitutionGivesNothing() {
+        assertEquals(null to null, PaymentSchedule.effectivePayment(credit(override = false), null))
     }
 }

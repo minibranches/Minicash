@@ -8,7 +8,7 @@ import com.uramos.minicash.data.local.entities.CreditInstitutionEntity
 import com.uramos.minicash.data.local.entities.TransactionEntity
 import com.uramos.minicash.data.preferences.PreferencesSnapshot
 
-const val BACKUP_FORMAT_VERSION = 4
+const val BACKUP_FORMAT_VERSION = 5
 
 /**
  * v1: cuentas, categorías, transacciones, presupuesto y créditos.

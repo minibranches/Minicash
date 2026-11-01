@@ -3,6 +3,7 @@ package com.uramos.minicash
 import com.uramos.minicash.ui.components.evaluateMathExpression
 import com.uramos.minicash.ui.components.processKeypadPress
 import com.uramos.minicash.ui.utils.toCents
+import com.uramos.minicash.ui.utils.toCompactCurrency
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -63,5 +64,14 @@ class KeypadTest {
     fun centsAreRounded() {
         assertEquals(1999L, 19.99.toCents())
         assertEquals(1005L, 10.05.toCents())
+    }
+
+    @Test
+    fun compactCurrency() {
+        assertEquals("\$950", 95000L.toCompactCurrency())
+        assertEquals("\$10.5k", 1050000L.toCompactCurrency())
+        assertEquals("\$10k", 1000000L.toCompactCurrency())
+        assertEquals("\$1.2M", 120000000L.toCompactCurrency())
+        assertEquals("\$5.6k", (-560900L).toCompactCurrency())
     }
 }

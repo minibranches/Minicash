@@ -59,6 +59,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -111,14 +112,14 @@ data class CreditFormValues(
     /** Día del mes (1 a 31) del pago; null si no se indicó. */
     val paymentDay: Int?,
     /** Días de anticipación del aviso (0 = el mismo día); null si no hay aviso. */
-    val reminderDaysBefore: Int?
+    val reminderDaysBefore: Int?,
+    /** Verdadero si la compra usa su propio día de pago en vez del de su institución. */
+    val paymentOverride: Boolean
 )
 
 private const val CUSTOM_MONTHS = -1
 private val PRESET_MONTHS = listOf(3, 6, 9, 12)
 private const val LAST_STEP = 2
-private const val NO_REMINDER = -1
-private val REMINDER_OPTIONS = listOf(NO_REMINDER, 0, 1, 2, 3, 5, 7)
 
 /**
  * Formulario de alta y edición de compras a meses en tres pasos:
@@ -151,8 +152,9 @@ fun CreditFormSheet(
     val initialTotal = credit?.totalInstallments?.toString() ?: "12"
     val initialPaid = credit?.paidInstallments?.toString() ?: "0"
     val initialCustom = credit != null && credit.totalInstallments !in PRESET_MONTHS
-    val initialPaymentDay = credit?.paymentDay?.toString() ?: ""
-    val initialReminder = credit?.reminderDaysBefore ?: NO_REMINDER
+    val initialOverride = credit?.paymentOverride ?: false
+    val initialPaymentDay = credit?.paymentDay?.takeIf { initialOverride }?.toString() ?: ""
+    val initialReminder = credit?.reminderDaysBefore?.takeIf { initialOverride } ?: NO_REMINDER
 
     var step by rememberSaveable { mutableIntStateOf(0) }
     var article by rememberSaveable { mutableStateOf(credit?.article ?: "") }
@@ -164,6 +166,7 @@ fun CreditFormSheet(
     var paidInstallmentsStr by rememberSaveable { mutableStateOf(initialPaid) }
     var isCustomMonths by rememberSaveable { mutableStateOf(initialCustom) }
     var monthlyAmountExpression by rememberSaveable { mutableStateOf(initialMonthly) }
+    var paymentOverride by rememberSaveable { mutableStateOf(initialOverride) }
     var paymentDayStr by rememberSaveable { mutableStateOf(initialPaymentDay) }
     var reminderDays by rememberSaveable { mutableIntStateOf(initialReminder) }
     var showInstitutionSheet by rememberSaveable { mutableStateOf(false) }
@@ -185,6 +188,7 @@ fun CreditFormSheet(
         totalInstallmentsStr != initialTotal ||
         paidInstallmentsStr != initialPaid ||
         monthlyAmountExpression != initialMonthly ||
+        paymentOverride != initialOverride ||
         paymentDayStr != initialPaymentDay ||
         reminderDays != initialReminder
 
@@ -194,9 +198,9 @@ fun CreditFormSheet(
     val focusManager = LocalFocusManager.current
 
     val paymentDay = paymentDayStr.toIntOrNull()
-    val paymentInvalid = paymentDayStr.isNotEmpty() && (paymentDay == null || paymentDay !in 1..31)
+    val paymentInvalid = paymentOverride && paymentDayStr.isNotEmpty() && (paymentDay == null || paymentDay !in 1..31)
     // El aviso solo tiene sentido con un día de pago válido
-    val effectiveReminder = if (paymentDay != null && !paymentInvalid) reminderDays else NO_REMINDER
+    val effectiveReminder = if (paymentOverride && paymentDay != null && !paymentInvalid) reminderDays else NO_REMINDER
 
     val context = LocalContext.current
     val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -294,6 +298,10 @@ fun CreditFormSheet(
                     )
                 } else {
                     PaymentStep(
+                        institution = institutions.firstOrNull { it.name.equals(selectedInstitution, ignoreCase = true) },
+                        institutionName = selectedInstitution,
+                        override = paymentOverride,
+                        onOverrideChange = { paymentOverride = it },
                         paymentDayStr = paymentDayStr,
                         onPaymentDayChange = { paymentDayStr = it.filter(Char::isDigit).take(2) },
                         paymentInvalid = paymentInvalid,
@@ -383,8 +391,9 @@ fun CreditFormSheet(
                                             monthlyAmount = calculatedMonthlyAmount,
                                             originalPrice = originalPriceStr.toDoubleOrNull() ?: 0.0,
                                             purchaseDate = purchaseDate,
-                                            paymentDay = paymentDay?.takeIf { !paymentInvalid },
-                                            reminderDaysBefore = effectiveReminder.takeIf { it != NO_REMINDER }
+                                            paymentDay = paymentDay?.takeIf { paymentOverride && !paymentInvalid },
+                                            reminderDaysBefore = effectiveReminder.takeIf { it != NO_REMINDER },
+                                            paymentOverride = paymentOverride
                                         )
                                     )
                                     onDismiss()
@@ -698,78 +707,61 @@ private fun PlanStep(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
+/** Paso 3: muestra el pago heredado de la institución y permite usar otro día solo para esta compra. */
 @Composable
 private fun PaymentStep(
+    institution: CreditInstitutionEntity?,
+    institutionName: String,
+    override: Boolean,
+    onOverrideChange: (Boolean) -> Unit,
     paymentDayStr: String,
     onPaymentDayChange: (String) -> Unit,
     paymentInvalid: Boolean,
     reminderDays: Int,
     onReminderChange: (Int) -> Unit
 ) {
-    val hasPaymentDay = paymentDayStr.isNotEmpty() && !paymentInvalid
+    val inheritedDay = institution?.paymentDay
+    val inheritedReminder = institution?.reminderDaysBefore
+    val name = institutionName.ifBlank { "la institución" }
+    val inheritedText = when {
+        inheritedDay == null -> "$name no tiene día de pago. Configúralo en Ajustes › Tarjetas e instituciones o usa un día propio."
+        inheritedReminder == null -> "Usa el pago de $name: día $inheritedDay, sin aviso."
+        inheritedReminder == 0 -> "Usa el pago de $name: día $inheritedDay, aviso el mismo día."
+        inheritedReminder == 1 -> "Usa el pago de $name: día $inheritedDay, aviso 1 día antes."
+        else -> "Usa el pago de $name: día $inheritedDay, aviso $inheritedReminder días antes."
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        OutlinedTextField(
-            value = paymentDayStr,
-            onValueChange = onPaymentDayChange,
-            label = { Text("Día de pago del mes (opcional)") },
-            placeholder = { Text("Por ejemplo, 5") },
-            supportingText = {
-                Text(
-                    if (paymentInvalid) "Escribe un día entre 1 y 31"
-                    else "Si el mes no tiene ese día, se usa el último"
-                )
-            },
-            isError = paymentInvalid,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            singleLine = true,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (!override) {
+            Text(
+                text = inheritedText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
-        AnimatedVisibility(visible = hasPaymentDay) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = "Avisarme",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Usar otro día para esta compra",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(checked = override, onCheckedChange = onOverrideChange)
+        }
 
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    REMINDER_OPTIONS.forEach { option ->
-                        ToggleButton(
-                            checked = option == reminderDays,
-                            onCheckedChange = { onReminderChange(option) }
-                        ) {
-                            Text(
-                                text = when (option) {
-                                    NO_REMINDER -> "Sin aviso"
-                                    0 -> "El mismo día"
-                                    1 -> "1 día antes"
-                                    else -> "$option días antes"
-                                },
-                                maxLines = 1
-                            )
-                        }
-                    }
-                }
-
-                Text(
-                    text = when (reminderDays) {
-                        NO_REMINDER -> "No recibirás aviso de este pago."
-                        0 -> "Recibirás el aviso el mismo día del pago."
-                        1 -> "Recibirás el aviso 1 día antes del pago."
-                        else -> "Recibirás el aviso $reminderDays días antes del pago."
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        AnimatedVisibility(visible = override) {
+            PaymentDayFields(
+                paymentDayStr = paymentDayStr,
+                onPaymentDayChange = onPaymentDayChange,
+                paymentInvalid = paymentInvalid,
+                reminderDays = reminderDays,
+                onReminderChange = onReminderChange
+            )
         }
     }
 }

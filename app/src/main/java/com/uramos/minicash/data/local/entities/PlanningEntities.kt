@@ -50,10 +50,10 @@ data class CreditEntity(
     val originalPrice: Long,
     val totalAmount: Long,
     val institutionId: Long? = null,
-    /** Día del mes (1 a 31) en que se paga la mensualidad; 
-ull si no se registró. */
+    /** Día del mes (1 a 31) en que se paga la mensualidad; solo cuenta si [paymentOverride] está activo. */
     val paymentDay: Int? = null,
-    /** Días de anticipación del aviso de pago (0 = el mismo día); 
-ull si no hay aviso. */
-    val reminderDaysBefore: Int? = null
+    /** Días de anticipación del aviso de pago (0 = el mismo día); solo cuenta si [paymentOverride] está activo. */
+    val reminderDaysBefore: Int? = null,
+    /** Si es falso la compra hereda el día de pago y el aviso de su institución. */
+    val paymentOverride: Boolean = false
 )

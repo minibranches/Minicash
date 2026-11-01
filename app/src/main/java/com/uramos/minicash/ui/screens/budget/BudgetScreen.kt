@@ -1,5 +1,25 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.theme.minicashSpatialSpec
+import com.uramos.minicash.ui.theme.minicashEffectsSpec
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.Color
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateColorAsState
+import com.uramos.minicash.ui.utils.toCompactCurrency
+import com.uramos.minicash.ui.components.WavyProgressIndicator
+import sh.calvin.reorderable.rememberReorderableLazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.GridCells
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
@@ -9,7 +29,6 @@ import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.MinicashTonalIconButton
 import androidx.compose.material.icons.filled.DragHandle
-import sh.calvin.reorderable.rememberReorderableLazyListState
 import sh.calvin.reorderable.ReorderableItem
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import com.uramos.minicash.ui.components.listEntrance
@@ -31,7 +50,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,7 +98,6 @@ import com.uramos.minicash.ui.components.MoneyDisplayType
 import com.uramos.minicash.ui.components.MoneyTextView
 import com.uramos.minicash.ui.components.MinicashButton
 import com.uramos.minicash.ui.components.MinicashPillTabs
-import com.uramos.minicash.ui.components.MinicashProgressBar
 import com.uramos.minicash.ui.components.rememberSegmentedShape
 import com.uramos.minicash.ui.theme.LocalAnimationRestriction
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
@@ -95,7 +113,7 @@ import java.util.Locale
 @Composable
 fun BudgetScreen(
     viewModel: BudgetViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
+    listState: LazyGridState = rememberLazyGridState(),
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
     onOpenAddTransactionForBudgetItem: ((BudgetItemEntity) -> Unit)? = null
@@ -107,7 +125,8 @@ fun BudgetScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    val haptics = rememberMinicashHaptics()
+    val haptics = rememberMinicashHaptics()
+
     val entranceTracker = rememberEntranceTracker()
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -120,12 +139,11 @@ fun BudgetScreen(
     }
     var showSelectiveCloneDialog by remember { mutableStateOf(false) }
     var itemToPay by remember { mutableStateOf<BudgetItemEntity?>(null) }
-    var itemToDelete by remember { mutableStateOf<BudgetItemEntity?>(null) }
     var itemToEdit by remember { mutableStateOf<BudgetItemEntity?>(null) }
 
     // Orden local mientras se arrastra; se guarda en la base al soltar
     var orderedItems by remember(state.items) { mutableStateOf(state.items) }
-    val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+    val reorderState = rememberReorderableLazyGridState(listState) { from, to ->
         val list = orderedItems.toMutableList()
         val fromIdx = list.indexOfFirst { it.id == from.key }
         val toIdx = list.indexOfFirst { it.id == to.key }
@@ -171,265 +189,67 @@ fun BudgetScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Selector de Mes estilo Cápsula Expressive con animación
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.extraSmall),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerLow
-            ) {
-                WithoutMinTouchTarget {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        MinicashTonalIconButton(
-                            onClick = { viewModel.previousMonth() },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Mes anterior",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        val isRestricted = LocalAnimationRestriction.current
-                        val motionScheme = MaterialTheme.motionScheme
-
-                        AnimatedContent(
-                            targetState = state.currentMonthLabel,
-                            transitionSpec = {
-                                if (isRestricted) {
-                                    fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                                } else {
-                                    val spatialSpec = motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
-                                    val effectsSpec = motionScheme.defaultEffectsSpec<Float>()
-                                    (slideInHorizontally(animationSpec = spatialSpec) { width -> width / 2 } + fadeIn(animationSpec = effectsSpec)) togetherWith
-                                    (slideOutHorizontally(animationSpec = spatialSpec) { width -> -width / 2 } + fadeOut(animationSpec = effectsSpec))
-                                }
-                            },
-                            label = "budget_month_transition"
-                        ) { monthLabel ->
-                            Text(
-                                text = monthLabel,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        MinicashTonalIconButton(
-                            onClick = { viewModel.nextMonth() },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "Mes siguiente",
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Pestañas de Quincena (Segmented Controls Expressive)
-            MinicashPillTabs(
-                labels = listOf("1ª Quincena", "2ª Quincena"),
-                selectedIndex = state.selectedFortnight - 1,
-                onSelect = { index ->
+            // Una sola fila: mes y quincena
+            BudgetPeriodBar(
+                monthLabel = state.currentMonthLabel,
+                fortnight = state.selectedFortnight,
+                onPreviousMonth = {
                     haptics.tick()
-                    viewModel.selectFortnight(index + 1)
+                    viewModel.previousMonth()
                 },
-                modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.small)
+                onNextMonth = {
+                    haptics.tick()
+                    viewModel.nextMonth()
+                },
+                onSelectFortnight = {
+                    haptics.tick()
+                    viewModel.selectFortnight(it)
+                },
+                modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.extraSmall)
             )
 
-            // Dashboard Compacto de Presupuesto
-            MinicashCard(
-                level = CardTonalLevel.LOW,
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.extraSmall)
+            // El resumen va dentro de la cuadrícula para que se desplace junto con las partidas
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = spacing.small,
+                    start = spacing.standard,
+                    end = spacing.standard,
+                    bottom = 120.dp
+                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(spacing.standard),
-                    verticalArrangement = Arrangement.spacedBy(spacing.small)
-                ) {
-                    // Fila 1: Disponible libre actual
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Disponible libre actual",
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            val freeAmountType = if (state.summary.actualFreeAmount >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE
-                            MoneyTextView(
-                                amountCents = state.summary.actualFreeAmount,
-                                type = freeAmountType,
-                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold)
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-
-                    // Fila 2: 3 columnas distribuidas equitativamente
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Columna 1: Ingresos
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.Start
-                        ) {
-                            Text(
-                                text = "Ingresos",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            MoneyTextView(
-                                amountCents = state.summary.executedIncome,
-                                type = MoneyDisplayType.INCOME,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = "de ${state.summary.expectedIncome.toCurrencyFormat()}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        // Columna 2: Reembolsos
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Reembolsos",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            MoneyTextView(
-                                amountCents = state.summary.executedReimbursement,
-                                type = MoneyDisplayType.INCOME,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = "de ${state.summary.expectedReimbursement.toCurrencyFormat()}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        // Columna 3: Gastos
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            horizontalAlignment = Alignment.End
-                        ) {
-                            Text(
-                                text = "Gastos",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            MoneyTextView(
-                                amountCents = state.summary.paidExpense,
-                                type = MoneyDisplayType.EXPENSE,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
-                            )
-                            Text(
-                                text = "de ${state.summary.expectedExpense.toCurrencyFormat()}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-
-                    // Barra expresiva ondulada de ejecución de gastos
-                    val expenseProgress = if (state.summary.expectedExpense > 0) {
-                        (state.summary.paidExpense.toFloat() / state.summary.expectedExpense.toFloat()).coerceIn(0f, 1f)
-                    } else 0f
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Avance de ejecución quincenal",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = "${(expenseProgress * 100).toInt()}%",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        MinicashProgressBar(progress = expenseProgress)
-                    }
+                item(key = "budget_summary", span = { GridItemSpan(maxLineSpan) }) {
+                    BudgetSummaryCard(summary = state.summary)
                 }
-            }
 
-            Spacer(modifier = Modifier.height(spacing.small))
-
-            // Lista de partidas del presupuesto
-            if (state.items.isEmpty()) {
-                MinicashEmptyState(
-                    icon = Icons.Default.Savings,
-                    title = "Sin partidas presupuestadas",
-                    subtitle = "No has agregado ingresos ni gastos para esta quincena.",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = spacing.hero)
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        top = spacing.small,
-                        start = spacing.standard,
-                        end = spacing.standard,
-                        bottom = 120.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
+                if (orderedItems.isEmpty()) {
+                    item(key = "budget_empty", span = { GridItemSpan(maxLineSpan) }) {
+                        MinicashEmptyState(
+                            icon = Icons.Default.Savings,
+                            title = "Sin partidas presupuestadas",
+                            subtitle = "No has agregado ingresos ni gastos para esta quincena.",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = spacing.large)
+                        )
+                    }
+                } else {
                     itemsIndexed(orderedItems, key = { _, item -> item.id }) { index, item ->
-                        ReorderableItem(reorderState, key = item.id) { _ ->
-                            val itemShape = rememberSegmentedShape(index = index, count = orderedItems.size)
-
-                            BudgetItemRow(
+                        ReorderableItem(reorderState, key = item.id) { isDragging ->
+                            BudgetItemCard(
                                 item = item,
-                                shape = itemShape,
-                                dragModifier = Modifier.draggableHandle(
-                                    onDragStopped = { viewModel.saveItemOrder(orderedItems.map { it.id }) }
-                                ),
+                                isDragging = isDragging,
                                 onClick = { itemToEdit = item },
                                 onToggleExecuted = { itemToPay = item },
-                                onDelete = { itemToDelete = item },
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp)
+                                    .longPressDraggableHandle(
+                                        onDragStarted = { haptics.click() },
+                                        onDragStopped = { viewModel.saveItemOrder(orderedItems.map { it.id }) }
+                                    )
                                     .listEntrance(entranceTracker, item.id, index)
                             )
                         }
@@ -462,36 +282,6 @@ fun BudgetScreen(
                 viewModel.deleteItem(target)
                 itemToEdit = null
             }
-        )
-    }
-
-    if (itemToDelete != null) {
-        val item = itemToDelete!!
-        MinicashAlertDialog(
-            onDismissRequest = { itemToDelete = null },
-            title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de que deseas eliminar la partida '${item.concept}' de ${item.amount.toCurrencyFormat()}?") },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        haptics.heavyOrDelete()
-                        viewModel.deleteItem(item)
-                        itemToDelete = null
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    ),
-                ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                MinicashTextButton(onClick = { itemToDelete = null }) {
-                    Text("Cancelar")
-                }
-            },
-            shape = RoundedCornerShape(28.dp)
         )
     }
 
@@ -540,129 +330,262 @@ fun BudgetScreen(
     }
 }
 
+/** Selector de periodo en una sola fila: mes con flechas y las dos quincenas. */
 @Composable
-fun BudgetItemRow(
-    item: BudgetItemEntity,
-    onClick: () -> Unit,
-    onToggleExecuted: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier,
-    shape: androidx.compose.ui.graphics.Shape? = null,
-    /** Modificador de arrastre (draggableHandle) que se aplica al asa de reordenamiento. */
-    dragModifier: Modifier = Modifier
+private fun BudgetPeriodBar(
+    monthLabel: String,
+    fortnight: Int,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onSelectFortnight: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val spacing = MinicashThemeExtensions.spacing
-    val colorScheme = MaterialTheme.colorScheme
+    val isRestricted = LocalAnimationRestriction.current
+    val motionScheme = MaterialTheme.motionScheme
 
-    val containerColor = remember(item.isPaid, colorScheme) {
-        when {
-            item.isPaid -> colorScheme.surfaceContainerHighest.copy(alpha = 0.6f)
-            else -> colorScheme.surfaceContainerLow
-        }
-    }
-
-    val displayType = when (item.type) {
-        BudgetItemType.EXPENSE -> MoneyDisplayType.EXPENSE
-        BudgetItemType.INCOME, BudgetItemType.REIMBURSEMENT -> MoneyDisplayType.INCOME
-    }
-
-    MinicashCard(
-        level = CardTonalLevel.LOW,
-        shape = shape ?: RoundedCornerShape(20.dp),
-        containerColor = containerColor,
-        onClick = onClick,
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = spacing.standard, vertical = spacing.medium),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        WithoutMinTouchTarget {
             Row(
+                modifier = Modifier.padding(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.medium),
-                modifier = Modifier.weight(1f)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                MinicashIconButton(
-                    onClick = onToggleExecuted,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = if (item.isPaid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
-                        tint = if (item.isPaid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                MinicashIconButton(onClick = onPreviousMonth, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
+                }
+                AnimatedContent(
+                    targetState = monthLabel,
+                    transitionSpec = {
+                        if (isRestricted) {
+                            fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
+                        } else {
+                            val spatialSpec = motionScheme.defaultSpatialSpec<androidx.compose.ui.unit.IntOffset>()
+                            val effectsSpec = motionScheme.defaultEffectsSpec<Float>()
+                            (slideInHorizontally(animationSpec = spatialSpec) { width -> width / 2 } + fadeIn(animationSpec = effectsSpec)) togetherWith
+                                (slideOutHorizontally(animationSpec = spatialSpec) { width -> -width / 2 } + fadeOut(animationSpec = effectsSpec))
+                        }
+                    },
+                    label = "budget_month_transition",
+                    modifier = Modifier.weight(1f)
+                ) { label ->
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+                MinicashIconButton(onClick = onNextMonth, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
+                }
 
-                Column {
-                    Text(
-                        text = item.concept,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (item.isPaid) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                listOf(1, 2).forEach { q ->
+                    val selected = q == fortnight
+                    val pillColor by animateColorAsState(
+                        targetValue = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                        animationSpec = minicashEffectsSpec(),
+                        label = "fortnight_pill"
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small),
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        onClick = { onSelectFortnight(q) },
+                        shape = CircleShape,
+                        color = pillColor,
+                        modifier = Modifier
+                            .height(40.dp)
+                            .widthIn(min = 48.dp)
+                            .semantics { contentDescription = "Quincena $q" }
                     ) {
-                        Text(
-                            text = item.type.displayName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (item.dueDate != null) {
-                            val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.forLanguageTag("es-MX")) }
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
                             Text(
-                                text = "•  ${dateFormat.format(Date(item.dueDate))}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                                text = "${q}ª",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                                color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+/** Resumen de la quincena en tres líneas: disponible, cifras ejecutadas y avance ondulado. */
+@Composable
+private fun BudgetSummaryCard(summary: BudgetSummary) {
+    val financialColors = MinicashThemeExtensions.financialColors
+    val progress = if (summary.expectedExpense > 0) {
+        (summary.paidExpense.toFloat() / summary.expectedExpense.toFloat()).coerceIn(0f, 1f)
+    } else 0f
+
+    MinicashCard(
+        level = CardTonalLevel.LOW,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Column {
+                    Text(
+                        text = "Disponible",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    MoneyTextView(
+                        amountCents = summary.actualFreeAmount,
+                        type = if (summary.actualFreeAmount >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
+                    )
+                }
+                Text(
+                    text = "${(progress * 100).toInt()}% pagado",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.extraSmall)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MoneyTextView(
-                    amountCents = item.amount,
-                    type = displayType,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                SummaryFigure("Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income)
+                SummaryFigure("Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income)
+                SummaryFigure("Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense)
+            }
 
-                Icon(
-                    imageVector = Icons.Default.DragHandle,
-                    contentDescription = "Mantén presionado y arrastra para reordenar",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = dragModifier
-                        .size(36.dp)
-                        .padding(6.dp)
-                )
+            WavyProgressIndicator(
+                progress = progress,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+            )
+        }
+    }
+}
 
-                MinicashIconButton(onClick = onClick, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar partida",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        modifier = Modifier.size(18.dp)
+@Composable
+private fun SummaryFigure(label: String, value: String, color: Color) {
+    Column {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+    }
+}
+
+/**
+ * Partida como tarjeta de la cuadrícula. Tocar abre la edición, el círculo marca ejecutado y
+ * mantener presionado la arrastra para reordenar.
+ */
+@Composable
+fun BudgetItemCard(
+    item: BudgetItemEntity,
+    isDragging: Boolean,
+    onClick: () -> Unit,
+    onToggleExecuted: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    val containerColor = if (item.isPaid) colorScheme.surfaceContainerHighest.copy(alpha = 0.6f) else colorScheme.surfaceContainerLow
+    val displayType = when (item.type) {
+        BudgetItemType.EXPENSE -> MoneyDisplayType.EXPENSE
+        BudgetItemType.INCOME, BudgetItemType.REIMBURSEMENT -> MoneyDisplayType.INCOME
+    }
+    val scale by animateFloatAsState(
+        targetValue = if (isDragging) 1.04f else 1f,
+        animationSpec = minicashSpatialSpec(),
+        label = "budget_card_drag"
+    )
+    val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.forLanguageTag("es-MX")) }
+    val subtitle = buildString {
+        append(item.type.displayName)
+        item.dueDate?.let { append(" • ").append(dateFormat.format(Date(it))) }
+    }
+
+    MinicashCard(
+        level = CardTonalLevel.LOW,
+        shape = RoundedCornerShape(24.dp),
+        containerColor = containerColor,
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(116.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.concept,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (item.isPaid) colorScheme.onSurfaceVariant else colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                MinicashIconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar partida",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                        modifier = Modifier.size(18.dp)
-                    )
+                Surface(
+                    onClick = onToggleExecuted,
+                    shape = CircleShape,
+                    color = if (item.isPaid) colorScheme.primary else colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
+                            tint = if (item.isPaid) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
+            MoneyTextView(
+                amountCents = item.amount,
+                type = displayType,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")
+            )
         }
     }
 }

@@ -28,6 +28,7 @@ import com.uramos.minicash.ui.screens.credits.CreditsViewModel
 import com.uramos.minicash.ui.screens.home.HomeViewModel
 import com.uramos.minicash.ui.screens.onboarding.OnboardingScreen
 import com.uramos.minicash.ui.screens.onboarding.OnboardingViewModel
+import com.uramos.minicash.ui.screens.reports.ReportsViewModel
 import com.uramos.minicash.ui.screens.settings.SettingsViewModel
 import com.uramos.minicash.ui.screens.transactions.TransactionsViewModel
 import com.uramos.minicash.ui.theme.MinicashTheme
@@ -107,6 +108,8 @@ class MainActivity : ComponentActivity() {
             database = db
         )
 
+        val reportsViewModel = ReportsViewModel(transactionDao = db.transactionDao())
+
         val settingsViewModel = SettingsViewModel(
             accountDao = db.accountDao(),
             categoryDao = db.categoryDao(),
@@ -139,6 +142,7 @@ class MainActivity : ComponentActivity() {
                         transactionsViewModel = transactionsViewModel,
                         budgetViewModel = budgetViewModel,
                         creditsViewModel = creditsViewModel,
+                        reportsViewModel = reportsViewModel,
                         settingsViewModel = settingsViewModel
                     )
                 }
@@ -196,6 +200,7 @@ fun AppNavigation(
     transactionsViewModel: TransactionsViewModel,
     budgetViewModel: BudgetViewModel,
     creditsViewModel: CreditsViewModel,
+    reportsViewModel: ReportsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     val isOnboardingCompleted by remember { userPreferences.isOnboardingCompleted }
@@ -228,6 +233,7 @@ fun AppNavigation(
                 transactionsViewModel = transactionsViewModel,
                 budgetViewModel = budgetViewModel,
                 creditsViewModel = creditsViewModel,
+                reportsViewModel = reportsViewModel,
                 settingsViewModel = settingsViewModel
             )
         }

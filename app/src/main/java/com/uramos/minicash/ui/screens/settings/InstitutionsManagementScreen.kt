@@ -5,7 +5,6 @@ import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
-import androidx.compose.material.icons.filled.Edit
 import com.uramos.minicash.ui.components.MinicashTonalButton
 import com.uramos.minicash.ui.components.MinicashButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
@@ -39,6 +38,17 @@ import com.uramos.minicash.ui.components.rememberSegmentedShape
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 import com.uramos.minicash.ui.utils.MinicashColorUtils
+import com.uramos.minicash.ui.screens.credits.NO_REMINDER
+import com.uramos.minicash.ui.screens.credits.PaymentDayFields
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,8 +96,8 @@ fun InstitutionsManagementScreen(
     if (showAddSheet) {
         AddInstitutionSheet(
             onDismiss = { showAddSheet = false },
-            onConfirm = { name, colorHex ->
-                viewModel.addCreditInstitution(name, colorHex)
+            onConfirm = { name, colorHex, paymentDay, reminder ->
+                viewModel.addCreditInstitution(name, colorHex, paymentDay, reminder)
                 showAddSheet = false
             }
         )
@@ -97,8 +107,8 @@ fun InstitutionsManagementScreen(
         AddInstitutionSheet(
             institution = editing,
             onDismiss = { instToEdit = null },
-            onConfirm = { name, colorHex ->
-                viewModel.updateCreditInstitution(editing, name, colorHex)
+            onConfirm = { name, colorHex, paymentDay, reminder ->
+                viewModel.updateCreditInstitution(editing, name, colorHex, paymentDay, reminder)
                 instToEdit = null
             }
         )
@@ -239,24 +249,25 @@ fun InstitutionsManagementScreen(
                                 }
                             }
 
-                            Text(
-                                text = inst.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
-
-                            MinicashIconButton(
-                                onClick = { instToEdit = inst },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Editar",
-                                    tint = instColor.asIconTint(),
-                                    modifier = Modifier.size(18.dp)
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = inst.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
+                                inst.paymentDay?.let { day ->
+                                    Text(
+                                        text = "Pago el día $day" + when (inst.reminderDaysBefore) {
+                                            null -> ""
+                                            0 -> " • aviso el mismo día"
+                                            1 -> " • aviso 1 día antes"
+                                            else -> " • aviso ${inst.reminderDaysBefore} días antes"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
 
                             MinicashIconButton(
@@ -317,7 +328,7 @@ fun InstitutionsManagementScreen(
 @Composable
 fun AddInstitutionSheet(
     onDismiss: () -> Unit,
-    onConfirm: (name: String, colorHex: String) -> Unit,
+    onConfirm: (name: String, colorHex: String, paymentDay: Int?, reminderDaysBefore: Int?) -> Unit,
     /** Si se indica, la hoja edita esa institución en lugar de crear una nueva. */
     institution: CreditInstitutionEntity? = null
 ) {
@@ -325,10 +336,24 @@ fun AddInstitutionSheet(
     val initialColor = institution?.colorHex ?: "#1A73E8"
     var name by remember(institution) { mutableStateOf(initialName) }
     var selectedColorHex by remember(institution) { mutableStateOf(initialColor) }
+    val initialDay = institution?.paymentDay?.toString() ?: ""
+    val initialReminder = institution?.reminderDaysBefore ?: NO_REMINDER
+    var paymentDayStr by remember(institution) { mutableStateOf(initialDay) }
+    var reminderDays by remember(institution) { mutableStateOf(initialReminder) }
 
-    val guard = rememberDiscardGuard(isDirty = name != initialName || selectedColorHex != initialColor, onDismiss = onDismiss)
+    val paymentDay = paymentDayStr.toIntOrNull()
+    val paymentInvalid = paymentDayStr.isNotEmpty() && (paymentDay == null || paymentDay !in 1..31)
+    // El aviso solo tiene sentido con un día de pago válido
+    val effectiveReminder = if (paymentDay != null && !paymentInvalid) reminderDays else NO_REMINDER
+    val isDirty = name != initialName || selectedColorHex != initialColor ||
+        paymentDayStr != initialDay || reminderDays != initialReminder
+
+    val context = LocalContext.current
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
+    val guard = rememberDiscardGuard(isDirty = isDirty, onDismiss = onDismiss)
     DiscardChangesDialog(guard)
-        GuardedModalBottomSheet(
+    GuardedModalBottomSheet(
         guard = guard,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         dragHandle = { BottomSheetDefaults.DragHandle() },
@@ -337,6 +362,7 @@ fun AddInstitutionSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -363,6 +389,27 @@ fun AddInstitutionSheet(
                 onColorSelected = { selectedColorHex = it }
             )
 
+            Text("Pago de las compras a meses:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = "Las compras de esta institución heredan este día; cada una puede usar otro.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            PaymentDayFields(
+                paymentDayStr = paymentDayStr,
+                onPaymentDayChange = { paymentDayStr = it.filter(Char::isDigit).take(2) },
+                paymentInvalid = paymentInvalid,
+                reminderDays = effectiveReminder,
+                onReminderChange = {
+                    reminderDays = it
+                    if (it != NO_REMINDER && Build.VERSION.SDK_INT >= 33 &&
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -371,11 +418,15 @@ fun AddInstitutionSheet(
                 MinicashButton(
                     text = "Guardar",
                     onClick = {
-                        if (name.isNotBlank()) {
-                            onConfirm(name.trim(), selectedColorHex)
+                        if (name.isNotBlank() && !paymentInvalid) {
+                            onConfirm(
+                                name.trim(), selectedColorHex,
+                                paymentDay?.takeIf { !paymentInvalid },
+                                effectiveReminder.takeIf { it != NO_REMINDER }
+                            )
                         }
                     },
-                    enabled = name.isNotBlank() && (name.trim() != initialName || selectedColorHex != initialColor),
+                    enabled = name.isNotBlank() && !paymentInvalid && isDirty,
                     modifier = Modifier.weight(1f)
                 )
             }

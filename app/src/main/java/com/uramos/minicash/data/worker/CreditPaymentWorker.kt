@@ -35,21 +35,22 @@ class CreditPaymentWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        val credits = MinicashDatabase.getDatabase(applicationContext).creditDao().getAllCreditsList()
+        val database = MinicashDatabase.getDatabase(applicationContext)
+        val credits = database.creditDao().getAllCreditsList()
+        val institutions = database.creditInstitutionDao().getAllInstitutionsList().associateBy { it.id }
         val today = LocalDate.now()
-        val due = credits.filter { credit -> shouldNotify(credit, today) }
+        val due = credits.mapNotNull { credit ->
+            val (day, daysBefore) = PaymentSchedule.effectivePayment(credit, institutions[credit.institutionId])
+            if (day == null || daysBefore == null) return@mapNotNull null
+            if (credit.paidInstallments >= credit.totalInstallments) return@mapNotNull null
+            if (!PaymentSchedule.shouldNotify(day, daysBefore, today)) return@mapNotNull null
+            credit to day
+        }
         if (due.isNotEmpty()) sendNotification(due, today)
         return Result.success()
     }
 
-    private fun shouldNotify(credit: CreditEntity, today: LocalDate): Boolean {
-        val day = credit.paymentDay ?: return false
-        val daysBefore = credit.reminderDaysBefore ?: return false
-        if (credit.paidInstallments >= credit.totalInstallments) return false
-        return PaymentSchedule.shouldNotify(day, daysBefore, today)
-    }
-
-    private fun sendNotification(due: List<CreditEntity>, today: LocalDate) {
+    private fun sendNotification(due: List<Pair<CreditEntity, Int>>, today: LocalDate) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
@@ -63,8 +64,8 @@ class CreditPaymentWorker(
             )
         }
 
-        val lines = due.map { credit ->
-            val days = PaymentSchedule.daysUntilNextPayment(credit.paymentDay ?: 1, today)
+        val lines = due.map { (credit, day) ->
+            val days = PaymentSchedule.daysUntilNextPayment(day, today)
             val whenText = when (days) {
                 0L -> "hoy"
                 1L -> "mañana"

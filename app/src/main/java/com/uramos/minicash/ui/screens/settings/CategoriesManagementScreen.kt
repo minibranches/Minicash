@@ -5,7 +5,9 @@ import com.uramos.minicash.ui.components.MinicashPillTabs
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.*
+
+
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.toShape
 import com.uramos.minicash.ui.utils.asIconTint
@@ -19,7 +21,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -253,19 +254,6 @@ fun CategoriesManagementScreen(
                                 }
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    MinicashIconButton(
-                                        onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                            categoryToEditName = category
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Editar nombre",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
                                     MinicashIconButton(
                                         onClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)

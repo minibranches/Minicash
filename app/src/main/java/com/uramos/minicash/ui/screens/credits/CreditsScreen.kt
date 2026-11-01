@@ -61,7 +61,7 @@ import com.uramos.minicash.ui.components.MinicashEmptyState
 import com.uramos.minicash.ui.components.MoneyDisplayType
 import com.uramos.minicash.ui.components.MoneyTextView
 import com.uramos.minicash.ui.components.MinicashPillTabs
-import com.uramos.minicash.ui.components.MinicashProgressBar
+import com.uramos.minicash.ui.components.WavyProgressIndicator
 import com.uramos.minicash.ui.components.rememberSegmentedShape
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
@@ -160,7 +160,7 @@ fun CreditsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Cabecera Principal Homologada (Dashboard de Deuda)
+            // Resumen compacto de deuda
             Surface(
                 shape = MinicashShapes.ContainerLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -168,46 +168,36 @@ fun CreditsScreen(
                     .fillMaxWidth()
                     .padding(horizontal = spacing.standard, vertical = spacing.small)
             ) {
-                Column(modifier = Modifier.padding(spacing.standard)) {
-                    Text(
-                        text = "Deuda total pendiente",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    MoneyTextView(
-                        amountCents = state.summary.totalPendingDebt,
-                        type = MoneyDisplayType.NEUTRAL,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Spacer(modifier = Modifier.height(spacing.medium))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Compromiso mensual",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            MoneyTextView(
-                                amountCents = state.summary.monthlyPaymentCommitment,
-                                type = MoneyDisplayType.NEUTRAL,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                            )
-                        }
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceContainerHighest
-                        ) {
-                            Text(
-                                text = "${state.summary.activeCreditsCount} activos",
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = spacing.standard, vertical = spacing.medium),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Deuda pendiente",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        MoneyTextView(
+                            amountCents = state.summary.totalPendingDebt,
+                            type = MoneyDisplayType.NEUTRAL,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "Mensual · ${state.summary.activeCreditsCount} activos",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        MoneyTextView(
+                            amountCents = state.summary.monthlyPaymentCommitment,
+                            type = MoneyDisplayType.NEUTRAL,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
                     }
                 }
             }
@@ -287,9 +277,6 @@ fun CreditsScreen(
                                 shape = itemShape,
                                 onPayClick = { creditToPay = credit },
                                 onEdit = { creditToEdit = credit },
-                                onDelete = {
-                                    creditToDelete = credit
-                                },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
@@ -328,7 +315,7 @@ fun CreditsScreen(
                 viewModel.addCredit(
                     v.article, v.institution, v.responsible, v.totalInstallments,
                     v.monthlyAmount, price, v.purchaseDate, v.paidInstallments,
-                    v.paymentDay, v.reminderDaysBefore
+                    v.paymentDay, v.reminderDaysBefore, v.paymentOverride
                 )
             }
         )
@@ -354,7 +341,8 @@ fun CreditsScreen(
                         totalAmount = monthlyCents * v.totalInstallments,
                         originalPrice = if (v.originalPrice > 0.0) v.originalPrice.toCents() else editing.originalPrice,
                         paymentDay = v.paymentDay,
-                        reminderDaysBefore = v.reminderDaysBefore
+                        reminderDaysBefore = v.reminderDaysBefore,
+                        paymentOverride = v.paymentOverride
                     )
                 )
             },
@@ -460,7 +448,6 @@ fun CreditItemCard(
     institutions: List<CreditInstitutionEntity> = emptyList(),
     onPayClick: () -> Unit,
     onEdit: () -> Unit = {},
-    onDelete: () -> Unit = {},
     modifier: Modifier = Modifier,
     shape: Shape? = null
 ) {
@@ -483,8 +470,10 @@ fun CreditItemCard(
         SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(credit.purchaseDate)
     }
 
-    val nextPaymentLabel = remember(credit.paymentDay, isCompleted) {
-        credit.paymentDay?.takeIf { !isCompleted }?.let { day ->
+    val institution = institutions.firstOrNull { it.id == credit.institutionId }
+    val (paymentDay, reminderDays) = com.uramos.minicash.data.util.PaymentSchedule.effectivePayment(credit, institution)
+    val nextPaymentLabel = remember(paymentDay, isCompleted) {
+        paymentDay?.takeIf { !isCompleted }?.let { day ->
             val next = com.uramos.minicash.data.util.PaymentSchedule.nextPayment(day, java.time.LocalDate.now())
             SimpleDateFormat("d MMM", Locale.forLanguageTag("es-MX"))
                 .format(java.util.Date.from(next.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()))
@@ -505,6 +494,7 @@ fun CreditItemCard(
     MinicashCard(
         level = CardTonalLevel.LOW,
         shape = shape ?: RoundedCornerShape(20.dp),
+        onClick = onEdit,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -550,7 +540,7 @@ fun CreditItemCard(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                if (credit.reminderDaysBefore != null) {
+                                if (reminderDays != null) {
                                     Icon(
                                         imageVector = Icons.Default.Notifications,
                                         contentDescription = "Con aviso de pago",
@@ -568,30 +558,15 @@ fun CreditItemCard(
                         }
                     }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    MinicashIconButton(onClick = onEdit) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Editar compra",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    MinicashIconButton(onClick = onDelete) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = "Eliminar",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
             }
 
             if (!isCompleted) {
                 // Barra de progreso de amortización
                 Column(verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
-                    MinicashProgressBar(progress = progress)
+                    WavyProgressIndicator(
+                        progress = progress,
+                        modifier = Modifier.fillMaxWidth().height(20.dp)
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,

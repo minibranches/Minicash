@@ -8,7 +8,8 @@ import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.foundation.lazy.rememberLazyListState
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import sh.calvin.reorderable.ReorderableItem
-import androidx.compose.foundation.background
+import androidx.compose.foundation.background
+
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Visibility
@@ -266,18 +266,6 @@ fun AccountsManagementScreen(
                                             contentDescription = "Visibilidad",
                                             tint = if (account.isVisibleInHome) cardAccentColor.asIconTint() else MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-
-                                    MinicashIconButton(
-                                        onClick = { accountToEdit = account },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Editar cuenta",
-                                            tint = cardAccentColor.asIconTint(),
-                                            modifier = Modifier.size(18.dp)
                                         )
                                     }
                                 }

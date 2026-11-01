@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoMode
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
@@ -80,6 +81,7 @@ fun SettingsScreen(
     onNavigateToInstitutions: () -> Unit = {},
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToModules: () -> Unit = {},
+    onNavigateToReports: () -> Unit = {},
     onNavigateToBackups: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
@@ -418,6 +420,12 @@ fun SettingsScreen(
                             }
                         }
 
+                        SettingsRowItem(
+                            title = "Reportes",
+                            icon = Icons.Default.BarChart,
+                            subtitle = "Ingresos y gastos por mes",
+                            onClick = onNavigateToReports
+                        )
                         val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
                         SettingsRowItem(
                             title = "Copias de seguridad",

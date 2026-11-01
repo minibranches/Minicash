@@ -76,6 +76,8 @@ import com.uramos.minicash.ui.screens.budget.BudgetScreen
 import com.uramos.minicash.ui.screens.budget.BudgetViewModel
 import com.uramos.minicash.ui.screens.credits.CreditsScreen
 import com.uramos.minicash.ui.screens.credits.CreditsViewModel
+import com.uramos.minicash.ui.screens.reports.ReportsScreen
+import com.uramos.minicash.ui.screens.reports.ReportsViewModel
 import com.uramos.minicash.ui.screens.home.HomeScreen
 import com.uramos.minicash.ui.screens.home.HomeViewModel
 import com.uramos.minicash.ui.screens.settings.AccountsManagementScreen
@@ -120,6 +122,7 @@ fun MainScreen(
     transactionsViewModel: TransactionsViewModel,
     budgetViewModel: BudgetViewModel,
     creditsViewModel: CreditsViewModel,
+    reportsViewModel: ReportsViewModel,
     settingsViewModel: SettingsViewModel
 ) {
     val settingsState by settingsViewModel.uiState.collectAsState()
@@ -151,7 +154,7 @@ fun MainScreen(
 
     val homeListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val transactionsListState = androidx.compose.foundation.lazy.rememberLazyListState()
-    val budgetListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val budgetListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val creditsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val settingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
 
@@ -335,6 +338,10 @@ fun MainScreen(
                                                 viewModel = settingsViewModel,
                                                 onBackClick = { activeSettingsSubScreen = null }
                                             )
+                                            "reports" -> ReportsScreen(
+                                                viewModel = reportsViewModel,
+                                                onBackClick = { activeSettingsSubScreen = null }
+                                            )
                                             "backups" -> BackupSettingsScreen(
                                                 viewModel = settingsViewModel,
                                                 onBackClick = { activeSettingsSubScreen = null }
@@ -347,6 +354,7 @@ fun MainScreen(
                                                 onNavigateToInstitutions = { activeSettingsSubScreen = "institutions" },
                                                 onNavigateToAppearance = { activeSettingsSubScreen = "appearance" },
                                                 onNavigateToModules = { activeSettingsSubScreen = "modules" },
+                                                onNavigateToReports = { activeSettingsSubScreen = "reports" },
                                                 onNavigateToBackups = { activeSettingsSubScreen = "backups" }
                                             )
                                         }

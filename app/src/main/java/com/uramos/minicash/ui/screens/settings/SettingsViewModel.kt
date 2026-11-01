@@ -384,20 +384,31 @@ class SettingsViewModel(
         }
     }
 
-    fun addCreditInstitution(name: String, colorHex: String = "#1A73E8") {
+    fun addCreditInstitution(name: String, colorHex: String = "#1A73E8", paymentDay: Int? = null, reminderDaysBefore: Int? = null) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            creditInstitutionDao.insertInstitution(CreditInstitutionEntity(name = name, colorHex = colorHex))
+            creditInstitutionDao.insertInstitution(
+                CreditInstitutionEntity(
+                    name = name, colorHex = colorHex,
+                    paymentDay = paymentDay, reminderDaysBefore = reminderDaysBefore
+                )
+            )
         }
     }
 
-    fun updateCreditInstitution(institution: CreditInstitutionEntity, newName: String, newColorHex: String = institution.colorHex) {
+    fun updateCreditInstitution(
+        institution: CreditInstitutionEntity,
+        newName: String,
+        newColorHex: String = institution.colorHex,
+        newPaymentDay: Int? = institution.paymentDay,
+        newReminderDaysBefore: Int? = institution.reminderDaysBefore
+    ) {
         if (newName.isBlank()) return
         viewModelScope.launch {
             val trimmed = newName.trim()
             // Nombre en el catálogo y en los créditos ligados cambian juntos.
             database.withTransaction {
-                creditInstitutionDao.updateInstitution(institution.copy(name = trimmed, colorHex = newColorHex))
+                creditInstitutionDao.updateInstitution(institution.copy(name = trimmed, colorHex = newColorHex, paymentDay = newPaymentDay, reminderDaysBefore = newReminderDaysBefore))
                 creditDao.renameInstitution(institution.id, trimmed)
             }
         }
