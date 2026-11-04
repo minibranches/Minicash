@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashTonalIconButton
@@ -79,7 +80,8 @@ fun TransactionsScreen(
     val selectedTotalAmount by viewModel.selectedTotalAmount.collectAsState()
 
     val haptic = LocalHapticFeedback.current
-    val haptics = rememberMinicashHaptics()
+    val haptics = rememberMinicashHaptics()
+
     val entranceTracker = rememberEntranceTracker()
     val isRestricted = LocalAnimationRestriction.current
 
@@ -206,7 +208,7 @@ fun TransactionsScreen(
 
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
                 contentPadding = PaddingValues(
                     top = spacing.small,
                     start = spacing.standard,

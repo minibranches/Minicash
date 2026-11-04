@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashPillTabs
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -70,37 +76,16 @@ fun CategoriesManagementScreen(
         }
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val fadeListState = rememberLazyListState()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                title = {
-                    Text(
-                        text = "Categorías",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                },
-                navigationIcon = {
-                    MinicashIconButton(onClick = onNavigateBack) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Regresar",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                },
+            MinicashSubScreenTopBar(
+                title = "Categorías",
+                onBack = onNavigateBack,
+                scrollBehavior = scrollBehavior,
                 actions = {
                     MinicashIconButton(
                         onClick = {
@@ -181,7 +166,8 @@ fun CategoriesManagementScreen(
                 )
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    state = fadeListState,
+                    modifier = Modifier.fillMaxSize().fadingTopEdge(fadeListState),
                     contentPadding = PaddingValues(
                         top = spacing.small,
                         start = spacing.standard,

@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.reports
 
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -73,40 +77,25 @@ fun ReportsScreen(
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val fadeListState = rememberLazyListState()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                navigationIcon = {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        modifier = Modifier
-                            .padding(start = spacing.small)
-                            .size(40.dp)
-                    ) {
-                        MinicashIconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                },
-                title = {
-                    Text("Reportes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                }
+            MinicashSubScreenTopBar(
+                title = "Reportes",
+                onBack = onBackClick,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->
         LazyColumn(
+            state = fadeListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .fadingTopEdge(fadeListState),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.standard,

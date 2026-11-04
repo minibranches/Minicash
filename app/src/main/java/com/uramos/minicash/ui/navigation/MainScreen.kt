@@ -1,5 +1,19 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.Crossfade
+import com.uramos.minicash.ui.screens.settings.AboutScreen
+import kotlin.coroutines.cancellation.CancellationException
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.rememberTransition
+import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.slideOutVertically
@@ -11,6 +25,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import androidx.compose.foundation.layout.height
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -224,9 +239,39 @@ fun MainScreen(
         )
     }
 
-    if (activeSettingsSubScreen != null) {
-        BackHandler {
+    // Subpantallas de Ajustes: eje X compartido; el gesto atrás predictivo arrastra la transición con el dedo
+    val subScreenTransitionState = remember { SeekableTransitionState<String?>(null) }
+    val subScreenTransition = rememberTransition(subScreenTransitionState, label = "settings_navigation_transition")
+    LaunchedEffect(activeSettingsSubScreen) {
+        if (subScreenTransitionState.currentState != activeSettingsSubScreen ||
+            subScreenTransitionState.targetState != activeSettingsSubScreen
+        ) {
+            subScreenTransitionState.animateTo(activeSettingsSubScreen)
+        }
+    }
+    PredictiveBackHandler(enabled = activeSettingsSubScreen != null) { progress ->
+        val leaving = activeSettingsSubScreen
+        try {
+            progress.collect { event -> subScreenTransitionState.seekTo(event.progress, targetState = null) }
             activeSettingsSubScreen = null
+        } catch (e: CancellationException) {
+            subScreenTransitionState.animateTo(leaving)
+            throw e
+        }
+    }
+
+    // Cambio de pestaña desde la barra: fundido con leve escala, como un "fade through"; deslizar sigue funcionando
+    val animationsRestricted = LocalAnimationRestriction.current
+    val tabFade = remember { Animatable(1f) }
+    val fadeToPage: (Int) -> Unit = { targetPage ->
+        coroutineScope.launch {
+            if (animationsRestricted) {
+                pagerState.scrollToPage(targetPage)
+            } else {
+                tabFade.animateTo(0f, tween(TAB_FADE_OUT_MS, easing = FastOutLinearInEasing))
+                pagerState.scrollToPage(targetPage)
+                tabFade.animateTo(1f, tween(TAB_FADE_IN_MS, easing = LinearOutSlowInEasing))
+            }
         }
     }
 
@@ -247,10 +292,7 @@ fun MainScreen(
                 }
             }
         } else {
-            val targetPage = getShortestTargetPage(pagerState.currentPage, index, numPages)
-            coroutineScope.launch {
-                pagerState.animateScrollToPage(targetPage)
-            }
+            fadeToPage(getShortestTargetPage(pagerState.currentPage, index, numPages))
         }
     }
 
@@ -286,6 +328,12 @@ fun MainScreen(
                         beyondViewportPageCount = 1,
                         modifier = Modifier
                             .fillMaxSize()
+                            .graphicsLayer {
+                                val fade = tabFade.value
+                                alpha = fade
+                                scaleX = TAB_FADE_MIN_SCALE + (1f - TAB_FADE_MIN_SCALE) * fade
+                                scaleY = TAB_FADE_MIN_SCALE + (1f - TAB_FADE_MIN_SCALE) * fade
+                            }
                     ) { page ->
                         Box(
                             modifier = Modifier
@@ -306,11 +354,8 @@ fun MainScreen(
                                     listState = homeListState,
                                     onAddTransactionClick = { showAddSheet = true },
                                     onSeeMoreTransactionsClick = {
-                                        coroutineScope.launch {
-                                            val txIdx = visibleScreens.indexOf(Screen.Transactions).coerceAtLeast(0)
-                                            val targetPage = getShortestTargetPage(pagerState.currentPage, txIdx, numPages)
-                                            pagerState.animateScrollToPage(targetPage)
-                                        }
+                                        val txIdx = visibleScreens.indexOf(Screen.Transactions).coerceAtLeast(0)
+                                        fadeToPage(getShortestTargetPage(pagerState.currentPage, txIdx, numPages))
                                     }
                                 )
                                 is Screen.Transactions -> TransactionsScreen(
@@ -338,21 +383,14 @@ fun MainScreen(
                                     }
                                 )
                                 else -> {
-                                    val isRestricted = LocalAnimationRestriction.current
-                                    AnimatedContent(
-                                        targetState = activeSettingsSubScreen,
+                                    subScreenTransition.AnimatedContent(
                                         transitionSpec = {
-                                            if (isRestricted) {
+                                            if (animationsRestricted) {
                                                 fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                                            } else if (targetState != null) {
-                                                (slideInHorizontally(initialOffsetX = { it }) + fadeIn()) togetherWith
-                                                        (slideOutHorizontally(targetOffsetX = { -it / 3 }) + fadeOut())
                                             } else {
-                                                (slideInHorizontally(initialOffsetX = { -it / 3 }) + fadeIn()) togetherWith
-                                                        (slideOutHorizontally(targetOffsetX = { it }) + fadeOut())
+                                                sharedAxisX(forward = targetState != null)
                                             }
-                                        },
-                                        label = "settings_navigation_transition"
+                                        }
                                     ) { subScreen ->
                                         when (subScreen) {
                                             "accounts" -> AccountsManagementScreen(
@@ -379,6 +417,9 @@ fun MainScreen(
                                                 viewModel = reportsViewModel,
                                                 onBackClick = { activeSettingsSubScreen = null }
                                             )
+                                            "about" -> AboutScreen(
+                                                onBackClick = { activeSettingsSubScreen = null }
+                                            )
                                             "backups" -> BackupSettingsScreen(
                                                 viewModel = settingsViewModel,
                                                 onBackClick = { activeSettingsSubScreen = null }
@@ -392,7 +433,8 @@ fun MainScreen(
                                                 onNavigateToAppearance = { activeSettingsSubScreen = "appearance" },
                                                 onNavigateToModules = { activeSettingsSubScreen = "modules" },
                                                 onNavigateToReports = { activeSettingsSubScreen = "reports" },
-                                                onNavigateToBackups = { activeSettingsSubScreen = "backups" }
+                                                onNavigateToBackups = { activeSettingsSubScreen = "backups" },
+                                                onNavigateToAbout = { activeSettingsSubScreen = "about" }
                                             )
                                         }
                                     }
@@ -419,6 +461,8 @@ fun MainScreen(
                             val spatialFloat = minicashSpatialSpec<Float>()
                             val spatialSize = minicashSpatialSpec<IntSize>()
                             val effectsFloat = minicashEffectsSpec<Float>()
+                            val effectsColor = minicashEffectsSpec<androidx.compose.ui.graphics.Color>()
+                            val spatialDp = minicashSpatialSpec<androidx.compose.ui.unit.Dp>()
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -444,30 +488,49 @@ fun MainScreen(
                                         ) {
                                             visibleScreens.forEachIndexed { index, screen ->
                                                 val isSelected = currentScreenIndex == index
+                                                // El ícono "rebota" al seleccionarse y la píldora cambia de color y de ancho con suavidad
                                                 val iconScale by animateFloatAsState(
-                                                    targetValue = if (isSelected) 1.05f else 1.0f,
-                                                    animationSpec = spatialFloat,
+                                                    targetValue = if (isSelected) 1.12f else 1.0f,
+                                                    animationSpec = spring(dampingRatio = 0.45f, stiffness = 380f),
                                                     label = "icon_scale"
+                                                )
+                                                val pillColor by animateColorAsState(
+                                                    targetValue = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                                                    animationSpec = effectsColor,
+                                                    label = "pill_color"
+                                                )
+                                                val iconTint by animateColorAsState(
+                                                    targetValue = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                                    animationSpec = effectsColor,
+                                                    label = "icon_tint"
+                                                )
+                                                val sidePadding by animateDpAsState(
+                                                    targetValue = if (isSelected) 14.dp else 9.dp,
+                                                    animationSpec = spatialDp,
+                                                    label = "pill_padding"
                                                 )
 
                                                 Surface(
                                                     onClick = { onNavClick(index, screen) },
                                                     shape = MinicashShapes.Pill,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
-                                                    modifier = Modifier.animateContentSize(
-                                                        animationSpec = spatialSize
-                                                    )
+                                                    color = pillColor,
+                                                    modifier = Modifier.animateContentSize(animationSpec = spatialSize)
                                                 ) {
-                                                    if (isSelected) {
-                                                        Row(
-                                                            modifier = Modifier.height(40.dp).padding(horizontal = 14.dp),
-                                                            verticalAlignment = Alignment.CenterVertically,
-                                                            horizontalArrangement = Arrangement.Center
-                                                        ) {
+                                                    Row(
+                                                        modifier = Modifier.height(40.dp).padding(horizontal = sidePadding),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.Center
+                                                    ) {
+                                                        Crossfade(
+                                                            targetState = isSelected,
+                                                            animationSpec = effectsFloat,
+                                                            label = "icon_swap"
+                                                        ) { selected ->
                                                             Icon(
-                                                                imageVector = screen.selectedIcon,
+                                                                imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
                                                                 contentDescription = screen.title,
-                                                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                tint = iconTint,
                                                                 modifier = Modifier
                                                                     .size(22.dp)
                                                                     .graphicsLayer {
@@ -475,42 +538,23 @@ fun MainScreen(
                                                                         scaleY = iconScale
                                                                     }
                                                             )
-                                                            AnimatedVisibility(
-                                                                visible = isSelected,
-                                                                enter = expandHorizontally(animationSpec = spatialSize) + fadeIn(animationSpec = effectsFloat),
-                                                                exit = shrinkHorizontally(animationSpec = spatialSize) + fadeOut(animationSpec = effectsFloat)
-                                                            ) {
-                                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                                    Spacer(modifier = Modifier.width(6.dp))
-                                                                    Text(
-                                                                        text = screen.title,
-                                                                        style = MaterialTheme.typography.labelMedium,
-                                                                        fontWeight = FontWeight.SemiBold,
-                                                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                        maxLines = 1,
-                                                                        softWrap = false
-                                                                    )
-                                                                }
-                                                            }
                                                         }
-                                                    } else {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .size(40.dp)
-                                                                .padding(8.dp),
-                                                            contentAlignment = Alignment.Center
+                                                        AnimatedVisibility(
+                                                            visible = isSelected,
+                                                            enter = expandHorizontally(animationSpec = spatialSize) + fadeIn(animationSpec = effectsFloat),
+                                                            exit = shrinkHorizontally(animationSpec = spatialSize) + fadeOut(animationSpec = effectsFloat)
                                                         ) {
-                                                            Icon(
-                                                                imageVector = screen.unselectedIcon,
-                                                                contentDescription = screen.title,
-                                                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                                                                modifier = Modifier
-                                                                    .size(22.dp)
-                                                                    .graphicsLayer {
-                                                                        scaleX = iconScale
-                                                                        scaleY = iconScale
-                                                                    }
-                                                            )
+                                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                Spacer(modifier = Modifier.width(6.dp))
+                                                                Text(
+                                                                    text = screen.title,
+                                                                    style = MaterialTheme.typography.labelMedium,
+                                                                    fontWeight = FontWeight.SemiBold,
+                                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                    maxLines = 1,
+                                                                    softWrap = false
+                                                                )
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -647,4 +691,21 @@ private fun ContextualFab(
             }
         }
     }
+}
+
+private const val TAB_FADE_OUT_MS = 90
+private const val TAB_FADE_IN_MS = 210
+private const val TAB_FADE_MIN_SCALE = 0.96f
+private const val SHARED_AXIS_MS = 300
+private const val SHARED_AXIS_FADE_OUT_MS = 90
+private const val SHARED_AXIS_OFFSET = 0.3f
+
+/** Eje X compartido de Material: la pantalla nueva entra desde el lado con fundido y la anterior sale al lado opuesto. */
+private fun sharedAxisX(forward: Boolean): ContentTransform {
+    val direction = if (forward) 1 else -1
+    val slide = tween<IntOffset>(SHARED_AXIS_MS, easing = FastOutSlowInEasing)
+    return (slideInHorizontally(slide) { (it * SHARED_AXIS_OFFSET).toInt() * direction } +
+        fadeIn(tween(SHARED_AXIS_MS - SHARED_AXIS_FADE_OUT_MS, delayMillis = SHARED_AXIS_FADE_OUT_MS, easing = LinearOutSlowInEasing))) togetherWith
+        (slideOutHorizontally(slide) { -(it * SHARED_AXIS_OFFSET).toInt() * direction } +
+            fadeOut(tween(SHARED_AXIS_FADE_OUT_MS, easing = FastOutLinearInEasing)))
 }

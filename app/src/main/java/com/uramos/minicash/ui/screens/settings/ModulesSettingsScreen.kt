@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.Check
@@ -32,37 +37,15 @@ fun ModulesSettingsScreen(
     val state by viewModel.uiState.collectAsState()
     val haptics = rememberMinicashHaptics()
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                navigationIcon = {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        modifier = Modifier
-                            .padding(start = spacing.small)
-                            .size(40.dp)
-                    ) {
-                        MinicashIconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                },
-                title = {
-                    Text(
-                        text = "Mostrar módulos",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+            MinicashSubScreenTopBar(
+                title = "Mostrar módulos",
+                onBack = onBackClick,
+                scrollBehavior = scrollBehavior
             )
         }
     ) { paddingValues ->

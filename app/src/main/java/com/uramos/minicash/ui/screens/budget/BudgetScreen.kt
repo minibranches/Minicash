@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -212,7 +213,7 @@ fun BudgetScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
                 contentPadding = PaddingValues(
                     top = spacing.small,
                     start = spacing.standard,

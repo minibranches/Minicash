@@ -122,6 +122,57 @@ class BackupManager(
         }
     }
 
+    /** Guarda todas las transacciones en un CSV (una fila por movimiento) para hojas de cálculo. */
+    suspend fun exportCsv(context: Context, uri: Uri): Result<Int> = withContext(Dispatchers.IO) {
+        runCatching {
+            val accounts = database.accountDao().getAllAccountsList().associateBy { it.id }
+            val categories = database.categoryDao().getAllCategoriesList().associateBy { it.id }
+            val transactions = database.transactionDao().getAllTransactionsList().sortedBy { it.date }
+            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
+            fun cell(value: String): String {
+                // Neutraliza fórmulas (=, +, -, @) que las hojas de cálculo ejecutarían al abrir el archivo
+                val safe = if (value.firstOrNull() in listOf('=', '+', '-', '@')) "'$value" else value
+                return "\"" + safe.replace("\"", "\"\"") + "\""
+            }
+            context.contentResolver.openOutputStream(uri)?.use { out ->
+                out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())) // BOM para que Excel lea UTF-8
+                val writer = out.bufferedWriter(Charsets.UTF_8)
+                writer.write("Fecha,Tipo,Monto,Cuenta,Cuenta destino,Categoría,Nota\n")
+                transactions.forEach { tx ->
+                    val amount = String.format(java.util.Locale.US, "%.2f", tx.amount / 100.0)
+                    writer.write(
+                        listOf(
+                            cell(dateFormat.format(java.util.Date(tx.date))),
+                            cell(tx.type.displayName),
+                            amount,
+                            cell(accounts[tx.sourceAccountId]?.name.orEmpty()),
+                            cell(tx.destinationAccountId?.let { accounts[it]?.name }.orEmpty()),
+                            cell(tx.categoryId?.let { categories[it]?.name }.orEmpty()),
+                            cell(tx.note.orEmpty())
+                        ).joinToString(",") + "\n"
+                    )
+                }
+                writer.flush()
+            } ?: throw IOException("No se pudo abrir el archivo para escritura.")
+            transactions.size
+        }
+    }
+
+    /** Borra todos los datos de la app. Antes guarda una copia de seguridad interna para poder deshacerlo. */
+    suspend fun wipeAllData(context: Context): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            writePreRestoreCopy(context)
+            database.withTransaction {
+                database.transactionDao().clearAllTransactions()
+                database.budgetDao().clearAllBudgetItems()
+                database.creditDao().clearAllCredits()
+                database.creditInstitutionDao().clearAllInstitutions()
+                database.accountDao().clearAllAccounts()
+                database.categoryDao().clearAllCategories()
+            }
+        }
+    }
+
     private suspend fun writePreRestoreCopy(context: Context) {
         val dir = File(context.filesDir, "backups").apply { mkdirs() }
         val file = File(dir, "$PRE_RESTORE_PREFIX${System.currentTimeMillis()}.json")

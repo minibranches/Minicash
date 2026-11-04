@@ -432,6 +432,22 @@ class SettingsViewModel(
         }
     }
 
+    fun exportCsv(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            backupManager.exportCsv(context, uri)
+                .onSuccess { count -> _messageEvent.emit("Se exportaron $count transacciones") }
+                .onFailure { _messageEvent.emit("Error al exportar el CSV: ${it.localizedMessage ?: "Error desconocido"}") }
+        }
+    }
+
+    fun wipeAllData(context: Context) {
+        viewModelScope.launch {
+            backupManager.wipeAllData(context)
+                .onSuccess { _messageEvent.emit("Se borraron todos los datos. Antes se guardó una copia interna.") }
+                .onFailure { _messageEvent.emit("Error al borrar los datos: ${it.localizedMessage ?: "Error desconocido"}") }
+        }
+    }
+
     fun importBackup(context: Context, uri: Uri) {
         viewModelScope.launch {
             backupManager.importBackup(context, uri)

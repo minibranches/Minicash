@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Payments
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.CreditCard
@@ -82,7 +84,8 @@ fun SettingsScreen(
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToModules: () -> Unit = {},
     onNavigateToReports: () -> Unit = {},
-    onNavigateToBackups: () -> Unit = {}
+    onNavigateToBackups: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -128,7 +131,8 @@ fun SettingsScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .fadingTopEdge(listState),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.standard,
@@ -432,6 +436,12 @@ fun SettingsScreen(
                             icon = Icons.Default.CloudDone,
                             subtitle = backupSubtitle,
                             onClick = onNavigateToBackups
+                        )
+                        SettingsRowItem(
+                            title = "Acerca de Minicash",
+                            icon = Icons.Default.Info,
+                            subtitle = "Versión, enlaces y compartir",
+                            onClick = onNavigateToAbout
                         )
                     }
                 }

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -212,7 +213,7 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
                     contentPadding = PaddingValues(
                         top = spacing.standard,
                         start = spacing.standard,
