@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.data.local.dao.findOrCreateByName
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -55,6 +56,12 @@ class HomeViewModel(
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao
 ) : ViewModel() {
+
+    /** Alta rápida desde el selector de categorías de la edición; entrega el id para dejarla seleccionada. */
+    fun createCategory(name: String, type: TransactionType, onCreated: (Long) -> Unit) {
+        if (name.isBlank()) return
+        viewModelScope.launch { onCreated(categoryDao.findOrCreateByName(name, type)) }
+    }
 
     val categories: StateFlow<List<CategoryEntity>> = categoryDao.getAllActiveCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

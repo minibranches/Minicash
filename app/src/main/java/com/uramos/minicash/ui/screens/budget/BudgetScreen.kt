@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.material3.Checkbox
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
@@ -333,13 +334,14 @@ fun BudgetScreen(
 
 /** Selector de periodo en una sola fila: mes con flechas y las dos quincenas. */
 @Composable
-private fun BudgetPeriodBar(
+internal fun BudgetPeriodBar(
     monthLabel: String,
     fortnight: Int,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onSelectFortnight: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    leadingLabel: String? = null
 ) {
     val isRestricted = LocalAnimationRestriction.current
     val motionScheme = MaterialTheme.motionScheme
@@ -355,6 +357,15 @@ private fun BudgetPeriodBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                if (leadingLabel != null) {
+                    Text(
+                        text = leadingLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 12.dp, end = 4.dp)
+                    )
+                }
                 MinicashIconButton(onClick = onPreviousMonth, modifier = Modifier.size(36.dp)) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
                 }
@@ -1124,95 +1135,6 @@ private fun isSameDay(cal1Millis: Long, cal2Millis: Long): Boolean {
     return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR)
 }
 
-@Composable
-fun FortnightSelectorRow(
-    label: String,
-    year: Int,
-    month: Int,
-    fortnight: Int,
-    onYearChange: (Int) -> Unit,
-    onMonthChange: (Int) -> Unit,
-    onFortnightChange: (Int) -> Unit,
-    monthNames: List<String>
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Month Dropdown
-            var monthExpanded by remember { mutableStateOf(false) }
-            Box(modifier = Modifier.weight(1.2f)) {
-                MinicashOutlinedButton(
-                    onClick = { monthExpanded = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(monthNames[month - 1], style = MaterialTheme.typography.labelMedium)
-                }
-                DropdownMenu(
-                    expanded = monthExpanded,
-                    onDismissRequest = { monthExpanded = false }
-                ) {
-                    monthNames.forEachIndexed { idx, m ->
-                        DropdownMenuItem(
-                            text = { Text(m) },
-                            onClick = {
-                                onMonthChange(idx + 1)
-                                monthExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            // Year Dropdown
-            var yearExpanded by remember { mutableStateOf(false) }
-            val yearOptions = remember(year) {
-                val cur = Calendar.getInstance().get(Calendar.YEAR)
-                ((cur - 2)..(cur + 2)).toList()
-            }
-            Box(modifier = Modifier.weight(0.8f)) {
-                MinicashOutlinedButton(
-                    onClick = { yearExpanded = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(year.toString(), style = MaterialTheme.typography.labelMedium)
-                }
-                DropdownMenu(
-                    expanded = yearExpanded,
-                    onDismissRequest = { yearExpanded = false }
-                ) {
-                    yearOptions.forEach { y ->
-                        DropdownMenuItem(
-                            text = { Text(y.toString()) },
-                            onClick = {
-                                onYearChange(y)
-                                yearExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
-
-        // Fortnight Segmented Selector: [ 1ª Quincena | 2ª Quincena ]
-        MinicashSegmentedChoice(
-            options = listOf(1, 2),
-            isSelected = { fortnight == it },
-            onSelect = onFortnightChange,
-            label = { "${it}ª Quincena" }
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CopyFortnightSheet(
@@ -1234,32 +1156,41 @@ fun CopyFortnightSheet(
     var destMonth by remember { mutableIntStateOf(defaultDestMonth) }
     var destFortnight by remember { mutableIntStateOf(defaultDestQ) }
 
-    var sourceYear by remember { mutableIntStateOf(if (defaultDestQ == 1) if (defaultDestMonth == 1) defaultDestYear - 1 else defaultDestYear else defaultDestYear) }
-    var sourceMonth by remember { mutableIntStateOf(if (defaultDestQ == 1) if (defaultDestMonth == 1) 12 else defaultDestMonth - 1 else defaultDestMonth) }
+    // Origen sugerido: la quincena inmediata anterior a la de destino
+    val (suggestedYear, suggestedMonth) = if (defaultDestQ == 1) shiftYearMonth(defaultDestYear, defaultDestMonth, -1) else defaultDestYear to defaultDestMonth
+    var sourceYear by remember { mutableIntStateOf(suggestedYear) }
+    var sourceMonth by remember { mutableIntStateOf(suggestedMonth) }
     var sourceFortnight by remember { mutableIntStateOf(if (defaultDestQ == 1) 2 else 1) }
 
     val monthNames = remember {
         listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
     }
+    fun label(year: Int, month: Int) = "${monthNames[month - 1].take(3)} $year"
 
     val sourceKey = remember(sourceYear, sourceMonth, sourceFortnight) {
         String.format(Locale.US, "%04d-%02d-Q%d", sourceYear, sourceMonth, sourceFortnight)
     }
-
     val destKey = remember(destYear, destMonth, destFortnight) {
         String.format(Locale.US, "%04d-%02d-Q%d", destYear, destMonth, destFortnight)
     }
 
-    var previewItems by remember { mutableStateOf<List<BudgetItemEntity>>(emptyList()) }
-    var isLoadingPreview by remember { mutableStateOf(false) }
-
-    LaunchedEffect(sourceKey) {
-        isLoadingPreview = true
-        previewItems = viewModel.getItemsForFortnightList(sourceKey)
-        isLoadingPreview = false
-    }
-
+    var sourceItems by remember { mutableStateOf<List<BudgetItemEntity>>(emptyList()) }
+    var duplicateIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var selectedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var isLoading by remember { mutableStateOf(false) }
     val isSameKey = sourceKey == destKey
+
+    // Al cambiar origen o destino se recalcula qué partidas ya existen; las repetidas quedan desmarcadas
+    LaunchedEffect(sourceKey, destKey) {
+        isLoading = true
+        val source = viewModel.getItemsForFortnightList(sourceKey)
+        val target = if (isSameKey) emptyList() else viewModel.getItemsForFortnightList(destKey)
+        val duplicates = source.filter { isDuplicateInTarget(it, target) }.map { it.id }.toSet()
+        sourceItems = source
+        duplicateIds = duplicates
+        selectedIds = source.map { it.id }.toSet() - duplicates
+        isLoading = false
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1270,11 +1201,10 @@ fun CopyFortnightSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 text = "Copiar quincena",
@@ -1282,30 +1212,21 @@ fun CopyFortnightSheet(
                 fontWeight = FontWeight.Bold
             )
 
-            // Sección 1: Origen (Copiar desde)
-            FortnightSelectorRow(
-                label = "Origen (Copiar desde)",
-                year = sourceYear,
-                month = sourceMonth,
+            BudgetPeriodBar(
+                leadingLabel = "Desde",
+                monthLabel = label(sourceYear, sourceMonth),
                 fortnight = sourceFortnight,
-                onYearChange = { sourceYear = it },
-                onMonthChange = { sourceMonth = it },
-                onFortnightChange = { sourceFortnight = it },
-                monthNames = monthNames
+                onPreviousMonth = { shiftYearMonth(sourceYear, sourceMonth, -1).let { sourceYear = it.first; sourceMonth = it.second } },
+                onNextMonth = { shiftYearMonth(sourceYear, sourceMonth, 1).let { sourceYear = it.first; sourceMonth = it.second } },
+                onSelectFortnight = { sourceFortnight = it }
             )
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-            // Sección 2: Destino (Copiar hacia)
-            FortnightSelectorRow(
-                label = "Destino (Copiar hacia)",
-                year = destYear,
-                month = destMonth,
+            BudgetPeriodBar(
+                leadingLabel = "Hacia",
+                monthLabel = label(destYear, destMonth),
                 fortnight = destFortnight,
-                onYearChange = { destYear = it },
-                onMonthChange = { destMonth = it },
-                onFortnightChange = { destFortnight = it },
-                monthNames = monthNames
+                onPreviousMonth = { shiftYearMonth(destYear, destMonth, -1).let { destYear = it.first; destMonth = it.second } },
+                onNextMonth = { shiftYearMonth(destYear, destMonth, 1).let { destYear = it.first; destMonth = it.second } },
+                onSelectFortnight = { destFortnight = it }
             )
 
             if (isSameKey) {
@@ -1316,61 +1237,90 @@ fun CopyFortnightSheet(
                 )
             }
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-            Text(
-                text = "Vista previa (${previewItems.size} partidas)",
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            if (isLoadingPreview) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .align(Alignment.CenterHorizontally)
-                )
-            } else if (previewItems.isEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "No hay partidas registradas en la quincena origen seleccionada.",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Partidas (${selectedIds.size} de ${sourceItems.size})",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    previewItems.take(5).forEach { item ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = item.concept,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = item.amount.toCurrencyFormat(),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                    if (previewItems.size > 5) {
-                        Text(
-                            text = "+ ${previewItems.size - 5} partidas más",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                if (sourceItems.isNotEmpty()) {
+                    val allSelected = selectedIds.size == sourceItems.size
+                    MinicashTextButton(
+                        onClick = { selectedIds = if (allSelected) emptySet() else sourceItems.map { it.id }.toSet() }
+                    ) {
+                        Text(if (allSelected) "Ninguna" else "Todas", fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            when {
+                isLoading -> CircularProgressIndicator(modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally))
+                sourceItems.isEmpty() -> Text(
+                    text = "No hay partidas registradas en la quincena origen seleccionada.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                else -> LazyColumn(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    items(sourceItems, key = { it.id }) { item ->
+                        val checked = item.id in selectedIds
+                        Surface(
+                            onClick = {
+                                haptics.tick()
+                                selectedIds = if (checked) selectedIds - item.id else selectedIds + item.id
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (checked) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Checkbox(checked = checked, onCheckedChange = null)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.concept,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = item.type.displayName,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (item.id in duplicateIds) {
+                                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.tertiaryContainer) {
+                                        Text(
+                                            text = "Ya existe",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = item.amount.toCurrencyFormat(),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             MinicashFilledButton(
                 onClick = {
@@ -1379,19 +1329,20 @@ fun CopyFortnightSheet(
                         sourceKey = sourceKey,
                         targetKey = destKey,
                         targetYear = destYear,
-                        targetMonth = destMonth
+                        targetMonth = destMonth,
+                        itemIds = selectedIds
                     ) { count ->
                         onConfirmed(count)
                         onDismiss()
                     }
                 },
-                enabled = previewItems.isNotEmpty() && !isSameKey,
+                enabled = selectedIds.isNotEmpty() && !isSameKey,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
             ) {
                 Text(
-                    text = "Copiar ${previewItems.size} partidas",
+                    text = "Copiar ${selectedIds.size} partidas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

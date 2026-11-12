@@ -136,6 +136,7 @@ fun HomeScreen(
                 viewModel.updateTransaction(original, updated)
                 transactionToEdit = null
             },
+            onCreateCategory = viewModel::createCategory,
             onDeleteTransaction = { tx ->
                 viewModel.deleteTransaction(tx)
                 transactionToEdit = null

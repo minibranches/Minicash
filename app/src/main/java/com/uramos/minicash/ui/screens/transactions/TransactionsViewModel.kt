@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.data.local.dao.findOrCreateByName
 import kotlinx.coroutines.flow.map
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
@@ -61,6 +62,12 @@ class TransactionsViewModel(
 
     val accounts: StateFlow<List<AccountEntity>> = accountDao.getAllAccounts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Alta rápida desde el selector de categorías de la edición; entrega el id para dejarla seleccionada. */
+    fun createCategory(name: String, type: TransactionType, onCreated: (Long) -> Unit) {
+        if (name.isBlank()) return
+        viewModelScope.launch { onCreated(categoryDao.findOrCreateByName(name, type)) }
+    }
 
     val categories: StateFlow<List<CategoryEntity>> = categoryDao.getAllActiveCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

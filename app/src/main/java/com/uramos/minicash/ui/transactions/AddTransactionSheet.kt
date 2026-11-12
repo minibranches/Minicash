@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.transactions
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -133,7 +138,6 @@ fun AddTransactionSheet(
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var showCreateCategoryDialog by remember { mutableStateOf(false) }
     var showNumpad by remember { mutableStateOf(true) }
 
     val conceptFocusRequester = remember { FocusRequester() }
@@ -954,7 +958,10 @@ fun AddTransactionSheet(
                 viewModel.onCategorySelect(catId)
                 showCategorySheet = false
             },
-            onAddNewCategoryClick = { showCreateCategoryDialog = true },
+            onCreateCategory = { name ->
+                viewModel.addCategory(name, state.type)
+                showCategorySheet = false
+            },
             onDismiss = { showCategorySheet = false }
         )
     }
@@ -1111,7 +1118,7 @@ fun CategorySelectionSheet(
     categories: List<CategoryEntity>,
     selectedCategoryId: Long?,
     onCategorySelected: (Long) -> Unit,
-    onAddNewCategoryClick: () -> Unit,
+    onCreateCategory: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -1223,7 +1230,61 @@ fun CategorySelectionSheet(
                     }
                 }
             }
+
+            NewCategoryRow(onCreate = onCreateCategory)
         }
+    }
+}
+
+/** "+ Nueva categoría": se despliega en un campo con botón "Crear"; el tipo lo define el movimiento en curso. */
+@Composable
+private fun NewCategoryRow(onCreate: (String) -> Unit) {
+    var creating by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable { mutableStateOf("") }
+    val canCreate = name.isNotBlank()
+
+    if (!creating) {
+        Surface(
+            onClick = { creating = true },
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Nueva categoría",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+    } else {
+        val focusRequester = remember { FocusRequester() }
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it.take(30) },
+            label = { Text("Nombre de la categoría") },
+            singleLine = true,
+            shape = CircleShape,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.Sentences),
+            keyboardActions = KeyboardActions(onDone = { if (canCreate) onCreate(name.trim()) }),
+            trailingIcon = {
+                MinicashTextButton(onClick = { onCreate(name.trim()) }, enabled = canCreate) {
+                    Text("Crear", fontWeight = FontWeight.Bold)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+        )
     }
 }
 

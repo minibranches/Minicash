@@ -9,7 +9,8 @@ import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
 import com.uramos.minicash.ui.components.rememberDiscardGuard
-import com.uramos.minicash.ui.utils.normalizeUtcToLocalMillis
+import com.uramos.minicash.ui.utils.normalizeUtcToLocalMillis
+
 import com.uramos.minicash.ui.utils.asIconTint
 
 import androidx.compose.animation.AnimatedVisibility
@@ -97,7 +98,6 @@ import com.uramos.minicash.data.local.entities.AccountEntity
 import com.uramos.minicash.data.local.entities.CategoryEntity
 import com.uramos.minicash.data.local.entities.TransactionEntity
 import com.uramos.minicash.data.local.entities.TransactionType
-import com.uramos.minicash.ui.screens.settings.AddCategoryDialog
 import com.uramos.minicash.ui.theme.LocalAnimationRestriction
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
@@ -197,6 +197,7 @@ fun EditTransactionSheet(
     categories: List<CategoryEntity>,
     onDismiss: () -> Unit,
     onSave: (original: TransactionEntity, updated: TransactionEntity) -> Unit,
+    onCreateCategory: (name: String, type: TransactionType, onCreated: (Long) -> Unit) -> Unit = { _, _, _ -> },
     onDeleteTransaction: ((TransactionEntity) -> Unit)? = null
 ) {
     val spacing = MinicashThemeExtensions.spacing
@@ -211,7 +212,6 @@ fun EditTransactionSheet(
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var showCreateCategoryDialog by remember { mutableStateOf(false) }
     var showNumpad by remember { mutableStateOf(true) }
 
     val conceptFocusRequester = remember { FocusRequester() }
@@ -912,7 +912,12 @@ fun EditTransactionSheet(
                 selectedCategoryId = catId
                 showCategorySheet = false
             },
-            onAddNewCategoryClick = { showCreateCategoryDialog = true },
+            onCreateCategory = { name ->
+                onCreateCategory(name, type) { newId ->
+                    selectedCategoryId = newId
+                    showCategorySheet = false
+                }
+            },
             onDismiss = { showCategorySheet = false }
         )
     }

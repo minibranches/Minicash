@@ -146,12 +146,14 @@ class BudgetViewModel(
         targetKey: String,
         targetYear: Int,
         targetMonth: Int,
+        itemIds: Set<Long>? = null,
         onSuccess: (Int) -> Unit
     ) {
         if (sourceKey.isBlank() || targetKey.isBlank()) return
 
         viewModelScope.launch {
             val sourceItems = budgetDao.getItemsByFortnightList(sourceKey)
+                .filter { itemIds == null || it.id in itemIds }
             if (sourceItems.isNotEmpty()) {
                 val clonedItems = sourceItems.map { item ->
                     val newDueDate = item.dueDate?.let { origDueDate ->
@@ -194,7 +196,7 @@ class BudgetViewModel(
         val parts = currentKey.split("-")
         val year = parts.getOrNull(0)?.toIntOrNull() ?: Calendar.getInstance().get(Calendar.YEAR)
         val month = parts.getOrNull(1)?.toIntOrNull() ?: (Calendar.getInstance().get(Calendar.MONTH) + 1)
-        copyFortnight(sourceKey, currentKey, year, month, onSuccess)
+        copyFortnight(sourceKey, currentKey, year, month, null, onSuccess)
     }
 
     fun markItemAsPaidWithTransaction(

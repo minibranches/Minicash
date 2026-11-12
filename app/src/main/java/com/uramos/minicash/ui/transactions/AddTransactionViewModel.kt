@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.data.local.dao.findOrCreateByName
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uramos.minicash.data.local.dao.AccountDao
@@ -300,15 +301,11 @@ class AddTransactionViewModel(
         }
     }
 
-    fun addCategory(name: String, type: TransactionType, colorHex: String, iconName: String) {
+    /** Alta rápida: reutiliza la categoría si ya existe con ese nombre y la deja seleccionada. */
+    fun addCategory(name: String, type: TransactionType) {
+        if (name.isBlank()) return
         viewModelScope.launch {
-            val newCat = com.uramos.minicash.data.local.entities.CategoryEntity(
-                name = name,
-                type = type,
-                colorHex = colorHex,
-                iconName = iconName
-            )
-            val id = categoryDao.insertCategory(newCat)
+            val id = categoryDao.findOrCreateByName(name, type)
             _uiState.update { it.copy(selectedCategoryId = id) }
         }
     }
