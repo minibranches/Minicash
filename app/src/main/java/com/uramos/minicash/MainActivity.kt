@@ -110,7 +110,7 @@ class MainActivity : ComponentActivity() {
             database = db
         )
 
-        val reportsViewModel = ReportsViewModel(transactionDao = db.transactionDao())
+        val reportsViewModel = ReportsViewModel(transactionDao = db.transactionDao(), categoryDao = db.categoryDao())
 
         val settingsViewModel = SettingsViewModel(
             accountDao = db.accountDao(),
