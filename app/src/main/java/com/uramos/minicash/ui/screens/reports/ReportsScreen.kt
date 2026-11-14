@@ -128,7 +128,7 @@ fun ReportsScreen(
                 item {
                     MinicashCard(
                         level = CardTonalLevel.LOW,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(

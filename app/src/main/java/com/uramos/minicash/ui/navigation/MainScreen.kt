@@ -1,5 +1,12 @@
 package com.uramos.minicash.ui.navigation
 
+import com.uramos.minicash.ui.theme.minicashFastEffectsSpec
+import com.uramos.minicash.ui.theme.minicashFastSpatialSpec
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
+import android.view.accessibility.AccessibilityManager
+import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import com.uramos.minicash.ui.screens.extras.ExtrasScreen
 import androidx.compose.animation.core.spring
@@ -187,10 +194,12 @@ fun MainScreen(
 
     // La barra flotante se oculta al bajar por la página y reaparece al subir, al cambiar de pestaña y en el tope
     var navBarScrollVisible by remember { mutableStateOf(true) }
+    // Con un lector de pantalla activo la barra no se oculta al desplazar (pauta de accesibilidad de M3)
+    val screenReaderOn = rememberTouchExplorationEnabled()
     val navBarScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                if (consumed.y < -NAV_SCROLL_THRESHOLD) navBarScrollVisible = false
+                if (consumed.y < -NAV_SCROLL_THRESHOLD && !screenReaderOn.value) navBarScrollVisible = false
                 else if (consumed.y > NAV_SCROLL_THRESHOLD) navBarScrollVisible = true
                 return Offset.Zero
             }
@@ -247,14 +256,16 @@ fun MainScreen(
     // Cambio de pestaña desde la barra: fundido con leve escala, como un "fade through"; deslizar sigue funcionando
     val animationsRestricted = LocalAnimationRestriction.current
     val tabFade = remember { Animatable(1f) }
+    val fadeOutSpec = minicashFastEffectsSpec<Float>()
+    val fadeInSpec = minicashEffectsSpec<Float>()
     val fadeToPage: (Int) -> Unit = { targetPage ->
         coroutineScope.launch {
             if (animationsRestricted) {
                 pagerState.scrollToPage(targetPage)
             } else {
-                tabFade.animateTo(0f, tween(TAB_FADE_OUT_MS, easing = FastOutLinearInEasing))
+                tabFade.animateTo(0f, fadeOutSpec)
                 pagerState.scrollToPage(targetPage)
-                tabFade.animateTo(1f, tween(TAB_FADE_IN_MS, easing = LinearOutSlowInEasing))
+                tabFade.animateTo(1f, fadeInSpec)
             }
         }
     }
@@ -442,7 +453,7 @@ fun MainScreen(
                     if (navBarStyle == NavBarStyle.FLOATING) {
                         // Capa Overlaid Flotante Desacoplada (Alineación simétrica de insets y ancho optimizado)
                         SlideVisibility(
-                            visible = navBarScrollVisible && !inSubScreen,
+                            visible = (navBarScrollVisible || screenReaderOn.value) && !inSubScreen,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter)
@@ -487,7 +498,7 @@ fun MainScreen(
                                                 // El ícono "rebota" al seleccionarse y la píldora cambia de color y de ancho con suavidad
                                                 val iconScale by animateFloatAsState(
                                                     targetValue = if (isSelected) 1.12f else 1.0f,
-                                                    animationSpec = spring(dampingRatio = 0.45f, stiffness = 380f),
+                                                    animationSpec = minicashFastSpatialSpec(),
                                                     label = "icon_scale"
                                                 )
                                                 val pillColor by animateColorAsState(
@@ -497,7 +508,7 @@ fun MainScreen(
                                                 )
                                                 val iconTint by animateColorAsState(
                                                     targetValue = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
-                                                    else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                                    else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     animationSpec = effectsColor,
                                                     label = "icon_tint"
                                                 )
@@ -662,7 +673,7 @@ private fun ContextualFab(
             val isFabPressed by fabInteractionSource.collectIsPressedAsState()
             val isAnimationRestricted = LocalAnimationRestriction.current
             val fabRadius by animateDpAsState(
-                targetValue = if (isFabPressed) 26.dp else 18.dp,
+                targetValue = if (isFabPressed) 28.dp else 16.dp,
                 animationSpec = if (isAnimationRestricted) snap() else MaterialTheme.motionScheme.defaultSpatialSpec(),
                 label = "fab_corner_radius"
             )
@@ -677,7 +688,7 @@ private fun ContextualFab(
                     defaultElevation = 2.dp,
                     pressedElevation = 6.dp
                 ),
-                modifier = Modifier.size(52.dp)
+                modifier = Modifier.size(56.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -689,8 +700,6 @@ private fun ContextualFab(
     }
 }
 
-private const val TAB_FADE_OUT_MS = 90
-private const val TAB_FADE_IN_MS = 210
 private const val TAB_FADE_MIN_SCALE = 0.96f
 private const val SHARED_AXIS_MS = 300
 private const val SHARED_AXIS_FADE_OUT_MS = 90
@@ -723,4 +732,18 @@ internal fun routeDepth(route: String?): Int = when {
     route == null -> 0
     route.startsWith("settings/") -> 2
     else -> 1
+}
+
+/** Estado del lector de pantalla (exploración táctil); se actualiza si el usuario lo activa o desactiva. */
+@Composable
+private fun rememberTouchExplorationEnabled(): State<Boolean> {
+    val context = LocalContext.current
+    val manager = remember { context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager }
+    val enabled = remember { mutableStateOf(manager.isTouchExplorationEnabled) }
+    DisposableEffect(manager) {
+        val listener = AccessibilityManager.TouchExplorationStateChangeListener { enabled.value = it }
+        manager.addTouchExplorationStateChangeListener(listener)
+        onDispose { manager.removeTouchExplorationStateChangeListener(listener) }
+    }
+    return enabled
 }

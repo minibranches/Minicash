@@ -15,3 +15,15 @@ fun <T> minicashSpatialSpec(): FiniteAnimationSpec<T> =
 @Composable
 fun <T> minicashEffectsSpec(): FiniteAnimationSpec<T> =
     if (LocalAnimationRestriction.current) snap() else MaterialTheme.motionScheme.defaultEffectsSpec()
+
+/** Resorte espacial rápido: para elementos pequeños (íconos de la barra, interruptores). */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun <T> minicashFastSpatialSpec(): FiniteAnimationSpec<T> =
+    if (LocalAnimationRestriction.current) snap() else MaterialTheme.motionScheme.fastSpatialSpec()
+
+/** Resorte de efectos rápido (opacidad y color): amortiguamiento 1.0, sin rebote. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun <T> minicashFastEffectsSpec(): FiniteAnimationSpec<T> =
+    if (LocalAnimationRestriction.current) snap() else MaterialTheme.motionScheme.fastEffectsSpec()

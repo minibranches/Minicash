@@ -442,7 +442,7 @@ private fun BudgetSummaryCard(summary: BudgetSummary) {
 
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -541,7 +541,7 @@ fun BudgetItemCard(
 
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         containerColor = containerColor,
         onClick = onClick,
         modifier = modifier
@@ -814,7 +814,7 @@ fun AddBudgetItemDialog(
                 label = { Text("Concepto") },
                 placeholder = { Text("Nombre de la partida") },
                 singleLine = true,
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(conceptFocusRequester)
@@ -826,7 +826,7 @@ fun AddBudgetItemDialog(
                 label = { Text("Responsable") },
                 placeholder = { Text("Nombre del responsable") },
                 singleLine = true,
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1044,7 +1044,7 @@ fun EditBudgetItemSheet(
                 label = { Text("Concepto") },
                 placeholder = { Text("Nombre de la partida") },
                 singleLine = true,
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1054,7 +1054,7 @@ fun EditBudgetItemSheet(
                 label = { Text("Responsable") },
                 placeholder = { Text("Nombre del responsable") },
                 singleLine = true,
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 

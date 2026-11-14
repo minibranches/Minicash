@@ -7,6 +7,20 @@ Lo que M3 no define se marca como **decisión de diseño**. No se cambió códig
 - **Cumple:** transición de pestañas en fundido ("top level"), eje X compartido con fundido para subpantallas ("forward and backward"), atrás predictivo, barra integrada en `surface container` sin sombra, volver a tocar la pestaña sube al tope, la barra se oculta al desplazar, diálogos de 28 dp y hojas con 28 dp arriba.
 - **Por atender:** 3 prioridad media, 5 baja y 3 decisiones de diseño que conviene confirmar.
 
+## Estado de las correcciones (2026-11-14)
+| # | Hallazgo | Estado |
+|---|---|---|
+| 1 | Barra oculta con lector de pantalla | Corregido: con exploración táctil activa la barra flotante se queda visible. |
+| 2 | Íconos inactivos con alfa 0.75 | Corregido: usan `onSurfaceVariant` completo. |
+| 3 | Radios 24 y 18 dp | Corregido: 24 → 20 dp (`MinicashShapes.ContainerLarge` y literales), 18 → 16 dp. |
+| 4 | FAB de 52 dp / 18 dp | Corregido: 56 dp con esquina de 16 dp; pulsado se redondea a 28 dp. |
+| 5 | Barra superior grande | Corregido: `LargeFlexibleTopAppBar`. |
+| 6 | Rebote del ícono | Corregido: `fastSpatialSpec` del esquema de movimiento. |
+| 7 | Duraciones fijas en transiciones | Parcial: el fundido de pestañas usa resortes de efectos; el eje X compartido conserva `tween` (permitido para transiciones y sin rebote). |
+| 8 | Entrada de diálogos con escala | Corregido: fundido corto y expansión vertical; sin elevación tonal extra. |
+
+Revisión de color y tipografía: sin uso de roles `container` como color de texto o ícono, y los divisores usan `outline variant` por defecto. Los pesos Bold de titulares y acciones ya equivalen a los estilos enfatizados, así que no se cambió la escala tipográfica.
+
 ## Prioridad media
 
 ### 1. La barra no debe ocultarse al desplazar con lector de pantalla activo

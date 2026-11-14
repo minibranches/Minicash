@@ -434,40 +434,43 @@ fun SettingsScreen(
                             onClick = onNavigateToBackups
                         )
                         val hideInRecents by viewModel.hideInRecents.collectAsState()
+                        val toggleHide = {
+                            haptics.click()
+                            viewModel.setHideInRecents(!hideInRecents)
+                        }
+                        // Misma estructura que SettingsRowItem; al final lleva el interruptor en lugar del chevron
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable(onClick = toggleHide)
+                                .padding(horizontal = 12.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.size(40.dp)) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        Icons.Default.VisibilityOff,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Ocultar en multitarea", style = MaterialTheme.typography.titleMedium)
+                            SettingsLeadingIcon(Icons.Default.VisibilityOff)
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 Text(
-                                    "Oculta la vista previa de Minicash al ver las apps abiertas. También bloquea las capturas de pantalla.",
+                                    text = "Ocultar en multitarea",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = if (hideInRecents) "Vista previa oculta; también se bloquean las capturas"
+                                    else "Oculta la vista previa al ver las apps abiertas",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            Spacer(modifier = Modifier.width(12.dp))
                             Switch(
                                 checked = hideInRecents,
                                 thumbContent = if (hideInRecents) {
                                     { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
                                 } else null,
-                                onCheckedChange = {
-                                    haptics.click()
-                                    viewModel.setHideInRecents(it)
-                                }
+                                onCheckedChange = { toggleHide() }
                             )
                         }
                         SettingsRowItem(

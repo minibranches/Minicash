@@ -241,7 +241,7 @@ fun TransactionsScreen(
                 item(key = "header_monthly_summary") {
                     MinicashCard(
                         level = CardTonalLevel.LOW,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(

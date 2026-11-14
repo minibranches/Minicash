@@ -11,10 +11,10 @@ object MinicashShapes {
     val Input = RoundedCornerShape(12.dp)
     val Compact = RoundedCornerShape(16.dp)
     val Card = RoundedCornerShape(20.dp)
-    val ContainerLarge = RoundedCornerShape(24.dp)
+    val ContainerLarge = RoundedCornerShape(20.dp)
     val Hero = RoundedCornerShape(28.dp)
     val Pill = CircleShape
-    val FABShape = RoundedCornerShape(18.dp)
+    val FABShape = RoundedCornerShape(16.dp)
 }
 
 val Shapes = Shapes(

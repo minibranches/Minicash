@@ -23,7 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,7 +43,7 @@ import androidx.compose.ui.unit.dp
  * Barra superior de las subpantallas: botón atrás en círculo y título grande que se colapsa al
  * desplazar la página. Requiere `Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)` en el Scaffold.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MinicashSubScreenTopBar(
     title: String,
@@ -51,7 +52,7 @@ fun MinicashSubScreenTopBar(
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     val background = MaterialTheme.colorScheme.surfaceContainerLowest
-    LargeTopAppBar(
+    LargeFlexibleTopAppBar(
         title = {
             Text(
                 text = title,
@@ -113,7 +114,7 @@ fun MinicashSectionNote(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun MinicashOptionGroup(content: @Composable () -> Unit) {
     Surface(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.fillMaxWidth()
     ) {

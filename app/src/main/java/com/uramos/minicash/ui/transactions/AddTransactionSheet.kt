@@ -1026,7 +1026,7 @@ fun KeypadButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    shape: Shape = RoundedCornerShape(18.dp),
+    shape: Shape = RoundedCornerShape(16.dp),
     /** Si se indica, la tecla cambia de esquina [cornerRadius] a [pressedCornerRadius] con resorte al presionarse. */
     cornerRadius: androidx.compose.ui.unit.Dp? = null,
     pressedCornerRadius: androidx.compose.ui.unit.Dp = 28.dp
