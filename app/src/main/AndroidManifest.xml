@@ -49,6 +49,39 @@
                 android:resource="@xml/quick_actions_widget_info" />
         </receiver>
 
+        <service
+            android:name=".tiles.ExpenseTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_shortcut_expense"
+            android:label="@string/shortcut_expense_short"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".tiles.IncomeTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_shortcut_income"
+            android:label="@string/shortcut_income_short"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".tiles.TransferTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_shortcut_transfer"
+            android:label="@string/shortcut_transfer_short"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

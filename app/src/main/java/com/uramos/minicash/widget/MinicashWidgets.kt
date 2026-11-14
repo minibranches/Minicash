@@ -43,9 +43,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-private const val ACTION_EXPENSE = "com.uramos.minicash.ACTION_NEW_EXPENSE"
-private const val ACTION_INCOME = "com.uramos.minicash.ACTION_NEW_INCOME"
-private const val ACTION_TRANSFER = "com.uramos.minicash.ACTION_NEW_TRANSFER"
+internal const val ACTION_EXPENSE = "com.uramos.minicash.ACTION_NEW_EXPENSE"
+internal const val ACTION_INCOME = "com.uramos.minicash.ACTION_NEW_INCOME"
+internal const val ACTION_TRANSFER = "com.uramos.minicash.ACTION_NEW_TRANSFER"
 
 /** Mismas acciones que los atajos de la app: `MainActivity` las traduce a "nuevo gasto / ingreso / transferencia". */
 private fun quickAction(context: Context, action: String, extra: String): Action =

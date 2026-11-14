@@ -167,7 +167,8 @@ fun MainScreen(
     val numPages = visibleScreens.size
 
     val pageCount = 10_000
-    val initialPage = pageCount / 2
+    // Página central que cae en un múltiplo del número de pestañas, para que la primera siempre sea Inicio
+    val initialPage = (pageCount / 2) / numPages * numPages
     val pagerState = rememberPagerState(
         initialPage = initialPage,
         pageCount = { pageCount }
