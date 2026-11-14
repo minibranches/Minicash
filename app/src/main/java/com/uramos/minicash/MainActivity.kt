@@ -1,5 +1,6 @@
 package com.uramos.minicash
 
+import com.uramos.minicash.widget.updateMinicashWidgets
 import androidx.compose.runtime.LaunchedEffect
 import android.view.WindowManager
 import android.content.Intent
@@ -166,6 +167,8 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         checkAutoBackup()
+        // Al salir de la app los datos pudieron cambiar: se refrescan los widgets de la pantalla de inicio
+        updateMinicashWidgets(applicationContext)
     }
 
     private fun checkAutoBackup() {

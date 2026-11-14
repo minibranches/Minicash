@@ -2,7 +2,7 @@
 
 Aplicación Android de finanzas personales, pensada para llevar el dinero del día a día en pareja o en lo individual. Todo vive en el dispositivo: sin cuentas, sin servidores y sin enviar datos a ningún lado.
 
-Hecha con Kotlin, Jetpack Compose y Material 3 Expressive.
+Hecha con Kotlin, Jetpack Compose y Material 3 Expressive. Las ideas a futuro están en [docs/hoja-de-ruta.md](docs/hoja-de-ruta.md).
 
 ## Qué hace
 
@@ -10,8 +10,11 @@ Hecha con Kotlin, Jetpack Compose y Material 3 Expressive.
 - **Historial.** Gastos, ingresos y transferencias entre cuentas, organizados por mes.
 - **Gastos fijos.** Presupuesto por quincenas: partidas de ingreso, gasto y reembolso en cuadrícula, con resumen de lo disponible y barra de avance. Se marcan como ejecutadas, se reordenan con pulsación larga y se pueden copiar de una quincena a otra.
 - **Créditos.** Compras a meses con avance por mensualidad, fecha estimada de término y aviso antes de cada pago. El día de pago se configura en la institución (tarjeta o banco) y las compras lo heredan; cada compra puede usar otro día.
-- **Reportes.** Ingresos contra gastos por mes (6 o 12 meses), con promedios y desglose mensual.
+- **Reportes.** Dashboard con balance del periodo y tasa de ahorro, ingresos contra gastos por mes (6 o 12 meses), gasto por categoría, balance acumulado y desglose mensual.
 - **Copias de seguridad.** Exportación e importación en JSON, con copia automática opcional.
+- **Extras.** Centro con tarjetas de resumen hacia Gastos fijos, Créditos y Reportes; los módulos que ocultes no aparecen. Ajustes queda en el engrane de arriba a la derecha.
+- **Widgets.** Uno con patrimonio, gasto del mes y botones de registro, y otro solo con los botones de gasto, ingreso y transferencia.
+- **Privacidad.** Opción para ocultar la vista previa en multitarea (también bloquea capturas de pantalla).
 - **Personalización.** Tema claro, oscuro o AMOLED, color dinámico o de acento, barra de navegación integrada o flotante (se oculta al desplazar) y módulos opcionales de Gastos fijos y Créditos.
 
 ## Privacidad
@@ -48,6 +51,7 @@ La firma de release usa `~/.android/debug.keystore`. Si compilas en otra computa
 | Datos | Room (con migraciones y esquemas exportados en `app/schemas`) |
 | Ajustes | DataStore |
 | Tareas en segundo plano | WorkManager (avisos de pago y copias automáticas) |
+| Widgets | Jetpack Glance |
 | Respaldos | Gson, formato JSON versionado |
 | Reordenar listas | `sh.calvin.reorderable` |
 

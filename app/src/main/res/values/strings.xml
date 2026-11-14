@@ -6,4 +6,8 @@
     <string name="shortcut_income_long">Registrar nuevo ingreso</string>
     <string name="shortcut_transfer_short">Transferencia</string>
     <string name="shortcut_transfer_long">Registrar transferencia entre cuentas</string>
+    <string name="widget_minicash_label">Minicash</string>
+    <string name="widget_minicash_description">Patrimonio, gasto del mes y botones para registrar</string>
+    <string name="widget_quick_label">Registro rápido</string>
+    <string name="widget_quick_description">Botones para registrar un gasto, un ingreso o una transferencia</string>
 </resources>
