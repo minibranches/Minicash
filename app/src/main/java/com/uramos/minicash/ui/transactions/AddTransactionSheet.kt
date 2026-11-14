@@ -171,8 +171,8 @@ fun AddTransactionSheet(
     val isRestricted = LocalAnimationRestriction.current
     val motionScheme = MaterialTheme.motionScheme
 
-    val selectedAccount = remember(accounts, state.selectedAccountId) {
-        accounts.firstOrNull { it.id == state.selectedAccountId } ?: accounts.firstOrNull()
+    val selectedAccount = remember(accounts, state.selectedAccountId, state.type) {
+        accounts.firstOrNull { it.id == state.selectedAccountId } ?: defaultAccountFor(state.type, accounts)
     }
     val selectedDestAccount = remember(accounts, state.selectedDestinationAccountId, state.selectedAccountId) {
         accounts.firstOrNull { it.id == state.selectedDestinationAccountId && it.id != selectedAccount?.id }

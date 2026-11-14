@@ -328,7 +328,7 @@ class AddTransactionViewModel(
 
         viewModelScope.launch {
             if (state.type == TransactionType.TRANSFER) {
-                val sourceId = state.selectedAccountId ?: accounts.value.firstOrNull()?.id ?: return@launch
+                val sourceId = state.selectedAccountId ?: defaultAccountFor(state.type, accounts.value)?.id ?: return@launch
                 val destId = state.selectedDestinationAccountId ?: return@launch
                 if (sourceId == destId) return@launch
 
@@ -351,7 +351,7 @@ class AddTransactionViewModel(
                 resetForm()
                 onSuccess()
             } else {
-                val sourceId = state.selectedAccountId ?: accounts.value.firstOrNull()?.id ?: return@launch
+                val sourceId = state.selectedAccountId ?: defaultAccountFor(state.type, accounts.value)?.id ?: return@launch
                 val categoryId = state.selectedCategoryId ?: return@launch
                 if (state.concept.isBlank()) return@launch
 
@@ -401,3 +401,10 @@ class AddTransactionViewModel(
         }
     }
 }
+
+/**
+ * Cuenta que se propone mientras el usuario no elige una: en transferencias, la de mayor saldo (suele ser el
+ * origen); en gastos e ingresos, la primera de la lista. Con saldos iguales gana la primera.
+ */
+fun defaultAccountFor(type: TransactionType, accounts: List<AccountEntity>): AccountEntity? =
+    if (type == TransactionType.TRANSFER) accounts.maxByOrNull { it.balance } else accounts.firstOrNull()

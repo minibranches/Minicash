@@ -256,6 +256,13 @@ class SettingsViewModel(
         }
     }
 
+    val hideInRecents: StateFlow<Boolean> = userPreferences.hideInRecents
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    fun setHideInRecents(enabled: Boolean) {
+        viewModelScope.launch { userPreferences.setHideInRecents(enabled) }
+    }
+
     val navBarStyle: StateFlow<NavBarStyle> = userPreferences.navBarStyle
         .stateIn(viewModelScope, SharingStarted.Eagerly, NavBarStyle.INTEGRATED)
 

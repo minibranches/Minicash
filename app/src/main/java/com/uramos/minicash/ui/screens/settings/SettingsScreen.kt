@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material.icons.filled.VisibilityOff
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Payments
@@ -437,6 +440,43 @@ fun SettingsScreen(
                             subtitle = backupSubtitle,
                             onClick = onNavigateToBackups
                         )
+                        val hideInRecents by viewModel.hideInRecents.collectAsState()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.size(40.dp)) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        Icons.Default.VisibilityOff,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Ocultar en multitarea", style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    "Oculta la vista previa de Minicash al ver las apps abiertas. También bloquea las capturas de pantalla.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = hideInRecents,
+                                thumbContent = if (hideInRecents) {
+                                    { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+                                } else null,
+                                onCheckedChange = {
+                                    haptics.click()
+                                    viewModel.setHideInRecents(it)
+                                }
+                            )
+                        }
                         SettingsRowItem(
                             title = "Acerca de Minicash",
                             icon = Icons.Default.Info,

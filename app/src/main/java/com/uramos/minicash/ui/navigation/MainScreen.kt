@@ -275,6 +275,12 @@ fun MainScreen(
         }
     }
 
+    // Atrás desde cualquier pestaña que no sea Inicio regresa a Inicio; en Inicio sale de la app
+    BackHandler(enabled = activeSettingsSubScreen == null && currentScreen !is Screen.Home) {
+        val homeIndex = visibleScreens.indexOf(Screen.Home).coerceAtLeast(0)
+        fadeToPage(getShortestTargetPage(pagerState.currentPage, homeIndex, numPages))
+    }
+
     val onNavClick: (Int, Screen) -> Unit = { index, screen ->
         if (activeSettingsSubScreen != null) {
             activeSettingsSubScreen = null

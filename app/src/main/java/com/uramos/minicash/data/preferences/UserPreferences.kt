@@ -38,6 +38,7 @@ class UserPreferences(private val context: Context) {
         val FONT_PREFERENCE_KEY = stringPreferencesKey("font_preference")
         val DYNAMIC_COLOR_KEY = booleanPreferencesKey("use_dynamic_color")
         val AMOLED_MODE_KEY = booleanPreferencesKey("is_amoled_mode")
+        val HIDE_IN_RECENTS_KEY = booleanPreferencesKey("hide_in_recents")
         val LAST_AUTO_BACKUP_TIMESTAMP = longPreferencesKey("last_auto_backup_timestamp")
         val DAILY_REMINDER_ENABLED = booleanPreferencesKey("daily_reminder_enabled")
         val DAILY_REMINDER_HOUR = androidx.datastore.preferences.core.intPreferencesKey("daily_reminder_hour")
@@ -68,6 +69,15 @@ class UserPreferences(private val context: Context) {
 
     val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[DYNAMIC_COLOR_KEY] ?: false
+    }
+
+    /** Oculta la vista previa de la app en multitarea (y bloquea capturas de pantalla). */
+    val hideInRecents: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[HIDE_IN_RECENTS_KEY] ?: false
+    }
+
+    suspend fun setHideInRecents(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[HIDE_IN_RECENTS_KEY] = enabled }
     }
 
     val isAmoledMode: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -240,6 +250,7 @@ class UserPreferences(private val context: Context) {
             fontPreference = prefs[FONT_PREFERENCE_KEY],
             useDynamicColor = prefs[DYNAMIC_COLOR_KEY],
             isAmoledMode = prefs[AMOLED_MODE_KEY],
+            hideInRecents = prefs[HIDE_IN_RECENTS_KEY],
             accentColorHex = prefs[ACCENT_COLOR_HEX],
             dailyReminderEnabled = prefs[DAILY_REMINDER_ENABLED],
             dailyReminderHour = prefs[DAILY_REMINDER_HOUR],
@@ -263,6 +274,7 @@ class UserPreferences(private val context: Context) {
             snapshot.fontPreference?.takeIf { v -> FontPreference.entries.any { it.name == v } }?.let { prefs[FONT_PREFERENCE_KEY] = it }
             snapshot.useDynamicColor?.let { prefs[DYNAMIC_COLOR_KEY] = it }
             snapshot.isAmoledMode?.let { prefs[AMOLED_MODE_KEY] = it }
+            snapshot.hideInRecents?.let { prefs[HIDE_IN_RECENTS_KEY] = it }
             snapshot.accentColorHex?.takeIf { it.isNotBlank() }?.let { prefs[ACCENT_COLOR_HEX] = it }
             snapshot.dailyReminderEnabled?.let { prefs[DAILY_REMINDER_ENABLED] = it }
             snapshot.dailyReminderHour?.takeIf { it in 0..23 }?.let { prefs[DAILY_REMINDER_HOUR] = it }
@@ -285,6 +297,7 @@ data class PreferencesSnapshot(
     val fontPreference: String? = null,
     val useDynamicColor: Boolean? = null,
     val isAmoledMode: Boolean? = null,
+    val hideInRecents: Boolean? = null,
     val accentColorHex: String? = null,
     val dailyReminderEnabled: Boolean? = null,
     val dailyReminderHour: Int? = null,

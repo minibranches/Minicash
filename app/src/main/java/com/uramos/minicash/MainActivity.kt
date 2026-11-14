@@ -1,5 +1,7 @@
 package com.uramos.minicash
 
+import androidx.compose.runtime.LaunchedEffect
+import android.view.WindowManager
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -122,6 +124,12 @@ class MainActivity : ComponentActivity() {
             val fontPreference by userPreferences.fontPreference.collectAsState(initial = com.uramos.minicash.data.preferences.FontPreference.ROUNDED_QUICKSAND)
             val useDynamicColor by userPreferences.useDynamicColor.collectAsState(initial = false)
             val isAmoledMode by userPreferences.isAmoledMode.collectAsState(initial = false)
+            val hideInRecents by userPreferences.hideInRecents.collectAsState(initial = false)
+            // FLAG_SECURE oculta la vista previa en multitarea; como efecto secundario también bloquea las capturas
+            LaunchedEffect(hideInRecents) {
+                if (hideInRecents) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
             val accentColorHex by userPreferences.accentColorHex.collectAsState(initial = "#1A73E8")
 
             MinicashTheme(
