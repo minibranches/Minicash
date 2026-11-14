@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -89,6 +90,7 @@ import com.uramos.minicash.ui.utils.toCurrencyFormat
 fun HomeScreen(
     userName: String,
     viewModel: HomeViewModel,
+    onOpenSettings: () -> Unit = {},
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     onAddTransactionClick: () -> Unit,
     onSeeMoreTransactionsClick: () -> Unit = {}
@@ -193,7 +195,8 @@ fun HomeScreen(
                             )
                         }
                     }
-                }
+                },
+                actions = { SettingsGearButton(onClick = onOpenSettings) }
             )
         }
     ) { paddingValues ->

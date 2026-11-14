@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -69,6 +70,7 @@ import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 @Composable
 fun TransactionsScreen(
     viewModel: TransactionsViewModel,
+    onOpenSettings: () -> Unit = {},
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
 ) {
     val spacing = MinicashThemeExtensions.spacing
@@ -191,7 +193,8 @@ fun TransactionsScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
-                title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
+                title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
+                actions = { SettingsGearButton(onClick = onOpenSettings) }
             )
         }
     ) { paddingValues ->

@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -86,9 +88,9 @@ fun SettingsScreen(
     onNavigateToInstitutions: () -> Unit = {},
     onNavigateToAppearance: () -> Unit = {},
     onNavigateToModules: () -> Unit = {},
-    onNavigateToReports: () -> Unit = {},
     onNavigateToBackups: () -> Unit = {},
-    onNavigateToAbout: () -> Unit = {}
+    onNavigateToAbout: () -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -118,16 +120,13 @@ fun SettingsScreen(
         }
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                title = { Text("Ajustes", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
-            )
+            MinicashSubScreenTopBar(title = "Ajustes", onBack = onBackClick, scrollBehavior = scrollBehavior)
         }
     ) { paddingValues ->
         LazyColumn(
@@ -427,12 +426,6 @@ fun SettingsScreen(
                             }
                         }
 
-                        SettingsRowItem(
-                            title = "Reportes",
-                            icon = Icons.Default.BarChart,
-                            subtitle = "Ingresos y gastos por mes",
-                            onClick = onNavigateToReports
-                        )
                         val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
                         SettingsRowItem(
                             title = "Copias de seguridad",

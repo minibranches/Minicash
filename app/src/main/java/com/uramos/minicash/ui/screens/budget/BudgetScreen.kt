@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.MinicashBackButton
 import androidx.compose.material3.Checkbox
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
@@ -118,7 +119,8 @@ fun BudgetScreen(
     listState: LazyGridState = rememberLazyGridState(),
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
-    onOpenAddTransactionForBudgetItem: ((BudgetItemEntity) -> Unit)? = null
+    onOpenAddTransactionForBudgetItem: ((BudgetItemEntity) -> Unit)? = null,
+    onBack: (() -> Unit)? = null
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -164,6 +166,7 @@ fun BudgetScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
+                navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
                 title = {
                     Text(
                         "Gastos fijos",

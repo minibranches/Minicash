@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
@@ -23,6 +25,7 @@ sealed class Screen(
     object Transactions : Screen("transactions", "Historial", Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
     object Budget : Screen("budget", "Fijos", Icons.Filled.PieChart, Icons.Outlined.PieChart)
     object Credits : Screen("credits", "Créditos", Icons.Filled.CreditCard, Icons.Outlined.CreditCard)
+    object Extras : Screen("extras", "Extras", Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
     object Settings : Screen("settings", "Ajustes", Icons.Filled.Settings, Icons.Outlined.Settings)
     object AccountsManagement : Screen("accounts_management", "Gestión de cuentas", Icons.Filled.Settings, Icons.Outlined.Settings)
     object CategoriesManagement : Screen("categories_management", "Gestión de categorías", Icons.Filled.Settings, Icons.Outlined.Settings)
@@ -31,7 +34,5 @@ sealed class Screen(
 val bottomNavItems = listOf(
     Screen.Home,
     Screen.Transactions,
-    Screen.Budget,
-    Screen.Credits,
-    Screen.Settings
+    Screen.Extras
 )

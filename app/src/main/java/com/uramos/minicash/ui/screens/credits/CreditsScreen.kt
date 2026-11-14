@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.MinicashBackButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Notifications
@@ -81,7 +82,8 @@ fun CreditsScreen(
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
-    onOpenAddTransactionForCredit: (amountCents: Long, conceptStr: String, notesStr: String) -> Unit = { _, _, _ -> }
+    onOpenAddTransactionForCredit: (amountCents: Long, conceptStr: String, notesStr: String) -> Unit = { _, _, _ -> },
+    onBack: (() -> Unit)? = null
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -152,6 +154,7 @@ fun CreditsScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
+                navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
                 title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
             )
         }

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -223,3 +224,43 @@ private fun Modifier.headerScrim(height: Dp, progress: () -> Float): Modifier {
 private val SCRIM_HEIGHT = 36.dp
 private const val SCRIM_RAMP_PX = 60f
 private const val SCRIM_MAX_ALPHA = 0.8f
+
+/** Botón de atrás en círculo tonal, el mismo de las barras superiores de subpantallas. */
+@Composable
+fun MinicashBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = modifier
+            .padding(start = 8.dp)
+            .size(40.dp)
+    ) {
+        MinicashIconButton(onClick = onClick) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Volver",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+/** Engrane fijo de las barras superiores de las pestañas: abre Ajustes. */
+@Composable
+fun SettingsGearButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = modifier
+            .padding(end = 8.dp)
+            .size(40.dp)
+    ) {
+        MinicashIconButton(onClick = onClick) {
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = "Ajustes",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}

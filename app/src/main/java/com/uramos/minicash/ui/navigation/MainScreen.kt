@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.compose.runtime.mutableStateListOf
+import com.uramos.minicash.ui.screens.extras.ExtrasScreen
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.Crossfade
@@ -153,15 +155,8 @@ fun MainScreen(
     val showCreditsTab = settingsState.showCreditsTab
     val navBarStyle by settingsViewModel.navBarStyle.collectAsState()
 
-    val visibleScreens = remember(showBudgetTab, showCreditsTab) {
-        buildList {
-            add(Screen.Home)
-            add(Screen.Transactions)
-            if (showBudgetTab) add(Screen.Budget)
-            if (showCreditsTab) add(Screen.Credits)
-            add(Screen.Settings)
-        }
-    }
+    // La barra tiene tres destinos fijos; Gastos fijos, Créditos y Reportes viven en Extras y Ajustes arriba a la derecha
+    val visibleScreens = remember { bottomNavItems }
     val numPages = visibleScreens.size
 
     val pageCount = 10_000
@@ -175,30 +170,20 @@ fun MainScreen(
     val currentScreenIndex = pagerState.currentPage % numPages
     val currentScreen = visibleScreens[currentScreenIndex]
 
-    // Al mostrar u ocultar módulos cambia el número de páginas: se reubica el pager para seguir en la misma pestaña
-    val previousScreens = remember { arrayOf(visibleScreens) }
-    LaunchedEffect(visibleScreens) {
-        val previous = previousScreens[0]
-        if (previous != visibleScreens) {
-            val page = pagerState.currentPage
-            val staying = previous[page % previous.size]
-            val newIndex = visibleScreens.indexOf(staying).takeIf { it >= 0 } ?: visibleScreens.lastIndex
-            previousScreens[0] = visibleScreens
-            pagerState.scrollToPage((page / visibleScreens.size) * visibleScreens.size + newIndex)
-        }
-    }
-
     val homeListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val transactionsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val budgetListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val creditsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val settingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val extrasListState = androidx.compose.foundation.lazy.rememberLazyListState()
 
     var showAddSheet by remember { mutableStateOf(false) }
     var shortcutType by remember { mutableStateOf<TransactionType?>(null) }
     var showAddBudgetItemFromMain by remember { mutableStateOf(false) }
     var showAddCreditFromMain by remember { mutableStateOf(false) }
-    var activeSettingsSubScreen by remember { mutableStateOf<String?>(null) }
+    // Pila de pantallas superpuestas (Ajustes, sus subpantallas y las de Extras); vacía = se ven las pestañas
+    val routeStack = remember { mutableStateListOf<String>() }
+    val activeRoute = routeStack.lastOrNull()
 
     // La barra flotante se oculta al bajar por la página y reaparece al subir, al cambiar de pestaña y en el tope
     var navBarScrollVisible by remember { mutableStateOf(true) }
@@ -212,8 +197,8 @@ fun MainScreen(
         }
     }
     LaunchedEffect(currentScreenIndex) { navBarScrollVisible = true }
-    // El submenú solo oculta la barra mientras se está en Ajustes
-    val inSubScreen = activeSettingsSubScreen != null && currentScreen is Screen.Settings
+    // Con cualquier pantalla superpuesta abierta la barra se oculta
+    val inSubScreen = routeStack.isNotEmpty()
 
     LaunchedEffect(shortcutAction) {
         if (!shortcutAction.isNullOrBlank()) {
@@ -239,23 +224,22 @@ fun MainScreen(
         )
     }
 
-    // Subpantallas de Ajustes: eje X compartido; el gesto atrás predictivo arrastra la transición con el dedo
-    val subScreenTransitionState = remember { SeekableTransitionState<String?>(null) }
-    val subScreenTransition = rememberTransition(subScreenTransitionState, label = "settings_navigation_transition")
-    LaunchedEffect(activeSettingsSubScreen) {
-        if (subScreenTransitionState.currentState != activeSettingsSubScreen ||
-            subScreenTransitionState.targetState != activeSettingsSubScreen
-        ) {
-            subScreenTransitionState.animateTo(activeSettingsSubScreen)
+    // Pantallas superpuestas: eje X compartido; el gesto atrás predictivo arrastra la transición con el dedo
+    val routeTransitionState = remember { SeekableTransitionState<String?>(null) }
+    val routeTransition = rememberTransition(routeTransitionState, label = "route_navigation_transition")
+    LaunchedEffect(activeRoute) {
+        if (routeTransitionState.currentState != activeRoute || routeTransitionState.targetState != activeRoute) {
+            routeTransitionState.animateTo(activeRoute)
         }
     }
-    PredictiveBackHandler(enabled = activeSettingsSubScreen != null) { progress ->
-        val leaving = activeSettingsSubScreen
+    PredictiveBackHandler(enabled = routeStack.isNotEmpty()) { progress ->
+        val leaving = activeRoute
+        val previous = routeStack.getOrNull(routeStack.lastIndex - 1)
         try {
-            progress.collect { event -> subScreenTransitionState.seekTo(event.progress, targetState = null) }
-            activeSettingsSubScreen = null
+            progress.collect { event -> routeTransitionState.seekTo(event.progress, targetState = previous) }
+            routeStack.removeLastOrNull()
         } catch (e: CancellationException) {
-            subScreenTransitionState.animateTo(leaving)
+            routeTransitionState.animateTo(leaving)
             throw e
         }
     }
@@ -276,24 +260,20 @@ fun MainScreen(
     }
 
     // Atrás desde cualquier pestaña que no sea Inicio regresa a Inicio; en Inicio sale de la app
-    BackHandler(enabled = activeSettingsSubScreen == null && currentScreen !is Screen.Home) {
+    BackHandler(enabled = routeStack.isEmpty() && currentScreen !is Screen.Home) {
         val homeIndex = visibleScreens.indexOf(Screen.Home).coerceAtLeast(0)
         fadeToPage(getShortestTargetPage(pagerState.currentPage, homeIndex, numPages))
     }
 
     val onNavClick: (Int, Screen) -> Unit = { index, screen ->
-        if (activeSettingsSubScreen != null) {
-            activeSettingsSubScreen = null
-        }
+        routeStack.clear()
         haptics.tick()
         if (currentScreenIndex == index) {
             coroutineScope.launch {
                 when (screen) {
                     is Screen.Home -> homeListState.animateScrollToItem(0)
                     is Screen.Transactions -> transactionsListState.animateScrollToItem(0)
-                    is Screen.Budget -> budgetListState.animateScrollToItem(0)
-                    is Screen.Credits -> creditsListState.animateScrollToItem(0)
-                    is Screen.Settings -> settingsListState.animateScrollToItem(0)
+                    is Screen.Extras -> extrasListState.animateScrollToItem(0)
                     else -> {}
                 }
             }
@@ -304,13 +284,15 @@ fun MainScreen(
 
     val onFabClick: () -> Unit = {
         haptics.click()
-        when (currentScreen) {
-            is Screen.Home, is Screen.Transactions -> showAddSheet = true
-            is Screen.Budget -> showAddBudgetItemFromMain = true
-            is Screen.Credits -> showAddCreditFromMain = true
-            else -> {}
+        when (activeRoute) {
+            ROUTE_BUDGET -> showAddBudgetItemFromMain = true
+            ROUTE_CREDITS -> showAddCreditFromMain = true
+            else -> if (currentScreen is Screen.Home || currentScreen is Screen.Transactions) showAddSheet = true
         }
     }
+    // Botón de agregar de las pestañas (Inicio e Historial) y el propio de Gastos fijos y Créditos
+    val tabFabVisible = !inSubScreen && (currentScreen is Screen.Home || currentScreen is Screen.Transactions)
+    val routeFabVisible = activeRoute == ROUTE_BUDGET || activeRoute == ROUTE_CREDITS
 
     Scaffold(
         containerColor = minicashFrameColor()
@@ -358,6 +340,7 @@ fun MainScreen(
                                     userName = userName,
                                     viewModel = homeViewModel,
                                     listState = homeListState,
+                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
                                     onAddTransactionClick = { showAddSheet = true },
                                     onSeeMoreTransactionsClick = {
                                         val txIdx = visibleScreens.indexOf(Screen.Transactions).coerceAtLeast(0)
@@ -366,87 +349,94 @@ fun MainScreen(
                                 )
                                 is Screen.Transactions -> TransactionsScreen(
                                     viewModel = transactionsViewModel,
-                                    listState = transactionsListState
+                                    listState = transactionsListState,
+                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) }
                                 )
-                                is Screen.Budget -> BudgetScreen(
-                                    viewModel = budgetViewModel,
-                                    listState = budgetListState,
-                                    showAddDialogExternal = showAddBudgetItemFromMain,
-                                    onAddDialogExternalHandled = { showAddBudgetItemFromMain = false },
-                                    onOpenAddTransactionForBudgetItem = { item ->
-                                        addTransactionViewModel.prefillForBudgetItem(item)
-                                        showAddSheet = true
-                                    }
+                                is Screen.Extras -> ExtrasScreen(
+                                    budgetViewModel = budgetViewModel,
+                                    creditsViewModel = creditsViewModel,
+                                    reportsViewModel = reportsViewModel,
+                                    showBudget = showBudgetTab,
+                                    showCredits = showCreditsTab,
+                                    listState = extrasListState,
+                                    onOpenBudget = { routeStack.add(ROUTE_BUDGET) },
+                                    onOpenCredits = { routeStack.add(ROUTE_CREDITS) },
+                                    onOpenReports = { routeStack.add(ROUTE_REPORTS) },
+                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) }
                                 )
-                                is Screen.Credits -> CreditsScreen(
-                                    viewModel = creditsViewModel,
-                                    listState = creditsListState,
-                                    showAddDialogExternal = showAddCreditFromMain,
-                                    onAddDialogExternalHandled = { showAddCreditFromMain = false },
-                                    onOpenAddTransactionForCredit = { amountCents, conceptStr, notesStr ->
-                                        addTransactionViewModel.prefillForCredit(amountCents, conceptStr, notesStr)
-                                        showAddSheet = true
-                                    }
-                                )
-                                else -> {
-                                    subScreenTransition.AnimatedContent(
-                                        transitionSpec = {
-                                            if (animationsRestricted) {
-                                                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                                            } else {
-                                                sharedAxisX(forward = targetState != null)
-                                            }
-                                        }
-                                    ) { subScreen ->
-                                        when (subScreen) {
-                                            "accounts" -> AccountsManagementScreen(
-                                                viewModel = settingsViewModel,
-                                                onNavigateBack = { activeSettingsSubScreen = null }
-                                            )
-                                            "categories" -> CategoriesManagementScreen(
-                                                viewModel = settingsViewModel,
-                                                onNavigateBack = { activeSettingsSubScreen = null }
-                                            )
-                                            "institutions" -> InstitutionsManagementScreen(
-                                                viewModel = settingsViewModel,
-                                                onNavigateBack = { activeSettingsSubScreen = null }
-                                            )
-                                            "appearance" -> AppearanceSettingsScreen(
-                                                viewModel = settingsViewModel,
-                                                onBackClick = { activeSettingsSubScreen = null }
-                                            )
-                                            "modules" -> ModulesSettingsScreen(
-                                                viewModel = settingsViewModel,
-                                                onBackClick = { activeSettingsSubScreen = null }
-                                            )
-                                            "reports" -> ReportsScreen(
-                                                viewModel = reportsViewModel,
-                                                onBackClick = { activeSettingsSubScreen = null }
-                                            )
-                                            "about" -> AboutScreen(
-                                                onBackClick = { activeSettingsSubScreen = null }
-                                            )
-                                            "backups" -> BackupSettingsScreen(
-                                                viewModel = settingsViewModel,
-                                                onBackClick = { activeSettingsSubScreen = null }
-                                            )
-                                            else -> SettingsScreen(
-                                                viewModel = settingsViewModel,
-                                                listState = settingsListState,
-                                                onNavigateToAccounts = { activeSettingsSubScreen = "accounts" },
-                                                onNavigateToCategories = { activeSettingsSubScreen = "categories" },
-                                                onNavigateToInstitutions = { activeSettingsSubScreen = "institutions" },
-                                                onNavigateToAppearance = { activeSettingsSubScreen = "appearance" },
-                                                onNavigateToModules = { activeSettingsSubScreen = "modules" },
-                                                onNavigateToReports = { activeSettingsSubScreen = "reports" },
-                                                onNavigateToBackups = { activeSettingsSubScreen = "backups" },
-                                                onNavigateToAbout = { activeSettingsSubScreen = "about" }
-                                            )
-                                        }
-                                    }
-                                }
+                                else -> Unit
                             }
                         }
+                    }
+
+                    // Pantallas superpuestas con eje X compartido; con la pila vacía no se dibuja nada y se ven las pestañas
+                    routeTransition.AnimatedContent(
+                        modifier = Modifier.fillMaxSize(),
+                        transitionSpec = {
+                            if (animationsRestricted) {
+                                fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
+                            } else {
+                                sharedAxisX(forward = routeDepth(targetState) > routeDepth(initialState))
+                            }
+                        }
+                    ) { route ->
+                        val back: () -> Unit = { routeStack.removeLastOrNull() }
+                        when (route) {
+                            null -> Box(Modifier.fillMaxSize())
+                            ROUTE_BUDGET -> BudgetScreen(
+                                viewModel = budgetViewModel,
+                                listState = budgetListState,
+                                showAddDialogExternal = showAddBudgetItemFromMain,
+                                onAddDialogExternalHandled = { showAddBudgetItemFromMain = false },
+                                onOpenAddTransactionForBudgetItem = { item ->
+                                    addTransactionViewModel.prefillForBudgetItem(item)
+                                    showAddSheet = true
+                                },
+                                onBack = back
+                            )
+                            ROUTE_CREDITS -> CreditsScreen(
+                                viewModel = creditsViewModel,
+                                listState = creditsListState,
+                                showAddDialogExternal = showAddCreditFromMain,
+                                onAddDialogExternalHandled = { showAddCreditFromMain = false },
+                                onOpenAddTransactionForCredit = { amountCents, conceptStr, notesStr ->
+                                    addTransactionViewModel.prefillForCredit(amountCents, conceptStr, notesStr)
+                                    showAddSheet = true
+                                },
+                                onBack = back
+                            )
+                            ROUTE_REPORTS -> ReportsScreen(viewModel = reportsViewModel, onBackClick = back)
+                            ROUTE_SETTINGS -> SettingsScreen(
+                                viewModel = settingsViewModel,
+                                listState = settingsListState,
+                                onNavigateToAccounts = { routeStack.add(ROUTE_ACCOUNTS) },
+                                onNavigateToCategories = { routeStack.add(ROUTE_CATEGORIES) },
+                                onNavigateToInstitutions = { routeStack.add(ROUTE_INSTITUTIONS) },
+                                onNavigateToAppearance = { routeStack.add(ROUTE_APPEARANCE) },
+                                onNavigateToModules = { routeStack.add(ROUTE_MODULES) },
+                                onNavigateToBackups = { routeStack.add(ROUTE_BACKUPS) },
+                                onNavigateToAbout = { routeStack.add(ROUTE_ABOUT) },
+                                onBackClick = back
+                            )
+                            ROUTE_ACCOUNTS -> AccountsManagementScreen(viewModel = settingsViewModel, onNavigateBack = back)
+                            ROUTE_CATEGORIES -> CategoriesManagementScreen(viewModel = settingsViewModel, onNavigateBack = back)
+                            ROUTE_INSTITUTIONS -> InstitutionsManagementScreen(viewModel = settingsViewModel, onNavigateBack = back)
+                            ROUTE_APPEARANCE -> AppearanceSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
+                            ROUTE_MODULES -> ModulesSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
+                            ROUTE_BACKUPS -> BackupSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
+                            ROUTE_ABOUT -> AboutScreen(onBackClick = back)
+                            else -> Box(Modifier.fillMaxSize())
+                        }
+                    }
+
+                    // Botón de agregar propio de Gastos fijos y Créditos (se abren sobre las pestañas, sin barra)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .navigationBarsPadding()
+                            .padding(16.dp)
+                    ) {
+                        ContextualFab(visible = routeFabVisible, leadingSpacer = false, onClick = onFabClick)
                     }
 
                     if (navBarStyle == NavBarStyle.FLOATING) {
@@ -569,7 +559,7 @@ fun MainScreen(
                                     }
                                 }
 
-                                ContextualFab(currentScreen = currentScreen, leadingSpacer = true, onClick = onFabClick)
+                                ContextualFab(visible = tabFabVisible, leadingSpacer = true, onClick = onFabClick)
                             }
                         }
                         }
@@ -577,7 +567,7 @@ fun MainScreen(
 
                     if (navBarStyle == NavBarStyle.INTEGRATED) {
                         Box(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                            ContextualFab(currentScreen = currentScreen, leadingSpacer = false, onClick = onFabClick)
+                            ContextualFab(visible = tabFabVisible, leadingSpacer = false, onClick = onFabClick)
                         }
                     }
                 }
@@ -651,10 +641,10 @@ private fun SlideVisibility(visible: Boolean, modifier: Modifier = Modifier, con
     ) { content() }
 }
 
-/** Botón de agregar contextual: aparece en todas las pestañas excepto Ajustes. */
+/** Botón de agregar contextual; [visible] lo decide quien lo coloca. */
 @Composable
 private fun ContextualFab(
-    currentScreen: Screen,
+    visible: Boolean,
     leadingSpacer: Boolean,
     onClick: () -> Unit
 ) {
@@ -662,7 +652,7 @@ private fun ContextualFab(
     val effectsFloat = minicashEffectsSpec<Float>()
 
     AnimatedVisibility(
-        visible = currentScreen !is Screen.Settings,
+        visible = visible,
         enter = scaleIn(animationSpec = spatialFloat) + fadeIn(animationSpec = effectsFloat),
         exit = scaleOut(animationSpec = spatialFloat) + fadeOut(animationSpec = effectsFloat)
     ) {
@@ -714,4 +704,23 @@ private fun sharedAxisX(forward: Boolean): ContentTransform {
         fadeIn(tween(SHARED_AXIS_MS - SHARED_AXIS_FADE_OUT_MS, delayMillis = SHARED_AXIS_FADE_OUT_MS, easing = LinearOutSlowInEasing))) togetherWith
         (slideOutHorizontally(slide) { -(it * SHARED_AXIS_OFFSET).toInt() * direction } +
             fadeOut(tween(SHARED_AXIS_FADE_OUT_MS, easing = FastOutLinearInEasing)))
+}
+
+private const val ROUTE_SETTINGS = "settings"
+private const val ROUTE_ACCOUNTS = "settings/accounts"
+private const val ROUTE_CATEGORIES = "settings/categories"
+private const val ROUTE_INSTITUTIONS = "settings/institutions"
+private const val ROUTE_APPEARANCE = "settings/appearance"
+private const val ROUTE_MODULES = "settings/modules"
+private const val ROUTE_BACKUPS = "settings/backups"
+private const val ROUTE_ABOUT = "settings/about"
+private const val ROUTE_BUDGET = "extras/budget"
+private const val ROUTE_CREDITS = "extras/credits"
+private const val ROUTE_REPORTS = "extras/reports"
+
+/** Profundidad de una ruta: 0 sin pantalla superpuesta, 1 pantallas de primer nivel, 2 subpantallas de Ajustes. */
+internal fun routeDepth(route: String?): Int = when {
+    route == null -> 0
+    route.startsWith("settings/") -> 2
+    else -> 1
 }
