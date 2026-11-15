@@ -143,6 +143,7 @@ import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import com.uramos.minicash.ui.transactions.AddTransactionSheet
+import com.uramos.minicash.ui.screens.account.AccountDetailScreen
 import com.uramos.minicash.ui.transactions.AddTransactionViewModel
 import kotlinx.coroutines.launch
 
@@ -386,6 +387,7 @@ fun MainScreen(
                                     listState = homeListState,
                                     onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
                                     onAddTransactionClick = { showAddSheet = true },
+                                    onOpenAccount = { id -> routeStack.add("$ROUTE_ACCOUNT_PREFIX$id") },
                                     onSeeMoreTransactionsClick = {
                                         val txIdx = visibleScreens.indexOf(Screen.Transactions).coerceAtLeast(0)
                                         fadeToPage(getShortestTargetPage(pagerState.currentPage, txIdx, numPages))
@@ -475,7 +477,14 @@ fun MainScreen(
                             ROUTE_MODULES -> ModulesSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
                             ROUTE_BACKUPS -> BackupSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
                             ROUTE_ABOUT -> AboutScreen(onBackClick = back)
-                            else -> Box(Modifier.fillMaxSize())
+                            else -> {
+                                val accountId = route?.removePrefix(ROUTE_ACCOUNT_PREFIX)?.toLongOrNull()
+                                if (route?.startsWith(ROUTE_ACCOUNT_PREFIX) == true && accountId != null) {
+                                    AccountDetailScreen(accountId = accountId, viewModel = homeViewModel, onBack = back)
+                                } else {
+                                    Box(Modifier.fillMaxSize())
+                                }
+                            }
                         }
                     }
 
@@ -889,6 +898,7 @@ private const val ROUTE_ABOUT = "settings/about"
 private const val ROUTE_BUDGET = "extras/budget"
 private const val ROUTE_CREDITS = "extras/credits"
 private const val ROUTE_REPORTS = "extras/reports"
+private const val ROUTE_ACCOUNT_PREFIX = "account/"
 
 /** Profundidad de una ruta: 0 sin pantalla superpuesta, 1 pantallas de primer nivel, 2 subpantallas de Ajustes. */
 internal fun routeDepth(route: String?): Int = when {

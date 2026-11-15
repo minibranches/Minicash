@@ -56,21 +56,10 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.key
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.material3.carousel.HorizontalUncontainedCarousel
+import androidx.compose.material3.carousel.rememberCarouselState
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
-import kotlinx.coroutines.flow.first
-import androidx.compose.ui.draw.clip
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.rememberSwipeToDismissBoxState
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.customActions
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -116,6 +105,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit = {},
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     onAddTransactionClick: () -> Unit,
+    onOpenAccount: (Long) -> Unit = {},
     onSeeMoreTransactionsClick: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
@@ -245,13 +235,20 @@ fun HomeScreen(
                         Column(modifier = Modifier.listEntrance(entranceTracker, "home_accounts", 1)) {
                             MinicashSectionTitle("Mis cuentas")
                             Spacer(modifier = Modifier.height(spacing.medium))
-                            LazyRow(
-                                contentPadding = PaddingValues(horizontal = spacing.none),
-                                horizontalArrangement = Arrangement.spacedBy(spacing.medium)
-                            ) {
-                                items(items = state.accounts, key = { it.id }) { account ->
-                                    AccountCard(account = account)
-                                }
+                            // Carrusel: las tarjetas de los bordes se recortan con máscara y se acomodan al desplazar
+                            val accountsCarouselState = rememberCarouselState { state.accounts.size }
+                            HorizontalUncontainedCarousel(
+                                state = accountsCarouselState,
+                                itemWidth = 156.dp,
+                                itemSpacing = spacing.medium,
+                                modifier = Modifier.fillMaxWidth().height(148.dp)
+                            ) { index ->
+                                val account = state.accounts[index]
+                                AccountCard(
+                                    account = account,
+                                    modifier = Modifier.fillMaxSize().maskClip(RoundedCornerShape(28.dp)),
+                                    onClick = { onOpenAccount(account.id) }
+                                )
                             }
                         }
                     }
@@ -468,125 +465,38 @@ fun GroupedTransactionCard(
                 animationSpec = minicashEffectsSpec(),
                 label = "transaction_row_color"
             )
-            val rowCard: @Composable (Modifier) -> Unit = { cardModifier ->
-                MinicashCard(
-                    shape = itemShape,
-                    containerColor = rowColor,
-                    modifier = cardModifier
-                        .fillMaxWidth()
-                        .combinedClickable(
-                            onClick = {
-                                if (isSelectionMode) {
-                                    haptics.tick()
-                                    onToggleSelection?.invoke(tx.id)
-                                } else {
-                                    onTransactionClick(tx)
-                                }
-                            },
-                            onLongClick = {
-                                haptics.heavyOrDelete()
-                                onToggleSelection?.invoke(tx.id)
-                            }
-                        )
-                ) {
-                    CompactTransactionRow(
-                        transaction = tx,
-                        accountName = accountName,
-                        categoryName = categoryName,
-                        isSelected = tx.id in selectedIds,
-                        isSelectionActive = isSelectionMode,
-                        onClick = null
-                    )
-                }
-            }
-
-            // La clave por id evita que, al borrar una fila, la siguiente herede su estado de deslizamiento
-            key(tx.id) {
-                if (onTransactionDelete != null && !isSelectionMode) {
-                    // Deslizar a la izquierda elimina (con "Deshacer"); la edición se abre al tocar la fila
-                    SwipeableTransactionRow(
-                        shape = itemShape,
-                        onDelete = {
-                            haptics.heavyOrDelete()
-                            onTransactionDelete(tx)
-                        },
-                        modifier = Modifier.padding(vertical = 2.dp),
-                        content = { rowCard(Modifier) }
-                    )
-                } else {
-                    rowCard(Modifier.padding(vertical = 2.dp))
-                }
-            }
-        }
-    }
-}
-
-/**
- * Fila que se desliza a la izquierda para eliminar. Solo se desliza en ese sentido para no chocar con el gesto de
- * cambiar de página; para lectores de pantalla, donde no se puede deslizar, "Eliminar" es una acción personalizada.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SwipeableTransactionRow(
-    shape: androidx.compose.ui.graphics.Shape,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val currentOnDelete by rememberUpdatedState(onDelete)
-    // La fila se colapsa con resorte y solo al terminar se borra el movimiento: así la lista no da un salto
-    val visibleState = remember { MutableTransitionState(true) }
-    LaunchedEffect(visibleState) {
-        snapshotFlow { visibleState.isIdle && !visibleState.currentState }.first { it }
-        currentOnDelete()
-    }
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                visibleState.targetState = false
-                true
-            } else {
-                false
-            }
-        }
-    )
-    val colorScheme = MaterialTheme.colorScheme
-    AnimatedVisibility(
-        visibleState = visibleState,
-        exit = shrinkVertically(minicashSpatialSpec()) + fadeOut(minicashEffectsSpec())
-    ) {
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        modifier = modifier.semantics {
-            customActions = listOf(CustomAccessibilityAction("Eliminar") { visibleState.targetState = false; true })
-        },
-        backgroundContent = {
-            val deleting = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
-            val color by animateColorAsState(
-                targetValue = if (deleting) colorScheme.errorContainer else Color.Transparent,
-                animationSpec = minicashEffectsSpec(),
-                label = "swipe_background"
-            )
-            Box(
+            MinicashCard(
+                shape = itemShape,
+                containerColor = rowColor,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(shape)
-                    .background(color)
-                    .padding(horizontal = 24.dp),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                if (deleting) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = null,
-                        tint = colorScheme.onErrorContainer
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+                    .combinedClickable(
+                        onClick = {
+                            if (isSelectionMode) {
+                                haptics.tick()
+                                onToggleSelection?.invoke(tx.id)
+                            } else {
+                                onTransactionClick(tx)
+                            }
+                        },
+                        onLongClick = {
+                            haptics.heavyOrDelete()
+                            onToggleSelection?.invoke(tx.id)
+                        }
                     )
-                }
+            ) {
+                CompactTransactionRow(
+                    transaction = tx,
+                    accountName = accountName,
+                    categoryName = categoryName,
+                    isSelected = tx.id in selectedIds,
+                    isSelectionActive = isSelectionMode,
+                    onClick = null,
+                    onDeleteClick = if (onTransactionDelete != null) { { onTransactionDelete(tx) } } else null
+                )
             }
-        },
-        content = { content() }
-    )
+        }
     }
 }
 

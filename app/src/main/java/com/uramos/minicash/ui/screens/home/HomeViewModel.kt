@@ -1,6 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
 import com.uramos.minicash.data.util.removeTransactions
+import com.uramos.minicash.ui.screens.account.transactionsOfAccount
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -66,6 +68,10 @@ class HomeViewModel(
         if (name.isBlank()) return
         viewModelScope.launch { onCreated(categoryDao.findOrCreateByName(name, type)) }
     }
+
+    /** Movimientos que tocan una cuenta (como origen o destino), del más reciente al más antiguo. */
+    fun accountTransactions(accountId: Long): Flow<List<TransactionEntity>> =
+        transactionDao.getAllTransactions().map { transactionsOfAccount(it, accountId) }
 
     val categories: StateFlow<List<CategoryEntity>> = categoryDao.getAllActiveCategories()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

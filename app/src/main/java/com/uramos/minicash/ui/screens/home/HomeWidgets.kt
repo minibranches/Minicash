@@ -159,7 +159,11 @@ fun PatrimonyCard(
 /** Tarjeta de cuenta alta: ícono en una forma expresiva, nombre, tipo de cuenta y saldo. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun AccountCard(account: AccountEntity) {
+fun AccountCard(
+    account: AccountEntity,
+    modifier: Modifier = Modifier.width(156.dp).height(148.dp),
+    onClick: (() -> Unit)? = null
+) {
     val accountColor = MinicashColorUtils.parseHexColor(account.colorHex, MaterialTheme.colorScheme.primary)
     val containerColor = MinicashColorUtils.tintedContainerColor(
         baseColor = accountColor,
@@ -172,9 +176,8 @@ fun AccountCard(account: AccountEntity) {
         level = CardTonalLevel.LOW,
         containerColor = containerColor,
         shape = RoundedCornerShape(28.dp),
-        modifier = Modifier
-            .width(156.dp)
-            .height(148.dp)
+        onClick = onClick,
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier
