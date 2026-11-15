@@ -93,6 +93,9 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.biometric)
+    // biometric 1.1.0 trae fragment 1.2.5, que rechaza los códigos de petición de la API de resultados de actividad
+    // (restaurar copias, exportar CSV) y cierra la app; hace falta una versión reciente
+    implementation(libs.androidx.fragment)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
 }
