@@ -154,8 +154,6 @@ fun BackupSettingsScreen(
                         title = "Crear copia de seguridad",
                         subtitle = "Cuentas, categorías, movimientos, gastos fijos y créditos",
                         icon = Icons.Default.CloudUpload,
-                        iconContainer = MaterialTheme.colorScheme.tertiaryContainer,
-                        iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
                         onClick = {
                             val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
                             createDocumentLauncher.launch("minicash_backup_$dateStr.json")
@@ -185,8 +183,6 @@ fun BackupSettingsScreen(
                         title = "Respaldo diario",
                         subtitle = if (state.autoBackupEnabled) "Programado todos los días a las $timeText hrs" else "Desactivado",
                         icon = Icons.Default.AutoMode,
-                        iconContainer = MaterialTheme.colorScheme.primaryContainer,
-                        iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
                         onClick = {
                             haptics.click()
                             viewModel.setAutoBackupEnabled(context, !state.autoBackupEnabled)

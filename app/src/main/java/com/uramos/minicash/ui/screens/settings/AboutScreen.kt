@@ -127,8 +127,6 @@ fun AboutScreen(onBackClick: () -> Unit) {
                         title = "Compartir Minicash",
                         subtitle = "Envía el instalador de esta versión a otra persona",
                         icon = Icons.Default.Share,
-                        iconContainer = MaterialTheme.colorScheme.tertiaryContainer,
-                        iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
                         onClick = { shareApk(context, versionName) }
                     )
                 }
