@@ -4,6 +4,10 @@ Aplicación Android de finanzas personales, pensada para llevar el dinero del d�
 
 Hecha con Kotlin, Jetpack Compose y Material 3 Expressive. Las ideas a futuro están en [docs/hoja-de-ruta.md](docs/hoja-de-ruta.md).
 
+[![Video de presentación de Minicash](docs/promo/minicash-promo.gif)](docs/promo/minicash-promo.mp4)
+
+<sub>Vista previa sin sonido; el [video completo con música](docs/promo/minicash-promo.mp4) está en `docs/promo/`, junto con su proyecto fuente en [Hyperframes](https://hyperframes.heygen.com).</sub>
+
 ## Qué hace
 
 - **Inicio.** Patrimonio total, tus cuentas en un carrusel (cada una abre su detalle) y la distribución de gastos e ingresos por categoría. Un selector de mes permite revisar meses anteriores; por defecto muestra el mes en curso.

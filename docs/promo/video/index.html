@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Minicash — video promocional</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Quicksand"; font-weight: 400; src: url("assets/fonts/quicksand_regular.ttf"); }
+      @font-face { font-family: "Quicksand"; font-weight: 600; src: url("assets/fonts/quicksand_semibold.ttf"); }
+      @font-face { font-family: "Quicksand"; font-weight: 700; src: url("assets/fonts/quicksand_bold.ttf"); }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #f8fafc; }
+
+      #root {
+        position: relative; width: 1920px; height: 1080px; overflow: hidden;
+        font-family: "Quicksand", sans-serif; font-weight: 600;
+        --pg: #f8fafc; --ink: #191c20; --inkv: #43474e;
+        --pri: #1a73e8; --pri-c: #d2e3fc; --on-pri-c: #041e49;
+        background: var(--pg);
+      }
+      .abs { position: absolute; }
+      .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+      /* ---------- fondo con formas M3E ---------- */
+      #bg .blob { position: absolute; }
+      #b1 { left: 1010px; top: 40px; width: 620px; height: 620px; background: var(--pri-c); border-radius: 50%; opacity: .55; }
+      #b2 { left: 1480px; top: 560px; width: 420px; height: 420px; background: #bcebf5; border-radius: 38%; opacity: .6; }
+      #b3 { left: -140px; top: 640px; width: 520px; height: 520px; background: #d7e3f7; border-radius: 30%; opacity: .7; }
+      #b4 { left: 880px; top: 760px; width: 190px; height: 190px; background: var(--pri); border-radius: 50%; opacity: .16; }
+      #b5 { left: 60px; top: 90px; width: 150px; height: 150px; background: #a5f5a8; border-radius: 34%; opacity: .45; }
+
+      /* ---------- intro ---------- */
+      #intro .in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #coin { position: relative; width: 300px; height: 300px; background: var(--pri); border-radius: 50%; }
+      #coin .disc { position: absolute; left: 36px; top: 36px; width: 228px; height: 228px; background: #d2e3fc; border-radius: 50%; }
+      #coin svg { position: absolute; left: 0; top: 0; }
+      #wordmark { margin-top: 36px; font-size: 168px; font-weight: 700; letter-spacing: -4px; color: #191c20; display: flex; line-height: 1; }
+      #wordmark span { display: inline-block; }
+      #tagline { margin-top: 18px; font-size: 44px; color: #43474e; }
+
+      /* ---------- texto lateral ---------- */
+      #txt { position: absolute; left: 160px; top: 250px; width: 780px; height: 540px; }
+      .tb { position: absolute; left: 0; top: 0; width: 780px; opacity: 0; }
+      .eyebrow { display: inline-block; padding: 10px 26px; border-radius: 999px; background: var(--pri-c); color: var(--on-pri-c); font-size: 26px; font-weight: 700; }
+      .tb h1 { margin-top: 28px; font-size: 96px; line-height: 1.04; font-weight: 700; letter-spacing: -2px; color: var(--ink); }
+      .tb p { margin-top: 26px; font-size: 36px; line-height: 1.35; color: var(--inkv); }
+      .chips { display: flex; gap: 14px; margin-top: 34px; }
+      .chip { position: relative; padding: 14px 30px; border-radius: 999px; font-size: 28px; font-weight: 700; background: var(--pri-c); color: var(--on-pri-c); overflow: hidden; }
+      .chip .sel { position: absolute; inset: 0; background: var(--pri); border-radius: 999px; opacity: 0; }
+      .chip b { position: relative; font-weight: 700; }
+
+      #m3e { position: absolute; left: 160px; top: 892px; display: flex; align-items: center; gap: 22px; opacity: 0; }
+      #m3eShape { width: 64px; height: 64px; background: var(--pri); border-radius: 50%; }
+      #m3e span { font-size: 30px; font-weight: 700; color: var(--ink); }
+
+      /* ---------- teléfono ---------- */
+      #phoneWrap { position: absolute; left: 1230px; top: 70px; width: 450px; height: 940px; }
+      .phone {
+        position: absolute; inset: 0; border-radius: 68px; background: #0b0f14; padding: 14px;
+        box-shadow: 0 50px 90px rgba(9, 30, 66, .28), 0 0 0 2px #2a313c inset;
+        --bg: #f8fafc; --c-low: #f2f4f8; --c: #eceef2; --c-high: #e6e8ee; --c-highest: #e0e2e8;
+        --on: #191c20; --onv: #43474e; --pri: #1a73e8; --on-pri: #ffffff; --pri-c: #d2e3fc; --on-pri-c: #041e49;
+        --sec-c: #d7e3f7; --on-sec-c: #101c2b; --inc: #1b6d2f; --inc-c: #a5f5a8; --exp: #ba1a1a; --ter: #39656d; --ter-c: #bcebf5;
+      }
+      .screen { position: relative; width: 422px; height: 912px; border-radius: 54px; overflow: hidden; background: var(--bg); color: var(--on); }
+      .cam { position: absolute; left: 50%; top: 14px; margin-left: -11px; width: 22px; height: 22px; border-radius: 50%; background: #0b0f14; z-index: 30; }
+      .sbar { position: absolute; left: 30px; top: 14px; font-size: 18px; font-weight: 700; z-index: 25; color: var(--on); }
+      .page { position: absolute; inset: 0; opacity: 0; }
+      .scroll { position: absolute; left: 0; top: 0; width: 422px; }
+      .pad { padding: 0 20px; }
+
+      .h1 { font-size: 40px; font-weight: 700; letter-spacing: -.5px; }
+      .sec { font-size: 25px; font-weight: 700; }
+      .row { display: flex; align-items: center; }
+      .iconbtn { width: 50px; height: 50px; border-radius: 50%; background: var(--c-high); display: flex; align-items: center; justify-content: center; }
+      svg.i { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+      .card { position: absolute; }
+      .lbl { font-size: 19px; color: var(--onv); }
+      .money { font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+      /* filas segmentadas */
+      .mrow { position: absolute; left: 20px; width: 382px; height: 84px; background: var(--c-high); display: flex; align-items: center; padding: 0 18px; gap: 14px; }
+      .mrow .ic { width: 52px; height: 52px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; }
+      .mrow .t { font-size: 22px; font-weight: 700; line-height: 1.15; }
+      .mrow .s { font-size: 16.5px; color: var(--onv); font-weight: 600; }
+      .mrow .a { margin-left: auto; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+      .inc { color: var(--inc); } .exp { color: var(--exp); } .trf { color: var(--ter); }
+      .ic.inc { background: var(--inc-c); color: var(--inc); } .ic.exp { background: #ffdad6; color: var(--exp); } .ic.trf { background: var(--ter-c); color: var(--ter); }
+      .grp { position: absolute; left: 24px; font-size: 20px; font-weight: 700; color: var(--onv); }
+
+      /* partidas de gastos fijos */
+      .part { position: absolute; width: 187px; height: 128px; background: var(--c-high); border-radius: 24px; padding: 16px 18px; }
+      .part .t { font-size: 19px; max-width: 110px; font-weight: 700; }
+      .part .a { position: absolute; left: 18px; bottom: 16px; font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .cbx { position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border-radius: 10px; border: 3px solid var(--onv); }
+      .cbx .fill { position: absolute; inset: -3px; border-radius: inherit; background: var(--pri); opacity: 0; }
+      .cbx svg { position: absolute; left: 3px; top: 3px; width: 26px; height: 26px; fill: none; stroke: var(--on-pri); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+
+      /* navegación flotante */
+      #nav { position: absolute; left: 17px; bottom: 28px; width: 388px; height: 72px; z-index: 20; }
+      #cap { position: absolute; left: 0; top: 0; height: 72px; width: 312px; border-radius: 999px; background: var(--c-high); padding: 8px; display: flex; gap: 4px; box-shadow: 0 8px 22px rgba(0, 0, 0, .13); }
+      .tab { position: relative; height: 56px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 0; overflow: hidden; color: var(--onv); flex: none; }
+      .tab .bg { position: absolute; inset: 0; background: var(--sec-c); border-radius: 999px; opacity: 0; }
+      .tab svg, .tab .nm { position: relative; }
+      .tab .nm { font-size: 19px; font-weight: 700; color: var(--on-sec-c); white-space: nowrap; opacity: 0; max-width: 0; overflow: hidden; padding-left: 0; }
+      #fab { position: absolute; right: 0; top: 4px; width: 64px; height: 64px; border-radius: 18px; background: var(--pri); color: var(--on-pri); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 22px rgba(26, 115, 232, .4); }
+      #fab svg { width: 32px; height: 32px; stroke-width: 2.6; }
+      .dial { position: absolute; right: 22px; height: 58px; padding: 0 24px 0 18px; border-radius: 999px; background: var(--pri-c); color: var(--on-pri-c); display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; z-index: 19; opacity: 0; box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
+      #fade { position: absolute; left: 0; bottom: 0; width: 422px; height: 150px; background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg) 70%); z-index: 15; }
+
+      /* ---------- final ---------- */
+      #outro { background: #0f141c; }
+      #outro .in { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; clip-path: circle(0px at 1450px 940px); }
+      #coin2 { position: relative; width: 260px; height: 260px; background: #1a73e8; border-radius: 50%; }
+      #coin2 .disc { position: absolute; left: 31px; top: 31px; width: 198px; height: 198px; background: #d2e3fc; border-radius: 50%; }
+      #coin2 svg { position: absolute; left: 0; top: 0; }
+      #o-word { margin-top: 30px; font-size: 150px; font-weight: 700; letter-spacing: -3px; color: #e1e6f0; line-height: 1; }
+      #o-sub { margin-top: 16px; font-size: 40px; color: #c2c7d0; }
+      #o-pills { margin-top: 44px; display: flex; gap: 16px; }
+      #o-pills div { padding: 14px 32px; border-radius: 999px; font-size: 28px; font-weight: 700; background: #222936; color: #e1e6f0; }
+      #o-pills div:first-child { background: #8ab4f8; color: #041e49; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="32.8" data-width="1920" data-height="1080">
+      <!-- Fondo -->
+      <div id="bg" class="clip abs" data-start="0" data-duration="32.8" style="left:0;top:0;width:1920px;height:1080px;z-index:0">
+        <div id="b1" class="blob"></div><div id="b2" class="blob"></div><div id="b3" class="blob"></div>
+        <div id="b4" class="blob"></div><div id="b5" class="blob"></div>
+      </div>
+
+      <!-- Intro -->
+      <div id="intro" class="clip abs" data-start="0" data-duration="4.7" style="left:0;top:0;width:1920px;height:1080px;z-index:5">
+        <div class="in" id="introIn">
+          <div id="coin">
+            <div class="disc"></div>
+            <svg width="300" height="300" viewBox="0 0 108 108"><g transform="translate(54 54) scale(1.7) translate(-54 -54)">
+              <path id="mPath" d="M 44,62 V 50 C 44,44.5 54,44.5 54,50 V 62 M 54,50 C 54,44.5 64,44.5 64,50 V 62" fill="none" stroke="#1A73E8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" /></g></svg>
+          </div>
+          <div id="wordmark"><span>M</span><span>i</span><span>n</span><span>i</span><span>c</span><span>a</span><span>s</span><span>h</span></div>
+          <div id="tagline">Tus finanzas, con forma propia.</div>
+        </div>
+      </div>
+
+      <!-- Texto lateral -->
+      <div id="txt" class="clip" data-start="4.2" data-duration="24.2" style="z-index:6">
+        <div id="t1" class="tb"><span class="eyebrow">Inicio</span><h1>Todo tu dinero, de un vistazo.</h1><p>Patrimonio, cuentas y gastos por categoría.</p></div>
+        <div id="t2" class="tb"><span class="eyebrow">Movimientos</span><h1>Listas que se sienten vivas.</h1><p>Esquinas segmentadas y un botón que se despliega.</p></div>
+        <div id="t3" class="tb"><span class="eyebrow">Gastos fijos y créditos</span><h1>Tus pagos, siempre a tiempo.</h1><p>Quincenas y créditos con progreso ondulado.</p></div>
+        <div id="t4" class="tb"><span class="eyebrow">Reportes</span><h1>Tus números, sin ruido.</h1><p>Balance del periodo, tasa de ahorro y gasto por categoría.</p></div>
+        <div id="t5" class="tb"><span class="eyebrow">Personalización</span><h1>Tu app, a tu medida.</h1><p>Claro, oscuro o AMOLED.</p>
+          <div class="chips"><div class="chip" id="ch1"><div class="sel"></div><b>Claro</b></div><div class="chip" id="ch2"><div class="sel"></div><b>Oscuro</b></div><div class="chip" id="ch3"><div class="sel"></div><b>AMOLED</b></div></div></div>
+      </div>
+      <div id="m3e" class="clip" data-start="4.2" data-duration="24.2" style="z-index:6"><div id="m3eShape"></div><span>Material 3 Expressive</span></div>
+
+      <!-- Teléfono -->
+      <div id="phoneWrap" class="clip" data-start="4.2" data-duration="25.4" style="z-index:8">
+        <div class="phone" id="phone">
+          <div class="screen">
+            <div style="position:absolute;left:0;top:0;width:422px;height:46px;background:var(--bg);z-index:22"></div><div class="cam"></div><div class="sbar">9:41</div>
+
+            <!-- Inicio -->
+            <div class="page" id="pHome" style="opacity:1">
+              <div class="scroll" id="homeScroll">
+                <div class="pad row" style="position:absolute;left:0;top:52px;width:422px;justify-content:space-between"><div class="h1">Inicio</div>
+                  <div class="row" style="gap:10px"><div class="row" style="padding:0 18px;height:50px;border-radius:999px;background:var(--c-high);font-size:19px;font-weight:700">nov 2026 ▾</div><div class="iconbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></div></div></div>
+                <div class="card" id="hero" style="left:20px;top:124px;width:382px;height:196px;border-radius:30px;background:var(--pri-c);color:var(--on-pri-c);padding:24px">
+                  <div class="lbl" style="color:var(--on-pri-c)">Patrimonio total</div>
+                  <div class="money" id="netw" style="font-size:58px;margin-top:6px;letter-spacing:-1px">$0.00</div>
+                  <div class="row" style="margin-top:12px;gap:8px;display:inline-flex;padding:7px 16px;border-radius:999px;background:var(--bg);font-size:19px;font-weight:700;color:var(--inc)"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="tnum">+4.2% este mes</span></div>
+                </div>
+                <div class="card" id="cIn" style="left:20px;top:330px;width:187px;height:112px;border-radius:24px;background:var(--c-high);padding:16px 18px">
+                  <div class="row lbl" style="gap:6px"><svg class="i inc" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Ingresos</div>
+                  <div class="money inc" id="vIn" style="font-size:30px;margin-top:8px">+$0</div></div>
+                <div class="card" id="cEx" style="left:215px;top:330px;width:187px;height:112px;border-radius:24px;background:var(--c-high);padding:16px 18px">
+                  <div class="row lbl" style="gap:6px"><svg class="i exp" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Gastos</div>
+                  <div class="money exp" id="vEx" style="font-size:30px;margin-top:8px">-$0</div></div>
+                <div class="sec abs" style="left:24px;top:470px">Tus cuentas</div>
+                <div class="abs" id="accRow" data-layout-allow-overflow style="left:0;top:512px;width:900px;height:132px">
+                  <div class="card" style="left:20px;top:0;width:230px;height:132px;border-radius:26px;background:var(--c-high);padding:18px 20px"><div class="lbl">Nómina</div><div class="money" style="font-size:31px;margin-top:20px">$21,300.00</div></div>
+                  <div class="card" style="left:258px;top:0;width:230px;height:132px;border-radius:26px;background:var(--sec-c);padding:18px 20px"><div class="lbl" style="color:var(--on-sec-c)">Ahorro</div><div class="money" style="font-size:31px;margin-top:20px;color:var(--on-sec-c)">$18,950.00</div></div>
+                  <div class="card" style="left:496px;top:0;width:230px;height:132px;border-radius:26px;background:var(--c-high);padding:18px 20px"><div class="lbl">Tarjeta</div><div class="money exp" style="font-size:31px;margin-top:20px">-$4,200.00</div></div>
+                </div>
+                <div class="sec abs" style="left:24px;top:672px">Gasto por categoría</div>
+                <div class="card" style="left:20px;top:714px;width:382px;height:200px;border-radius:28px;background:var(--c-low);padding:20px">
+                  <svg id="donut" width="160" height="160" viewBox="0 0 120 120" style="position:absolute;left:20px;top:20px">
+                    <circle cx="60" cy="60" r="46" fill="none" stroke="var(--c-highest)" stroke-width="16" />
+                    <circle class="seg" cx="60" cy="60" r="46" fill="none" stroke="var(--pri)" stroke-width="16" stroke-linecap="butt" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 60 60)" data-len="38" data-off="0"/>
+                    <circle class="seg" cx="60" cy="60" r="46" fill="none" stroke="var(--ter)" stroke-width="16" pathLength="100" stroke-dasharray="0 100" stroke-dashoffset="-40" transform="rotate(-90 60 60)" data-len="25" data-off="-40"/>
+                    <circle class="seg" cx="60" cy="60" r="46" fill="none" stroke="#7a8aa6" stroke-width="16" pathLength="100" stroke-dasharray="0 100" stroke-dashoffset="-67" transform="rotate(-90 60 60)" data-len="16" data-off="-67"/>
+                  </svg>
+                  <div style="position:absolute;left:200px;top:30px;font-size:21px;line-height:2.05;font-weight:700">
+                    <div class="row" style="gap:10px"><i style="width:16px;height:16px;border-radius:50%;background:var(--pri);display:block"></i>Vivienda</div>
+                    <div class="row" style="gap:10px"><i style="width:16px;height:16px;border-radius:50%;background:var(--ter);display:block"></i>Comida</div>
+                    <div class="row" style="gap:10px"><i style="width:16px;height:16px;border-radius:50%;background:#7a8aa6;display:block"></i>Transporte</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Movimientos -->
+            <div class="page" id="pMov">
+              <div class="abs h1" style="left:24px;top:52px">Movimientos</div>
+              <div class="abs row" style="left:20px;top:116px;width:382px;height:58px;border-radius:999px;background:var(--c-high);padding:0 20px;gap:12px;color:var(--onv);font-size:21px"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar movimientos</div>
+              <div class="abs row" style="left:20px;top:188px;gap:7px;font-size:18px;font-weight:700">
+                <div style="padding:9px 15px;border-radius:999px;background:var(--sec-c);color:var(--on-sec-c)">Todos</div>
+                <div style="padding:9px 15px;border-radius:999px;background:var(--c-high)">Gastos</div>
+                <div style="padding:9px 15px;border-radius:999px;background:var(--c-high)">Ingresos</div>
+                <div style="padding:9px 15px;border-radius:999px;background:var(--c-high)">Transf.</div></div>
+              <div class="grp" style="top:246px">Hoy</div>
+              <div class="mrow r1" style="top:278px;border-radius:24px 24px 4px 4px"><div class="ic exp"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div><div><div class="t">Supermercado</div><div class="s">Tarjeta</div></div><div class="a exp">-$842.30</div></div>
+              <div class="mrow r2" style="top:366px;border-radius:4px"><div class="ic inc"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></div><div><div class="t">Nómina</div><div class="s">Cuenta nómina</div></div><div class="a inc">+$18,500.00</div></div>
+              <div class="mrow r3" style="top:454px;border-radius:4px"><div class="ic trf"><svg class="i" viewBox="0 0 24 24"><path d="M5 8h14M15 4l4 4-4 4M19 16H5M9 12l-4 4 4 4"/></svg></div><div><div class="t">A ahorro</div><div class="s">Transferencia</div></div><div class="a trf">$2,000.00</div></div>
+              <div class="mrow r4" style="top:542px;border-radius:4px 4px 24px 24px"><div class="ic exp"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div><div><div class="t">Café y pan</div><div class="s">Efectivo</div></div><div class="a exp">-$96.00</div></div>
+              <div class="grp" style="top:644px">Ayer</div>
+              <div class="mrow r5" style="top:676px;border-radius:24px 24px 4px 4px"><div class="ic exp"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div><div><div class="t">Gasolina</div><div class="s">Tarjeta</div></div><div class="a exp">-$620.00</div></div>
+              <div class="mrow r6" style="top:764px;border-radius:4px 4px 24px 24px"><div class="ic exp"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div><div><div class="t">Streaming</div><div class="s">Tarjeta</div></div><div class="a exp">-$219.00</div></div>
+            </div>
+
+            <!-- Gastos fijos y créditos -->
+            <div class="page" id="pFix">
+              <div class="abs row" style="left:20px;top:52px;gap:14px"><div class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div><div class="h1" style="font-size:34px;line-height:1">Gastos fijos</div><div class="lbl" style="margin-top:4px">1.ª quincena · noviembre</div></div></div>
+              <div class="card" style="left:20px;top:128px;width:382px;height:170px;border-radius:28px;background:var(--pri-c);color:var(--on-pri-c);padding:22px 24px">
+                <div class="lbl" style="color:var(--on-pri-c)">Disponible</div>
+                <div class="money" id="avail" style="font-size:44px;margin-top:2px">$3,240.00</div>
+                <svg width="334" height="26" viewBox="0 0 334 26" style="position:absolute;left:24px;top:108px;overflow:visible">
+                  <line x1="0" y1="13" x2="334" y2="13" stroke="var(--on-pri-c)" stroke-opacity=".22" stroke-width="7" stroke-linecap="round"/>
+                  <path class="wave" id="wv1" fill="none" stroke="var(--pri)" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="0.6" data-w="334" data-y="13" data-amp="5"/>
+                </svg>
+                <div class="lbl tnum" id="pct" style="position:absolute;right:24px;top:22px;font-weight:700;color:var(--on-pri-c)">40% ejecutado</div>
+              </div>
+              <div class="part" id="pa1" style="left:20px;top:312px"><div class="t">Renta</div><div class="a exp">-$7,500</div><div class="cbx"><div class="fill"></div><svg viewBox="0 0 26 26"><path d="M5 13.5l5 5 11-11" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg></div></div>
+              <div class="part" id="pa2" style="left:215px;top:312px"><div class="t">Internet</div><div class="a exp">-$480</div><div class="cbx"><div class="fill"></div><svg viewBox="0 0 26 26"><path d="M5 13.5l5 5 11-11" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg></div></div>
+              <div class="part" id="pa3" style="left:20px;top:448px"><div class="t">Nómina</div><div class="a inc">+$9,250</div><div class="cbx"><div class="fill"></div><svg viewBox="0 0 26 26"><path d="M5 13.5l5 5 11-11" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg></div></div>
+              <div class="part" id="pa4" style="left:215px;top:448px"><div class="t">Reembolso</div><div class="a inc">+$350</div><div class="cbx"><div class="fill"></div><svg viewBox="0 0 26 26"><path d="M5 13.5l5 5 11-11" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/></svg></div></div>
+              <div class="sec abs" style="left:24px;top:604px">Créditos</div>
+              <div class="card" id="credit" style="left:20px;top:646px;width:382px;height:150px;border-radius:28px;background:var(--c-low);padding:20px 24px">
+                <div class="row" style="justify-content:space-between"><div style="font-size:23px;font-weight:700">Laptop</div><div class="lbl tnum" style="font-weight:700">8 de 12</div></div>
+                <div class="lbl" style="margin-top:2px">Próximo pago · 20 nov</div>
+                <svg width="334" height="26" viewBox="0 0 334 26" style="position:absolute;left:24px;top:98px;overflow:visible">
+                  <line x1="0" y1="13" x2="334" y2="13" stroke="var(--c-highest)" stroke-width="7" stroke-linecap="round"/>
+                  <path class="wave" id="wv2" fill="none" stroke="var(--pri)" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" data-w="334" data-y="13" data-amp="5"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Reportes -->
+            <div class="page" id="pRep">
+              <div class="abs row" style="left:20px;top:52px;gap:14px"><div class="iconbtn"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></div><div class="h1" style="font-size:34px">Reportes</div></div>
+              <div class="card" style="left:20px;top:128px;width:382px;height:150px;border-radius:28px;background:var(--pri-c);color:var(--on-pri-c);padding:22px 24px">
+                <div class="lbl" style="color:var(--on-pri-c)">Balance del periodo</div>
+                <div class="money" id="bal" style="font-size:46px;margin-top:2px">+$0.00</div>
+                <div class="row" style="position:absolute;left:24px;bottom:18px;padding:6px 16px;border-radius:999px;background:var(--bg);font-size:18px;font-weight:700;color:var(--inc);gap:6px"><svg class="i" style="width:18px;height:18px" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg><span class="tnum" id="rate">0% tasa de ahorro</span></div>
+              </div>
+              <div class="card" style="left:20px;top:292px;width:382px;height:330px;border-radius:28px;background:var(--c-low);padding:20px 22px">
+                <div class="sec" style="font-size:22px">Ingresos contra gastos</div>
+                <div id="bars" style="position:absolute;left:22px;top:66px;width:338px;height:200px;display:flex;align-items:flex-end;justify-content:space-between"></div>
+                <div id="mon" style="position:absolute;left:22px;top:276px;width:338px;display:flex;justify-content:space-between;font-size:17px;color:var(--onv);font-weight:700"><span>jun</span><span>jul</span><span>ago</span><span>sep</span><span>oct</span><span>nov</span></div>
+              </div>
+              <div class="sec abs" style="left:24px;top:644px">Por categoría</div>
+              <div class="card" style="left:20px;top:686px;width:382px;height:150px;border-radius:28px;background:var(--c-high);padding:18px 22px">
+                <div class="lbl row" style="justify-content:space-between;font-weight:700"><span>Vivienda</span><span class="tnum">38%</span></div>
+                <div style="margin-top:7px;height:14px;border-radius:999px;background:var(--c-highest)"><div class="cb" style="height:14px;width:38%;border-radius:999px;background:var(--pri)"></div></div>
+                <div class="lbl row" style="justify-content:space-between;font-weight:700;margin-top:16px"><span>Comida</span><span class="tnum">25%</span></div>
+                <div style="margin-top:7px;height:14px;border-radius:999px;background:var(--c-highest)"><div class="cb" style="height:14px;width:25%;border-radius:999px;background:var(--ter)"></div></div>
+              </div>
+            </div>
+
+            <!-- Barra flotante + FAB -->
+            <div id="fade"></div>
+            <div class="dial" data-layout-allow-overlap id="d3" style="bottom:252px"><svg class="i" viewBox="0 0 24 24"><path d="M5 8h14M15 4l4 4-4 4M19 16H5M9 12l-4 4 4 4"/></svg>Transferencia</div>
+            <div class="dial" data-layout-allow-overlap id="d2" style="bottom:182px"><svg class="i" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Ingreso</div>
+            <div class="dial" data-layout-allow-overlap id="d1" style="bottom:112px"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg>Gasto</div>
+            <div id="nav">
+              <div id="cap">
+                <div class="tab" id="tab1" style="width:160px"><div class="bg" style="opacity:1"></div><svg class="i" viewBox="0 0 24 24" style="color:var(--on-sec-c)"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="currentColor"/></svg><span class="nm" style="opacity:1;max-width:110px;padding-left:8px">Inicio</span></div>
+                <div class="tab" id="tab2" style="width:64px"><div class="bg"></div><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z M9 8h6 M9 12h6"/></svg><span class="nm">Movimientos</span></div>
+                <div class="tab" id="tab3" style="width:64px"><div class="bg"></div><svg class="i" viewBox="0 0 24 24"><path d="M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z"/></svg><span class="nm">Extras</span></div>
+              </div>
+              <div id="fab"><svg class="i" id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cierre -->
+      <div id="outro" class="clip abs" data-start="28.6" data-duration="4.2" style="left:0;top:0;width:1920px;height:1080px;z-index:12">
+        <div class="in" id="outroIn">
+          <div id="coin2"><div class="disc"></div>
+            <svg width="260" height="260" viewBox="0 0 108 108"><g transform="translate(54 54) scale(1.7) translate(-54 -54)"><path d="M 44,62 V 50 C 44,44.5 54,44.5 54,50 V 62 M 54,50 C 54,44.5 64,44.5 64,50 V 62" fill="none" stroke="#1A73E8" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></g></svg></div>
+          <div id="o-word">Minicash</div>
+          <div id="o-sub">Finanzas personales para Android</div>
+          <div id="o-pills"><div>Sin cuentas</div><div>Sin servidores</div><div>100 % en tu dispositivo</div></div>
+        </div>
+      </div>
+
+      <audio id="music" src="assets/music.mp3" data-start="0" data-duration="32.8" data-volume="0.85" data-fade-out="2.5"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const E = { pop: "back.out(1.7)", spr: "elastic.out(1, 0.62)", out: "expo.out", soft: "power3.out" };
+      const money = (v, p = "$") => p + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const $ = (s) => document.querySelector(s);
+      function count(id, a, b, at, dur, fmt) {
+        const o = { v: a };
+        tl.to(o, { v: b, duration: dur, ease: "power3.out", onUpdate() { $(id).textContent = fmt(o.v); } }, at);
+      }
+      // trazos ondulados
+      document.querySelectorAll(".wave").forEach((p) => {
+        const w = +p.dataset.w, y = +p.dataset.y, a = +p.dataset.amp, wl = 30; let d = "";
+        for (let x = 0; x <= w; x += 2) d += (x ? "L" : "M") + x + "," + (y + a * Math.sin((2 * Math.PI * x) / wl)).toFixed(2);
+        p.setAttribute("d", d);
+      });
+      // barras de reportes
+      const data = [[62, 44], [70, 52], [58, 49], [74, 47], [68, 55], [84, 54]];
+      const barsEl = $("#bars");
+      data.forEach(([i, g], k) => {
+        const c = document.createElement("div");
+        c.style.cssText = "display:flex;gap:5px;align-items:flex-end;height:200px";
+        c.innerHTML = `<div class="bar" style="width:20px;height:${i * 2.3}px;border-radius:10px 10px 4px 4px;background:var(--pri)"></div><div class="bar" style="width:20px;height:${g * 2.3}px;border-radius:10px 10px 4px 4px;background:var(--ter)"></div>`;
+        barsEl.appendChild(c);
+      });
+
+      /* ===== 0–4.7 INTRO ===== */
+      tl.fromTo("#coin", { scale: 0.55, rotation: -40 }, { scale: 1, rotation: 0, duration: 1.1, ease: E.spr }, 0.2);
+      tl.fromTo("#mPath", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, 0.8);
+      tl.to("#coin", { borderRadius: "32%", duration: 0.8, ease: "power3.inOut" }, 1.6)
+        .to("#coin .disc", { borderRadius: "32%", duration: 0.8, ease: "power3.inOut" }, 1.6)
+        .to("#coin", { borderRadius: "50%", duration: 0.8, ease: E.pop }, 2.5)
+        .to("#coin .disc", { borderRadius: "50%", duration: 0.8, ease: E.pop }, 2.5);
+      tl.fromTo("#wordmark span", { y: 90, opacity: 0.12, rotation: 8 }, { y: 0, opacity: 1, rotation: 0, duration: 0.7, ease: E.pop, stagger: 0.06 }, 1.5);
+      tl.fromTo("#tagline", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: E.out }, 2.4);
+      tl.fromTo("#b1", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 0.55, duration: 1.4, ease: E.out }, 0.1);
+      tl.fromTo("#b2", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 0.6, duration: 1.4, ease: E.out }, 0.3);
+      tl.fromTo("#b3", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 0.7, duration: 1.4, ease: E.out }, 0.5);
+      tl.fromTo("#b4", { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.16, duration: 1, ease: E.pop }, 0.7);
+      tl.fromTo("#b5", { scale: 0, opacity: 0 }, { scale: 1, opacity: 0.45, duration: 1, ease: E.pop }, 0.9);
+      tl.to("#introIn", { opacity: 0, scale: 0.92, duration: 0.5, ease: "power2.in" }, 4.1);
+      // formas de fondo, en movimiento continuo y suave
+      tl.to("#b1", { rotation: 40, x: -60, y: 30, duration: 30, ease: "sine.inOut" }, 0.1);
+      tl.to("#b2", { rotation: -60, y: -50, duration: 30, ease: "sine.inOut" }, 0.3);
+      tl.to("#b3", { rotation: 50, x: 50, duration: 30, ease: "sine.inOut" }, 0.5);
+      tl.to("#b5", { rotation: 120, y: 40, duration: 30, ease: "sine.inOut" }, 0.9);
+
+      /* ===== TELÉFONO ===== */
+      tl.fromTo("#phone", { y: 1100, rotation: 6 }, { y: 0, rotation: 0, duration: 1.3, ease: "back.out(1.25)" }, 4.2);
+      tl.fromTo("#m3e", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.8, ease: E.out }, 4.8);
+      // forma M3E que se transforma (morph de radios)
+      const mph = [["50%", 4.8], ["28%", 6.2], ["50%", 7.6], ["14% 50% 14% 50%", 9.0], ["50%", 10.4], ["38% 62% 38% 62% / 50% 50% 50% 50%", 11.8],
+        ["50%", 13.2], ["22%", 14.6], ["50%", 16.0], ["14% 50% 14% 50%", 17.4], ["50%", 18.8], ["30%", 20.2], ["50%", 21.6], ["22%", 23.0], ["50%", 24.4]];
+      mph.forEach(([r, t], i) => tl.to("#m3eShape", { borderRadius: r, rotation: (i + 1) * 45, duration: 1.0, ease: "back.out(1.5)" }, t));
+
+      // ---- escena Inicio 4.2–9.6
+      tl.fromTo("#t1", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: E.out }, 4.9);
+      tl.fromTo("#hero", { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.9, ease: E.spr }, 5.3);
+      tl.fromTo("#cIn", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.pop }, 5.6);
+      tl.fromTo("#cEx", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.pop }, 5.75);
+      count("#netw", 0, 48250, 5.5, 1.6, (v) => money(v));
+      count("#vIn", 0, 32400, 5.8, 1.4, (v) => "+$" + Math.round(v).toLocaleString("en-US"));
+      count("#vEx", 0, 14180, 5.9, 1.4, (v) => "-$" + Math.round(v).toLocaleString("en-US"));
+      tl.fromTo("#accRow", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E.out }, 6.1);
+      tl.to("#accRow", { x: -238, duration: 0.9, ease: "power3.inOut" }, 6.9);
+      tl.to("#homeScroll", { y: -165, duration: 0.9, ease: "power3.inOut" }, 7.4);
+      document.querySelectorAll("#donut .seg").forEach((s, i) => {
+        tl.fromTo(s, { strokeDasharray: "0 100" }, { strokeDasharray: `${+s.dataset.len - 1} 100`, duration: 0.9, ease: "power3.out" }, 8.0 + i * 0.18);
+      });
+      tl.to("#t1", { opacity: 0, y: -40, duration: 0.45, ease: "power2.in" }, 9.1);
+
+      // ---- cambio de pestaña: helper
+      function tabTo(a, b, at) {
+        tl.to(`#tab${a}`, { width: 64, duration: 0.7, ease: "back.out(1.3)" }, at)
+          .to(`#tab${a} .bg`, { opacity: 0, duration: 0.3 }, at)
+          .to(`#tab${a} .nm`, { opacity: 0, maxWidth: 0, paddingLeft: 0, duration: 0.3 }, at)
+          .to(`#tab${b}`, { width: 160, duration: 0.7, ease: "back.out(1.3)" }, at)
+          .to(`#tab${b} .bg`, { opacity: 1, duration: 0.3 }, at)
+          .to(`#tab${b} .nm`, { opacity: 1, maxWidth: 118, paddingLeft: 6, duration: 0.4 }, at + 0.1);
+      }
+      function swap(a, b, at) {
+        tl.to(a, { x: -70, opacity: 0, duration: 0.4, ease: "power3.in" }, at)
+          .fromTo(b, { x: 70, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: E.out, immediateRender: false }, at + 0.3);
+      }
+
+      // ---- escena Movimientos 9.6–15
+      tabTo(1, 2, 9.5);
+      swap("#pHome", "#pMov", 9.5);
+      tl.fromTo("#t2", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: E.out }, 9.9);
+      ["r1", "r2", "r3", "r4", "r5", "r6"].forEach((r, i) => {
+        tl.fromTo(`.${r}`, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E.pop }, 10.4 + i * 0.1);
+      });
+      // pulsación: la fila se transforma
+      tl.to(".r2", { borderRadius: "24px", scale: 0.97, duration: 0.25, ease: "power2.out" }, 12.0)
+        .to(".r2", { scale: 1, duration: 0.6, ease: E.spr }, 12.25)
+        .to(".r2", { borderRadius: "4px", duration: 0.5, ease: "power2.inOut" }, 12.6);
+      // FAB: despliega Gasto / Ingreso / Transferencia
+      tl.to("#plus", { rotation: 135, duration: 0.5, ease: E.pop }, 13.0);
+      tl.to("#fab", { borderRadius: "32px", duration: 0.5, ease: E.pop }, 13.0);
+      ["#d1", "#d2", "#d3"].forEach((d, i) => tl.fromTo(d, { opacity: 0, y: 40, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: E.pop }, 13.1 + i * 0.12));
+      ["#d3", "#d2", "#d1"].forEach((d, i) => tl.to(d, { opacity: 0, y: 30, scale: 0.7, duration: 0.3, ease: "power2.in" }, 14.5 + i * 0.05));
+      tl.to("#plus", { rotation: 0, duration: 0.5, ease: E.pop }, 14.5);
+      tl.to("#fab", { borderRadius: "18px", duration: 0.5, ease: E.pop }, 14.5);
+      tl.to("#t2", { opacity: 0, y: -40, duration: 0.45, ease: "power2.in" }, 14.6);
+
+      // ---- escena Gastos fijos y créditos 15–20.4
+      tabTo(2, 3, 14.9);
+      swap("#pMov", "#pFix", 14.9);
+      tl.fromTo("#t3", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: E.out }, 15.3);
+      ["#pa1", "#pa2", "#pa3", "#pa4"].forEach((p, i) => tl.fromTo(p, { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.pop }, 15.7 + i * 0.1));
+      tl.fromTo("#credit", { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.pop }, 16.2);
+      tl.to("#wv1", { strokeDashoffset: 0.6, duration: 0.01 }, 15.7);
+      // palomitas con morfeo cuadrado → círculo
+      [["#pa1", 17.0], ["#pa2", 17.5], ["#pa3", 18.0], ["#pa4", 18.45]].forEach(([p, t]) => {
+        tl.to(`${p} .cbx`, { borderRadius: "50%", duration: 0.45, ease: E.pop }, t)
+          .to(`${p} .cbx .fill`, { opacity: 1, duration: 0.2 }, t)
+          .to(`${p} .cbx svg path`, { strokeDashoffset: 0, duration: 0.4, ease: "power2.out" }, t + 0.1)
+          .fromTo(p, { scale: 1 }, { scale: 1, duration: 0.01 }, t);
+        tl.to(p, { scale: 1.05, duration: 0.18, ease: "power2.out" }, t).to(p, { scale: 1, duration: 0.5, ease: E.spr }, t + 0.18);
+      });
+      tl.to("#wv1", { strokeDashoffset: 0.12, duration: 1.8, ease: "power3.out" }, 17.0);
+      tl.to("#wv2", { strokeDashoffset: 0.34, duration: 1.4, ease: "power3.out" }, 16.6);
+      count("#avail", 3240, 11840, 17.0, 1.8, (v) => money(v));
+      const pc = { v: 40 };
+      tl.to(pc, { v: 88, duration: 1.8, ease: "power3.out", onUpdate() { $("#pct").textContent = Math.round(pc.v) + "% ejecutado"; } }, 17.0);
+      tl.to("#t3", { opacity: 0, y: -40, duration: 0.45, ease: "power2.in" }, 19.9);
+
+      // ---- escena Reportes 20.4–25.4
+      swap("#pFix", "#pRep", 20.3);
+      tl.fromTo("#t4", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: E.out }, 20.7);
+      document.querySelectorAll("#bars .bar").forEach((b, i) => {
+        tl.fromTo(b, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, transformOrigin: "50% 100%", duration: 0.9, ease: "elastic.out(1, 0.55)" }, 21.2 + i * 0.07);
+      });
+      count("#bal", 0, 18220, 20.9, 1.5, (v) => money(v, "+$"));
+      const rt = { v: 0 };
+      tl.to(rt, { v: 36, duration: 1.5, ease: "power3.out", onUpdate() { $("#rate").textContent = Math.round(rt.v) + "% tasa de ahorro"; } }, 20.9);
+      document.querySelectorAll("#pRep .cb").forEach((c, i) => tl.fromTo(c, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, transformOrigin: "0% 50%", duration: 0.9, ease: "back.out(1.2)" }, 22.5 + i * 0.15));
+      tl.to("#t4", { opacity: 0, y: -40, duration: 0.45, ease: "power2.in" }, 24.9);
+
+      // ---- escena Personalización 25.4–29
+      tabTo(3, 1, 25.2);
+      swap("#pRep", "#pHome", 25.2);
+      tl.to("#homeScroll", { y: 0, duration: 0.01 }, 25.2);
+      tl.to("#accRow", { x: 0, duration: 0.01 }, 25.2);
+      tl.fromTo("#t5", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.9, ease: E.out }, 25.6);
+      const dark = { "--bg": "#0f141c", "--c-low": "#141923", "--c": "#181e29", "--c-high": "#222936", "--c-highest": "#2c3444", "--on": "#e1e6f0", "--onv": "#c2c7d0",
+        "--pri": "#8ab4f8", "--on-pri": "#041e49", "--pri-c": "#0842a0", "--on-pri-c": "#d2e3fc", "--sec-c": "#3b4858", "--on-sec-c": "#d7e3f7", "--inc": "#7fdc8c", "--inc-c": "#0f4a21", "--exp": "#ffb4ab", "--ter": "#a0cfd8", "--ter-c": "#1f4d55" };
+      const amoled = { "--bg": "#000000", "--c-low": "#0a0c10", "--c-high": "#161a22", "--c-highest": "#1e232d", "--c": "#10131a" };
+      const light = { "--bg": "#f8fafc", "--c-low": "#f2f4f8", "--c": "#eceef2", "--c-high": "#e6e8ee", "--c-highest": "#e0e2e8", "--on": "#191c20", "--onv": "#43474e",
+        "--pri": "#1a73e8", "--on-pri": "#ffffff", "--pri-c": "#d2e3fc", "--on-pri-c": "#041e49", "--sec-c": "#d7e3f7", "--on-sec-c": "#101c2b", "--inc": "#1b6d2f", "--inc-c": "#a5f5a8", "--exp": "#ba1a1a", "--ter": "#39656d", "--ter-c": "#bcebf5" };
+      tl.to("#ch1 .sel", { opacity: 1, duration: 0.3 }, 25.9);
+      tl.to("#ch1 .sel", { opacity: 0, duration: 0.3 }, 26.9).to("#ch2 .sel", { opacity: 1, duration: 0.3 }, 26.9);
+      tl.to("#phone", { ...dark, duration: 0.7, ease: "power2.inOut" }, 26.9);
+      tl.to("#root", { "--pg": "#0f141c", "--ink": "#e1e6f0", "--inkv": "#c2c7d0", "--pri-c": "#0842a0", "--on-pri-c": "#d2e3fc", "--pri": "#8ab4f8", duration: 0.7, ease: "power2.inOut" }, 26.9);
+      tl.to("#ch2 .sel", { opacity: 0, duration: 0.3 }, 27.7).to("#ch3 .sel", { opacity: 1, duration: 0.3 }, 27.7);
+      tl.to("#phone", { ...amoled, duration: 0.6, ease: "power2.inOut" }, 27.7);
+      tl.to("#root", { "--pg": "#000000", duration: 0.6, ease: "power2.inOut" }, 27.7);
+      tl.to("#t5", { opacity: 0, y: -40, duration: 0.4, ease: "power2.in" }, 28.2);
+      tl.to("#m3e", { opacity: 0, duration: 0.4 }, 28.2);
+
+      // ---- cierre 29–32.4
+      tl.to("#phone", { y: 1100, rotation: -6, duration: 0.8, ease: "back.in(1.2)" }, 28.2);
+      tl.to("#outroIn", { clipPath: "circle(2400px at 1450px 940px)", duration: 1.1, ease: "power3.inOut" }, 28.6);
+      tl.fromTo("#coin2", { scale: 0, rotation: -60 }, { scale: 1, rotation: 0, duration: 1.0, ease: E.spr }, 29.4);
+      tl.fromTo("#o-word", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: E.pop }, 29.7);
+      tl.fromTo("#o-sub", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E.out }, 30.0);
+      tl.fromTo("#o-pills div", { y: 40, opacity: 0, scale: 0.7 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: E.pop, stagger: 0.12 }, 30.2);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
