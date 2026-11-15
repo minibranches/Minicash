@@ -57,7 +57,6 @@ fun CategoriesManagementScreen(
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
 
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Gastos, 1: Ingresos
@@ -89,7 +88,7 @@ fun CategoriesManagementScreen(
                 actions = {
                     MinicashIconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             showAddCategoryDialog = true
                         }
                     ) {
@@ -136,7 +135,7 @@ fun CategoriesManagementScreen(
                 labels = listOf("Gastos (${state.expenseCategories.size})", "Ingresos (${state.incomeCategories.size})"),
                 selectedIndex = selectedTab,
                 onSelect = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    haptics.tick()
                     selectedTab = it
                 },
                 modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.small)
@@ -191,7 +190,7 @@ fun CategoriesManagementScreen(
                             level = CardTonalLevel.LOW,
                             shape = itemShape,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                haptics.tick()
                                 categoryToEditName = category
                             },
                             modifier = Modifier
@@ -242,7 +241,7 @@ fun CategoriesManagementScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     MinicashIconButton(
                                         onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            haptics.heavyOrDelete()
                                             categoryToDelete = category
                                         }
                                     ) {
@@ -264,7 +263,7 @@ fun CategoriesManagementScreen(
                             level = CardTonalLevel.HIGH,
                             shape = CircleShape,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                haptics.tick()
                                 showAddCategoryDialog = true
                             },
                             modifier = Modifier.fillMaxWidth()

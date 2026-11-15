@@ -201,7 +201,6 @@ fun EditTransactionSheet(
     onDeleteTransaction: ((TransactionEntity) -> Unit)? = null
 ) {
     val spacing = MinicashThemeExtensions.spacing
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -757,7 +756,7 @@ fun EditTransactionSheet(
                                         KeypadButton(
                                             text = key,
                                             onClick = {
-                                                haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                                haptics.click()
                                                 val (newExpr, calc) = onKeypadPressHandler(amountExpression, key)
                                                 amountExpression = newExpr
                                                 calculatedAmount = calc
@@ -787,7 +786,7 @@ fun EditTransactionSheet(
                                     KeypadButton(
                                         text = op,
                                         onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                            haptics.click()
                                             val (newExpr, calc) = onKeypadPressHandler(amountExpression, op)
                                             amountExpression = newExpr
                                             calculatedAmount = calc

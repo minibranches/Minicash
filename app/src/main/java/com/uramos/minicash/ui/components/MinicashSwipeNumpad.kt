@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -102,7 +103,7 @@ fun MinicashSwipeNumpad(
     onExpressionChange: (newExpression: String, calculatedAmount: Double) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
     val spacing = MinicashThemeExtensions.spacing
     var showOperators by remember { mutableStateOf(false) }
 
@@ -144,7 +145,7 @@ fun MinicashSwipeNumpad(
                             KeypadButton(
                                 text = key,
                                 onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    haptics.click()
                                     val newExpr = processKeypadPress(amountExpression, key)
                                     val calcVal = evaluateMathExpression(newExpr)
                                     onExpressionChange(newExpr, calcVal)
@@ -175,7 +176,7 @@ fun MinicashSwipeNumpad(
                         KeypadButton(
                             text = op,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                haptics.click()
                                 val newExpr = processKeypadPress(amountExpression, op)
                                 val calcVal = evaluateMathExpression(newExpr)
                                 onExpressionChange(newExpr, calcVal)

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,7 @@ fun IconSelectionSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val spacing = MinicashThemeExtensions.spacing
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
 
     val groups = listOf(
         IconCategoryGroup(
@@ -199,7 +200,7 @@ fun IconSelectionSheet(
 
                                     Surface(
                                         onClick = {
-                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                            haptics.click()
                                             onIconSelected(iconName)
                                             onDismiss()
                                         },

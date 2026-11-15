@@ -512,7 +512,7 @@ private fun PurchaseStep(
             label = { Text("Artículo o servicio") },
             placeholder = { Text("Nombre del producto o servicio") },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = MinicashShapes.Input,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -537,7 +537,7 @@ private fun PurchaseStep(
             label = { Text("Responsable") },
             placeholder = { Text("Nombre del responsable (por defecto, Yo)") },
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = MinicashShapes.Input,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -562,7 +562,7 @@ private fun PurchaseStep(
             label = { Text("Precio de contado (opcional)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp),
+            shape = MinicashShapes.Input,
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -649,7 +649,7 @@ private fun PlanStep(
                 } else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.weight(1f)
             )
             if (isCustomMonths) {
@@ -660,7 +660,7 @@ private fun PlanStep(
                     suffix = { Text("meses", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MinicashShapes.Input,
                     modifier = Modifier.weight(1f)
                 )
             }

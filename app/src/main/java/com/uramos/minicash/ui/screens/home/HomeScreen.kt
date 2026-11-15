@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
@@ -106,7 +107,6 @@ fun HomeScreen(
     var transactionToEdit by remember { mutableStateOf<TransactionEntity?>(null) }
     var showBatchDeleteDialog by remember { mutableStateOf(false) }
 
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
 
     val entranceTracker = rememberEntranceTracker()
@@ -209,7 +209,7 @@ fun HomeScreen(
         ) {
             if (state.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    MinicashLoading()
                 }
             } else {
                 val groupedRecent = remember(state.recentTransactions) {
@@ -303,7 +303,7 @@ fun HomeScreen(
                                         accountMap = accountMap,
                                         selectedIds = selectedIds,
                                         onToggleSelection = { id ->
-                                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                            haptics.click()
                                             viewModel.toggleSelection(id)
                                         },
                                         onTransactionClick = { transactionToEdit = it }
@@ -532,7 +532,6 @@ fun CompactTransactionRow(
         .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
         .padding(horizontal = 16.dp, vertical = 12.dp)
 
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
     var showNoteDialog by remember { mutableStateOf(false) }
 

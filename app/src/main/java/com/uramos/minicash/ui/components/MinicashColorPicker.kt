@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,7 +37,7 @@ fun MinicashColorPicker(
     onColorSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
     val scrollState = rememberScrollState()
 
     val vibrantColors = listOf(
@@ -65,7 +66,7 @@ fun MinicashColorPicker(
                         hexColor = hex,
                         isSelected = selectedColorHex.equals(hex, ignoreCase = true),
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            haptics.click()
                             onColorSelected(hex)
                         }
                     )
@@ -79,7 +80,7 @@ fun MinicashColorPicker(
                         hexColor = hex,
                         isSelected = selectedColorHex.equals(hex, ignoreCase = true),
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            haptics.click()
                             onColorSelected(hex)
                         }
                     )

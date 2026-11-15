@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.onboarding
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashLogo
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -107,7 +108,7 @@ fun OnboardingScreen(
     val state by viewModel.uiState.collectAsState()
     val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
     val scope = rememberCoroutineScope()
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
 
     val currentPage = pagerState.currentPage
     val isLastPage = currentPage == PAGE_COUNT - 1
@@ -177,9 +178,9 @@ fun OnboardingScreen(
                     enabled = canContinue,
                     isLast = isLastPage,
                     onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptics.tick()
                         if (isLastPage) {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            haptics.heavyOrDelete()
                             viewModel.finishOnboarding(onFinished)
                         } else {
                             scope.launch { pagerState.animateScrollToPage(currentPage + 1) }
@@ -209,11 +210,11 @@ fun OnboardingScreen(
                 else -> CategoriesPage(
                     state = state,
                     onToggleExpenseCategory = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptics.tick()
                         viewModel.toggleExpenseCategory(it)
                     },
                     onToggleIncomeCategory = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        haptics.tick()
                         viewModel.toggleIncomeCategory(it)
                     }
                 )

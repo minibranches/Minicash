@@ -64,7 +64,6 @@ fun InstitutionsManagementScreen(
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -133,7 +132,7 @@ fun InstitutionsManagementScreen(
                 actions = {
                     MinicashIconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             showAddSheet = true
                         }
                     ) {
@@ -206,7 +205,7 @@ fun InstitutionsManagementScreen(
                         level = CardTonalLevel.LOW,
                         shape = itemShape,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             instToEdit = inst
                         },
                         modifier = Modifier
@@ -277,7 +276,7 @@ fun InstitutionsManagementScreen(
                         level = CardTonalLevel.HIGH,
                         shape = CircleShape,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             showAddSheet = true
                         },
                         modifier = Modifier.fillMaxWidth()
@@ -365,7 +364,7 @@ fun AddInstitutionSheet(
                 label = { Text("Nombre de la institución") },
                 placeholder = { Text("Escribe el nombre de la institución") },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 

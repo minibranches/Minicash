@@ -522,7 +522,7 @@ fun SettingsScreen(
                     label = { Text("Nombre") },
                     supportingText = { Text("Se muestra en el saludo de Inicio") },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = MinicashShapes.Input,
                     modifier = Modifier.fillMaxWidth()
                 )
             },
@@ -824,7 +824,7 @@ fun InstitutionsManagementSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showAddDialog by remember { mutableStateOf(false) }
     var instToDelete by remember { mutableStateOf<CreditInstitutionEntity?>(null) }
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -980,7 +980,7 @@ fun InstitutionsManagementSheet(
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        haptics.confirm()
                         onDelete(inst)
                         instToDelete = null
                     },

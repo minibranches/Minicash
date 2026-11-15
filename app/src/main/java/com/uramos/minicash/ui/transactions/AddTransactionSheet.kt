@@ -107,7 +107,6 @@ fun AddTransactionSheet(
     val state by viewModel.uiState.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
     val categories by viewModel.categories.collectAsState()
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
     val view = androidx.compose.ui.platform.LocalView.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -876,7 +875,7 @@ fun AddTransactionSheet(
                                                 KeypadButton(
                                                     text = key,
                                                     onClick = {
-                                                        haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                                        haptics.click()
                                                         viewModel.onKeypadPress(key)
                                                     },
                                                     shape = RoundedCornerShape(12.dp),
@@ -905,7 +904,7 @@ fun AddTransactionSheet(
                                             KeypadButton(
                                                 text = op,
                                                 onClick = {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                                    haptics.click()
                                                     viewModel.onKeypadPress(op)
                                                 },
                                                 shape = RoundedCornerShape(12.dp),

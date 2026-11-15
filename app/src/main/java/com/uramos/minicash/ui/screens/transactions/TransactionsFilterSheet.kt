@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -53,7 +54,7 @@ fun TransactionsFilterSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val spacing = MinicashThemeExtensions.spacing
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
     var showCategoryPicker by remember { mutableStateOf(false) }
     val hasActiveFilters = selectedTypeFilter != null || selectedAccountId != null || selectedCategoryIds.isNotEmpty()
 
@@ -85,7 +86,7 @@ fun TransactionsFilterSheet(
                 if (hasActiveFilters) {
                     MinicashTextButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onTypeFilterSelect(null)
                             onSelectAccountFilter(null)
                             onClearCategories()
@@ -113,7 +114,7 @@ fun TransactionsFilterSheet(
                 options = listOf<TransactionType?>(null, TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
                 isSelected = { selectedTypeFilter == it },
                 onSelect = {
-                    haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                    haptics.click()
                     onTypeFilterSelect(it)
                 },
                 label = {
@@ -146,7 +147,7 @@ fun TransactionsFilterSheet(
                         FilterChip(
                             selected = isSelected,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                haptics.tick()
                                 onSelectAccountFilter(null)
                             },
                             label = { Text("Todas las cuentas") },
@@ -173,7 +174,7 @@ fun TransactionsFilterSheet(
                         FilterChip(
                             selected = isSelected,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                haptics.tick()
                                 onSelectAccountFilter(account.id)
                             },
                             label = { Text(account.name) },
@@ -263,7 +264,7 @@ fun TransactionsFilterSheet(
                             InputChip(
                                 selected = true,
                                 onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    haptics.tick()
                                     onToggleCategory(category.id)
                                 },
                                 label = { Text(category.name) },

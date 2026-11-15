@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
+import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.material3.ripple
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
@@ -44,7 +46,6 @@ import com.uramos.minicash.ui.components.rememberEntranceTracker
 import com.uramos.minicash.ui.components.DiscardChangesDialog
 import com.uramos.minicash.ui.components.rememberDiscardGuard
 import com.uramos.minicash.ui.utils.toCents
-import android.app.DatePickerDialog
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -838,7 +839,7 @@ fun AddBudgetItemDialog(
                 label = { Text("Concepto") },
                 placeholder = { Text("Nombre de la partida") },
                 singleLine = true,
-                shape = RoundedCornerShape(16.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(conceptFocusRequester)
@@ -850,7 +851,7 @@ fun AddBudgetItemDialog(
                 label = { Text("Responsable") },
                 placeholder = { Text("Nombre del responsable") },
                 singleLine = true,
-                shape = RoundedCornerShape(16.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -881,7 +882,7 @@ fun AddBudgetItemDialog(
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDateMillis ?: System.currentTimeMillis()
+            initialSelectedDateMillis = normalizeLocalToUtcMillis(selectedDateMillis ?: System.currentTimeMillis())
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -1068,7 +1069,7 @@ fun EditBudgetItemSheet(
                 label = { Text("Concepto") },
                 placeholder = { Text("Nombre de la partida") },
                 singleLine = true,
-                shape = RoundedCornerShape(16.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1078,7 +1079,7 @@ fun EditBudgetItemSheet(
                 label = { Text("Responsable") },
                 placeholder = { Text("Nombre del responsable") },
                 singleLine = true,
-                shape = RoundedCornerShape(16.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -1124,7 +1125,7 @@ fun EditBudgetItemSheet(
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDateMillis ?: System.currentTimeMillis()
+            initialSelectedDateMillis = normalizeLocalToUtcMillis(selectedDateMillis ?: System.currentTimeMillis())
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -1286,7 +1287,7 @@ fun CopyFortnightSheet(
             }
 
             when {
-                isLoading -> CircularProgressIndicator(modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally))
+                isLoading -> MinicashLoading(modifier = Modifier.size(40.dp).align(Alignment.CenterHorizontally))
                 sourceItems.isEmpty() -> Text(
                     text = "No hay partidas registradas en la quincena origen seleccionada.",
                     style = MaterialTheme.typography.bodySmall,

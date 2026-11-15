@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.foundation.lazy.rememberLazyListState
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -263,7 +264,7 @@ fun BackupSettingsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        CircularProgressIndicator()
+                        MinicashLoading()
                         Text("Restaurando datos...", style = MaterialTheme.typography.bodyMedium)
                     }
                 } else {
@@ -307,7 +308,7 @@ fun BackupSettingsScreen(
                         onValueChange = { typed = it },
                         label = { Text("Escribe $WIPE_CONFIRMATION_WORD para confirmar") },
                         singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = MinicashShapes.Input,
                         keyboardOptions = KeyboardOptions.Default,
                         modifier = Modifier.fillMaxWidth()
                     )

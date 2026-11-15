@@ -90,7 +90,6 @@ fun CreditsScreen(
     val state by viewModel.uiState.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
     val institutions by viewModel.institutions.collectAsState()
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
     val entranceTracker = rememberEntranceTracker()
 
@@ -677,7 +676,7 @@ fun InstitutionSelectionSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showAddDialog by remember { mutableStateOf(false) }
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -720,7 +719,7 @@ fun InstitutionSelectionSheet(
 
                         Surface(
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                haptics.click()
                                 onInstitutionSelected(inst.name)
                                 onDismiss()
                             },

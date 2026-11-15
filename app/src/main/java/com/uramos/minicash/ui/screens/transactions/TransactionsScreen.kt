@@ -82,7 +82,6 @@ fun TransactionsScreen(
     val selectedIds by viewModel.selectedIds.collectAsState()
     val selectedTotalAmount by viewModel.selectedTotalAmount.collectAsState()
 
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
 
     val entranceTracker = rememberEntranceTracker()
@@ -137,7 +136,7 @@ fun TransactionsScreen(
             confirmButton = {
                 MinicashTextButton(
                     onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        haptics.confirm()
                         viewModel.deleteTransaction(tx)
                         transactionToDelete = null
                     },

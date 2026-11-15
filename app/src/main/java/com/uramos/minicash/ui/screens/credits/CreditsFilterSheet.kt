@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import androidx.compose.foundation.layout.*
@@ -37,7 +38,7 @@ fun CreditsFilterSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val spacing = MinicashThemeExtensions.spacing
-    val haptic = LocalHapticFeedback.current
+    val haptics = rememberMinicashHaptics()
     val hasActiveFilters = selectedResponsible != null || selectedInstitution != null || selectedMonth != null
 
     ModalBottomSheet(
@@ -67,7 +68,7 @@ fun CreditsFilterSheet(
                 if (hasActiveFilters) {
                     MinicashTextButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onClearFilters()
                         }
                     ) {
@@ -98,7 +99,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectResponsible(null)
                         },
                         label = { Text("Todos") },
@@ -118,7 +119,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectResponsible(resp)
                         },
                         label = { Text(resp) },
@@ -154,7 +155,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectInstitution(null)
                         },
                         label = { Text("Todas") },
@@ -174,7 +175,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectInstitution(inst)
                         },
                         label = { Text(inst) },
@@ -210,7 +211,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectMonth(null)
                         },
                         label = { Text("Todos") },
@@ -230,7 +231,7 @@ fun CreditsFilterSheet(
                     FilterChip(
                         selected = isSelected,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             onSelectMonth(month)
                         },
                         label = { Text(monthKeyLabel(month)) },

@@ -160,7 +160,7 @@ fun EditAccountSheet(
                 label = { Text("Nombre de la cuenta") },
                 placeholder = { Text("Escribe el nombre de la cuenta") },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -171,7 +171,7 @@ fun EditAccountSheet(
                 placeholder = { Text("Ingresa el saldo actual") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -290,7 +290,7 @@ fun EditCategorySheet(
                 label = { Text("Nombre de la categoría") },
                 placeholder = { Text("Escribe el nombre de la categoría") },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -370,7 +370,7 @@ fun AddAccountSheet(
                 label = { Text("Nombre de la cuenta") },
                 placeholder = { Text("Escribe el nombre de la cuenta") },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -381,7 +381,7 @@ fun AddAccountSheet(
                 placeholder = { Text("Ingresa el saldo inicial") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -474,7 +474,7 @@ fun AddCategorySheet(
                 label = { Text("Nombre de categoría") },
                 placeholder = { Text("Escribe el nombre de la categoría") },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 

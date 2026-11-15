@@ -58,7 +58,6 @@ fun AccountsManagementScreen(
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
-    val haptic = LocalHapticFeedback.current
     val haptics = rememberMinicashHaptics()
 
     var showAddAccountDialog by remember { mutableStateOf(false) }
@@ -91,7 +90,7 @@ fun AccountsManagementScreen(
                 actions = {
                     MinicashIconButton(
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             showAddAccountDialog = true
                         }
                     ) {
@@ -164,7 +163,7 @@ fun AccountsManagementScreen(
                             level = CardTonalLevel.LOW,
                             shape = itemShape,
                             onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                haptics.tick()
                                 accountToEdit = account
                             },
                             modifier = Modifier
@@ -263,7 +262,7 @@ fun AccountsManagementScreen(
                         level = CardTonalLevel.HIGH,
                         shape = MinicashShapes.ContainerLarge,
                         onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            haptics.tick()
                             showAddAccountDialog = true
                         },
                         modifier = Modifier.fillMaxWidth()
