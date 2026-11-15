@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.extras
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -78,6 +79,7 @@ fun ExtrasScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0.dp),
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
                 title = { Text("Extras", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                 actions = { SettingsGearButton(onClick = onOpenSettings) }

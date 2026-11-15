@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.compositeOver
 import com.uramos.minicash.ui.components.MinicashBackButton
@@ -165,6 +166,7 @@ fun BudgetScreen(
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
@@ -671,7 +673,7 @@ fun ConfirmPaymentDialog(
                         onCheckedChange = { createTransaction = it }
                     )
                     Text(
-                        text = "Crear transacción",
+                        text = "Crear movimiento",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

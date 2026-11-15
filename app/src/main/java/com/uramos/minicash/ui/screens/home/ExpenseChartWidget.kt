@@ -62,13 +62,14 @@ fun TwoFacedStatsChartWidget(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     ) {
+        Box {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxWidth()
         ) { page ->
             if (page == 0) {
                 SingleDonutPage(
-                    title = "Distribución de gastos del mes",
+                    title = "Gastos",
                     emptyMessage = "Sin gastos registrados este mes",
                     totalLabel = "Total gastado",
                     stats = monthlyExpenseStats,
@@ -76,13 +77,19 @@ fun TwoFacedStatsChartWidget(
                 )
             } else {
                 SingleDonutPage(
-                    title = "Distribución de ingresos del mes",
+                    title = "Ingresos",
                     emptyMessage = "Sin ingresos registrados este mes",
                     totalLabel = "Total ingresado",
                     stats = monthlyIncomeStats,
                     totalAmount = totalMonthlyIncome
                 )
             }
+        }
+        PagerDots(
+            current = pagerState.currentPage,
+            count = 2,
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 18.dp, end = 16.dp)
+        )
         }
     }
 }
@@ -356,6 +363,23 @@ fun ChartMonthSelector(
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
                 }
             }
+        }
+    }
+}
+
+/** Puntos de página: el activo en color primario, para que se vea que la tarjeta tiene otra cara. */
+@Composable
+private fun PagerDots(current: Int, count: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        repeat(count) { index ->
+            Box(
+                modifier = Modifier
+                    .size(if (index == current) 8.dp else 6.dp)
+                    .background(
+                        if (index == current) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                        CircleShape
+                    )
+            )
         }
     }
 }

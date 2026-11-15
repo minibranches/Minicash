@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
@@ -150,7 +151,7 @@ fun HomeScreen(
         MinicashAlertDialog(
             onDismissRequest = { showBatchDeleteDialog = false },
             title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción eliminará las transacciones seleccionadas y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
+            text = { Text("Esta acción eliminará los movimientos seleccionados y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -177,6 +178,7 @@ fun HomeScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
@@ -254,7 +256,7 @@ fun HomeScreen(
                     // Módulo de Análisis Estadístico: Widget de 2 Caras con Swipe (Gastos e Ingresos)
                     item {
                         Column(modifier = Modifier.listEntrance(entranceTracker, "home_stats", 2)) {
-                            MinicashSectionTitle("Distribución de gastos del mes")
+                            MinicashSectionTitle("Distribución del mes")
                             Spacer(modifier = Modifier.height(spacing.small))
                             val chartMonthOverride by viewModel.chartMonth.collectAsState()
                             ChartMonthSelector(
@@ -287,7 +289,7 @@ fun HomeScreen(
                             MinicashEmptyState(
                                 icon = Icons.AutoMirrored.Filled.ReceiptLong,
                                 title = "Sin movimientos recientes",
-                                subtitle = "Tus transacciones de los últimos días aparecerán aquí.",
+                                subtitle = "Tus movimientos de los últimos días aparecerán aquí.",
                                 modifier = Modifier.padding(vertical = spacing.large)
                             )
                         }

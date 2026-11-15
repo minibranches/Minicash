@@ -22,8 +22,8 @@ sealed class Screen(
     val unselectedIcon: ImageVector
 ) {
     object Home : Screen("home", "Inicio", Icons.Filled.Home, Icons.Outlined.Home)
-    object Transactions : Screen("transactions", "Historial", Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
-    object Budget : Screen("budget", "Fijos", Icons.Filled.PieChart, Icons.Outlined.PieChart)
+    object Transactions : Screen("transactions", "Movimientos", Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
+    object Budget : Screen("budget", "Gastos fijos", Icons.Filled.PieChart, Icons.Outlined.PieChart)
     object Credits : Screen("credits", "Créditos", Icons.Filled.CreditCard, Icons.Outlined.CreditCard)
     object Extras : Screen("extras", "Extras", Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
     object Settings : Screen("settings", "Ajustes", Icons.Filled.Settings, Icons.Outlined.Settings)

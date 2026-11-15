@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
@@ -163,7 +164,7 @@ fun TransactionsScreen(
         MinicashAlertDialog(
             onDismissRequest = { showBatchDeleteDialog = false },
             title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción eliminará las transacciones seleccionadas y reajustará automáticamente los saldos correspondientes de las cuentas. ¿Proceder?") },
+            text = { Text("Esta acción eliminará los movimientos seleccionados y reajustará automáticamente los saldos correspondientes de las cuentas. ¿Proceder?") },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -190,6 +191,7 @@ fun TransactionsScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
@@ -357,9 +359,9 @@ fun TransactionsScreen(
                             icon = Icons.AutoMirrored.Filled.ReceiptLong,
                             title = "Sin movimientos registrados",
                             subtitle = if (state.searchQuery.isNotBlank() || hasActiveFilters) {
-                                "No se encontraron transacciones con los filtros seleccionados."
+                                "No se encontraron movimientos con los filtros seleccionados."
                             } else {
-                                "No hay transacciones registradas en este mes."
+                                "No hay movimientos registrados en este mes."
                             },
                             modifier = Modifier
                                 .fillMaxWidth()

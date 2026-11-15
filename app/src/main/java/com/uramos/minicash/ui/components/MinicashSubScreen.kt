@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
@@ -53,6 +54,7 @@ fun MinicashSubScreenTopBar(
 ) {
     val background = MaterialTheme.colorScheme.surfaceContainerLowest
     LargeFlexibleTopAppBar(
+        windowInsets = WindowInsets(0.dp),
         title = {
             Text(
                 text = title,

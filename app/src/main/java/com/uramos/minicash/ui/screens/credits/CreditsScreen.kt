@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.MinicashBackButton
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
@@ -151,6 +152,7 @@ fun CreditsScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
@@ -426,7 +428,7 @@ fun ConfirmCreditPaymentDialog(
                         onCheckedChange = { createExpenseTransaction = it }
                     )
                     Text(
-                        text = "Crear transacción de gasto",
+                        text = "Crear movimiento de gasto",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

@@ -949,7 +949,7 @@ fun EditTransactionSheet(
         MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             title = { Text("¿Eliminar movimiento?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción eliminará permanentemente la transacción y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
+            text = { Text("Esta acción eliminará permanentemente el movimiento y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {

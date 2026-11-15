@@ -442,7 +442,7 @@ class SettingsViewModel(
     fun exportCsv(context: Context, uri: Uri) {
         viewModelScope.launch {
             backupManager.exportCsv(context, uri)
-                .onSuccess { count -> _messageEvent.emit("Se exportaron $count transacciones") }
+                .onSuccess { count -> _messageEvent.emit("Se exportaron $count movimientos") }
                 .onFailure { _messageEvent.emit("Error al exportar el CSV: ${it.localizedMessage ?: "Error desconocido"}") }
         }
     }

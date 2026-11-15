@@ -7,7 +7,7 @@ Hecha con Kotlin, Jetpack Compose y Material 3 Expressive. Las ideas a futuro es
 ## Qué hace
 
 - **Inicio.** Patrimonio total, tus cuentas y la distribución de gastos e ingresos por categoría. Un selector de mes permite revisar meses anteriores; por defecto muestra el mes en curso.
-- **Historial.** Gastos, ingresos y transferencias entre cuentas, organizados por mes.
+- **Movimientos.** Gastos, ingresos y transferencias entre cuentas, organizados por mes.
 - **Gastos fijos.** Presupuesto por quincenas: partidas de ingreso, gasto y reembolso en cuadrícula, con resumen de lo disponible y barra de avance. Se marcan como ejecutadas, se reordenan con pulsación larga y se pueden copiar de una quincena a otra.
 - **Créditos.** Compras a meses con avance por mensualidad, fecha estimada de término y aviso antes de cada pago. El día de pago se configura en la institución (tarjeta o banco) y las compras lo heredan; cada compra puede usar otro día.
 - **Reportes.** Dashboard con balance del periodo y tasa de ahorro, ingresos contra gastos por mes (6 o 12 meses), gasto por categoría, balance acumulado y desglose mensual.
