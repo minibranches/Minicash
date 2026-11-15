@@ -46,7 +46,7 @@ Necesitas Android Studio reciente o el JDK y el SDK de Android configurados.
 
 En Windows usa `gradlew.bat`. El APK release queda en `app/build/outputs/apk/release/`.
 
-La firma de release usa `~/.android/debug.keystore`. Si compilas en otra computadora, copia ese archivo a la misma ruta antes del primer build; así el APK sigue instalándose como actualización de las versiones anteriores.
+La firma de release se configura con un archivo `keystore.properties` en la raíz (fuera del repositorio, ver `.gitignore`) que apunta a tu propio `.jks` con las claves `storeFile`, `storePassword`, `keyAlias` y `keyPassword`. Sin ese archivo, el build de release se firma con la llave debug y no se podrá instalar como actualización de los APK publicados.
 
 ## Tecnología
 
