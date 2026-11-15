@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.compositeOver
 import com.uramos.minicash.ui.components.MinicashBackButton
 import androidx.compose.material3.Checkbox
 import com.uramos.minicash.ui.components.fadingTopEdge
@@ -523,7 +525,12 @@ fun BudgetItemCard(
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val containerColor = if (item.isPaid) colorScheme.surfaceContainerHighest.copy(alpha = 0.6f) else colorScheme.surfaceContainerLow
+    // Pendiente: tarjeta más clara y elevada. Pagada: tinte del color primario y más recesiva; además lleva la palomita
+    val containerColor = if (item.isPaid) {
+        colorScheme.primaryContainer.copy(alpha = 0.30f).compositeOver(colorScheme.surfaceContainerLow)
+    } else {
+        colorScheme.surfaceContainerHigh
+    }
     val displayType = when (item.type) {
         BudgetItemType.EXPENSE -> MoneyDisplayType.EXPENSE
         BudgetItemType.INCOME, BudgetItemType.REIMBURSEMENT -> MoneyDisplayType.INCOME
@@ -599,7 +606,8 @@ fun BudgetItemCard(
             MoneyTextView(
                 amountCents = item.amount,
                 type = displayType,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum"),
+                modifier = Modifier.alpha(if (item.isPaid) 0.7f else 1f)
             )
         }
     }

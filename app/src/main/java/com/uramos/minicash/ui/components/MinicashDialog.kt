@@ -1,10 +1,10 @@
 package com.uramos.minicash.ui.components
 
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.expandVertically
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,8 +31,9 @@ import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
 
 /**
- * Diálogo de alerta con la misma estructura que el de Material 3, pero que aparece con un fundido corto y se
- * expande en vertical. M3 evita la escala en Android porque sugiere un cambio de elevación.
+ * Diálogo de alerta con la misma estructura que el de Material 3, pero que aparece con un fundido corto y un
+ * leve desplazamiento vertical. Evita la escala (M3 la evita en Android por sugerir elevación) y no cambia el
+ * tamaño del contenido al entrar: dentro de una ventana de diálogo eso la redimensiona cuadro a cuadro y parpadea.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,12 +49,12 @@ fun MinicashAlertDialog(
 ) {
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     val fadeSpec = minicashEffectsSpec<Float>()
-    val expandSpec = minicashSpatialSpec<IntSize>()
+    val slideSpec = minicashSpatialSpec<IntOffset>()
 
     BasicAlertDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
         AnimatedVisibility(
             visibleState = visibleState,
-            enter = fadeIn(animationSpec = fadeSpec) + expandVertically(animationSpec = expandSpec, expandFrom = Alignment.CenterVertically)
+            enter = fadeIn(animationSpec = fadeSpec) + slideInVertically(animationSpec = slideSpec) { it / 12 }
         ) {
             Surface(
                 shape = shape,
