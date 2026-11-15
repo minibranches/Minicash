@@ -901,7 +901,6 @@ fun InstitutionsManagementSheet(
 
                                 MinicashIconButton(
                                     onClick = { instToDelete = inst },
-                                    modifier = Modifier.size(32.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,

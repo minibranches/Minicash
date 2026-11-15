@@ -514,7 +514,7 @@ fun MainScreen(
                                                     label = "icon_tint"
                                                 )
                                                 val sidePadding by animateDpAsState(
-                                                    targetValue = if (isSelected) 14.dp else 9.dp,
+                                                    targetValue = if (isSelected) 14.dp else 13.dp, // 22 dp de ícono + 2 x 13 dp = 48 dp de ancho para el destino sin seleccionar
                                                     animationSpec = spatialDp,
                                                     label = "pill_padding"
                                                 )

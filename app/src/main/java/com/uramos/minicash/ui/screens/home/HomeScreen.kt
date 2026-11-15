@@ -666,7 +666,6 @@ fun CompactTransactionRow(
         if (onDeleteClick != null && !isSelectionActive) {
             MinicashIconButton(
                 onClick = onDeleteClick,
-                modifier = Modifier.size(28.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

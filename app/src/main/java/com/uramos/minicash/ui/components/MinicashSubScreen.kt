@@ -63,23 +63,7 @@ fun MinicashSubScreenTopBar(
                 overflow = TextOverflow.Ellipsis
             )
         },
-        navigationIcon = {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(40.dp)
-            ) {
-                MinicashIconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        },
+        navigationIcon = { MinicashBackButton(onClick = onBack) },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = background,
@@ -228,42 +212,34 @@ private val SCRIM_HEIGHT = 36.dp
 private const val SCRIM_RAMP_PX = 60f
 private const val SCRIM_MAX_ALPHA = 0.8f
 
-/** Botón de atrás en círculo tonal, el mismo de las barras superiores de subpantallas. */
+/** Botón de atrás: zona táctil de 48 dp (M3) con el círculo tonal visible de 40 dp. */
 @Composable
 fun MinicashBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier
-            .padding(start = 8.dp)
-            .size(40.dp)
-    ) {
-        MinicashIconButton(onClick = onClick) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Volver",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+    MinicashIconButton(onClick = onClick, modifier = modifier.padding(start = 4.dp).size(48.dp)) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.size(40.dp)) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Volver",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
 
-/** Engrane fijo de las barras superiores de las pestañas: abre Ajustes. */
+/** Engrane fijo de las barras superiores de las pestañas: abre Ajustes. Zona táctil de 48 dp, círculo de 40 dp. */
 @Composable
 fun SettingsGearButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier
-            .padding(end = 8.dp)
-            .size(40.dp)
-    ) {
-        MinicashIconButton(onClick = onClick) {
-            Icon(
-                imageVector = Icons.Outlined.Settings,
-                contentDescription = "Ajustes",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+    MinicashIconButton(onClick = onClick, modifier = modifier.padding(end = 4.dp).size(48.dp)) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.size(40.dp)) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Ajustes",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }

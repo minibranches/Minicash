@@ -56,7 +56,7 @@ fun MinicashPeriodSelector(
     ) {
         WithoutMinTouchTarget {
             Row(
-                modifier = Modifier.padding(6.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -145,7 +145,7 @@ private fun YearSelect(year: Int, years: List<Int>, onYearSelect: (Int) -> Unit)
 
 @Composable
 private fun PeriodArrow(icon: androidx.compose.ui.graphics.vector.ImageVector, description: String, onClick: () -> Unit) {
-    MinicashIconButton(onClick = onClick, modifier = Modifier.size(36.dp)) {
+    MinicashIconButton(onClick = onClick, modifier = Modifier.size(48.dp)) {
         Icon(icon, contentDescription = description, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

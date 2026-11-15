@@ -243,7 +243,6 @@ fun AccountsManagementScreen(
 
                                     MinicashIconButton(
                                         onClick = { viewModel.toggleAccountVisibility(account) },
-                                        modifier = Modifier.size(32.dp)
                                     ) {
                                         Icon(
                                             imageVector = if (account.isVisibleInHome) Icons.Default.Visibility else Icons.Default.VisibilityOff,

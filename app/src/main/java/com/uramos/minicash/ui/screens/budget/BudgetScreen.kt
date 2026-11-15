@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.material3.ripple
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.compositeOver
@@ -360,7 +362,7 @@ internal fun BudgetPeriodBar(
     ) {
         WithoutMinTouchTarget {
             Row(
-                modifier = Modifier.padding(6.dp),
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -373,7 +375,7 @@ internal fun BudgetPeriodBar(
                         modifier = Modifier.padding(start = 12.dp, end = 4.dp)
                     )
                 }
-                MinicashIconButton(onClick = onPreviousMonth, modifier = Modifier.size(36.dp)) {
+                MinicashIconButton(onClick = onPreviousMonth, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
                 }
                 AnimatedContent(
@@ -401,7 +403,7 @@ internal fun BudgetPeriodBar(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                MinicashIconButton(onClick = onNextMonth, modifier = Modifier.size(36.dp)) {
+                MinicashIconButton(onClick = onNextMonth, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
                 }
 
@@ -589,19 +591,31 @@ fun BudgetItemCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                Surface(
-                    onClick = onToggleExecuted,
-                    shape = CircleShape,
-                    color = if (item.isPaid) colorScheme.primary else colorScheme.surfaceContainerHigh,
-                    modifier = Modifier.size(32.dp)
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        // Sin recorte: el círculo visible va en la esquina y un clip circular de 48 dp lo cortaría;
+                        // la onda de toque no acotada se dibuja alrededor sin tocar su forma
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(bounded = false, radius = 24.dp),
+                            onClick = onToggleExecuted
+                        ),
+                    contentAlignment = Alignment.TopEnd
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
-                            tint = if (item.isPaid) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp)
-                        )
+                    Surface(
+                        shape = CircleShape,
+                        color = if (item.isPaid) colorScheme.primary else colorScheme.surfaceContainerHighest,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
+                                tint = if (item.isPaid) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -326,11 +326,11 @@ fun ChartMonthSelector(
     ) {
         com.uramos.minicash.ui.components.WithoutMinTouchTarget {
             Row(
-                modifier = Modifier.padding(4.dp),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                com.uramos.minicash.ui.components.MinicashIconButton(onClick = onPrevious, modifier = Modifier.size(36.dp)) {
+                com.uramos.minicash.ui.components.MinicashIconButton(onClick = onPrevious, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
                 }
                 Text(
@@ -351,14 +351,14 @@ fun ChartMonthSelector(
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
                         )
                     }
                 }
                 com.uramos.minicash.ui.components.MinicashIconButton(
                     onClick = onNext,
                     enabled = !isCurrent,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
                 }
