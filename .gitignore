@@ -24,3 +24,6 @@ keystore.properties
 build/
 *.apk
 *.aab
+
+# Skills y ajustes locales de Claude Code
+.claude/
