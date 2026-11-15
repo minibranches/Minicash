@@ -382,8 +382,14 @@ fun MainScreen(
                     }
 
                     // Pantallas superpuestas con eje X compartido; con la pila vacía no se dibuja nada y se ven las pestañas
+                    // Entre dos pantallas superpuestas el fundido las deja semitransparentes un instante y dejaría ver la
+                    // pestaña de abajo (un destello de Inicio); con un fondo opaco ese cruce no se nota. Desde y hacia las
+                    // pestañas no se pone, porque ahí sí debe verse lo que hay detrás.
+                    val betweenRoutes = routeTransition.currentState != null && routeTransition.targetState != null
                     routeTransition.AnimatedContent(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .then(if (betweenRoutes) Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest) else Modifier),
                         transitionSpec = {
                             if (animationsRestricted) {
                                 fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
