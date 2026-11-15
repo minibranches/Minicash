@@ -13,6 +13,10 @@ import com.uramos.minicash.ui.components.MinicashBackButton
 import androidx.compose.material3.Checkbox
 import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
+import com.uramos.minicash.ui.theme.minicashFastSpatialSpec
+import androidx.compose.material3.MaterialShapes
+import androidx.graphics.shapes.Morph
+import com.uramos.minicash.ui.components.MorphShape
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -531,6 +535,7 @@ private fun SummaryFigure(label: String, value: String, color: Color) {
  * Partida como tarjeta de la cuadrícula. Tocar abre la edición, el círculo marca ejecutado y
  * mantener presionado la arrastra para reordenar.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun BudgetItemCard(
     item: BudgetItemEntity,
@@ -614,9 +619,26 @@ fun BudgetItemCard(
                         ),
                     contentAlignment = Alignment.TopEnd
                 ) {
+                    // Al marcarla pagada el círculo se transforma en una galleta y la palomita "salta"
+                    val checkMorph = remember { Morph(MaterialShapes.Circle, MaterialShapes.Cookie6Sided) }
+                    val morphProgress by animateFloatAsState(
+                        targetValue = if (item.isPaid) 1f else 0f,
+                        animationSpec = minicashFastSpatialSpec(),
+                        label = "check_morph"
+                    )
+                    val checkPop by animateFloatAsState(
+                        targetValue = if (item.isPaid) 1f else 0.85f,
+                        animationSpec = minicashFastSpatialSpec(),
+                        label = "check_pop"
+                    )
+                    val checkColor by animateColorAsState(
+                        targetValue = if (item.isPaid) colorScheme.primary else colorScheme.surfaceContainerHighest,
+                        animationSpec = minicashEffectsSpec(),
+                        label = "check_color"
+                    )
                     Surface(
-                        shape = CircleShape,
-                        color = if (item.isPaid) colorScheme.primary else colorScheme.surfaceContainerHighest,
+                        shape = MorphShape(checkMorph, morphProgress.coerceIn(0f, 1f)),
+                        color = checkColor,
                         modifier = Modifier.size(32.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
@@ -624,7 +646,12 @@ fun BudgetItemCard(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
                                 tint = if (item.isPaid) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .graphicsLayer {
+                                        scaleX = checkPop
+                                        scaleY = checkPop
+                                    }
                             )
                         }
                     }

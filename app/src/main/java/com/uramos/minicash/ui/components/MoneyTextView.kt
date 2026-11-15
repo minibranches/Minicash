@@ -21,9 +21,12 @@ fun MoneyTextView(
     amountCents: Long,
     type: MoneyDisplayType,
     modifier: Modifier = Modifier,
-    style: TextStyle = MaterialTheme.typography.titleMedium
+    style: TextStyle = MaterialTheme.typography.titleMedium,
+    /** Cuenta hacia la cifra en lugar de saltar; para totales destacados, no para filas de una lista. */
+    animate: Boolean = false
 ) {
     val financialColors = MinicashThemeExtensions.financialColors
+    val amountCents = rememberAnimatedCents(amountCents, enabled = animate)
 
     val color = if (amountCents == 0L) {
         financialColors.neutral

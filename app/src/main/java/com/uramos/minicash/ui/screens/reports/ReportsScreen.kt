@@ -217,8 +217,9 @@ private fun HeroBalanceCard(state: ReportsUiState) {
                     style = MaterialTheme.typography.labelLarge,
                     color = onContainer
                 )
+                val animatedBalance = com.uramos.minicash.ui.components.rememberAnimatedCents(state.periodBalance)
                 Text(
-                    text = state.periodBalance.toCurrencyFormat(),
+                    text = animatedBalance.toCurrencyFormat(),
                     style = MaterialTheme.typography.displaySmall.copy(fontFeatureSettings = "tnum"),
                     fontWeight = FontWeight.ExtraBold,
                     color = onContainer,
@@ -350,6 +351,15 @@ private fun IncomeExpenseChart(months: List<MonthlyTotals>) {
     val maxValue = (months.maxOfOrNull { maxOf(it.income, it.expense) } ?: 0L).coerceAtLeast(100L)
     val ticks = listOf(0f, 0.5f, 1f)
 
+    // Las barras crecen desde la base al mostrar la gráfica y al cambiar el periodo
+    val restricted = com.uramos.minicash.ui.theme.LocalAnimationRestriction.current
+    val growth = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(if (restricted) 1f else 0f) }
+    val growthSpec = com.uramos.minicash.ui.theme.minicashSpatialSpec<Float>()
+    androidx.compose.runtime.LaunchedEffect(months) {
+        growth.snapTo(if (restricted) 1f else 0f)
+        growth.animateTo(1f, growthSpec)
+    }
+
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
@@ -374,7 +384,7 @@ private fun IncomeExpenseChart(months: List<MonthlyTotals>) {
         months.forEachIndexed { i, m ->
             val center = leftPad + slot * i + slot / 2f
             fun bar(value: Long, left: Float, color: Color) {
-                val h = chartH * value / maxValue
+                val h = chartH * value / maxValue * growth.value
                 if (h <= 0f) return
                 drawRoundRect(
                     color = color,

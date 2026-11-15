@@ -51,6 +51,7 @@ import com.uramos.minicash.ui.components.MinicashCard
 import com.uramos.minicash.ui.components.MinicashEmptyState
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.rememberAnimatedCents
 import com.uramos.minicash.ui.screens.home.GroupedTransactionCard
 import com.uramos.minicash.ui.screens.home.HomeViewModel
 import com.uramos.minicash.ui.theme.LocalAnimationRestriction
@@ -182,7 +183,8 @@ fun AccountDetailScreen(
                         group = group,
                         categoryMap = categoryMap,
                         accountMap = accountMap,
-                        onTransactionClick = { transactionToEdit = it }
+                        onTransactionClick = { transactionToEdit = it },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
@@ -230,8 +232,9 @@ private fun AccountHeroCard(account: AccountEntity) {
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                val animatedBalance = rememberAnimatedCents(account.balance)
                 Text(
-                    text = (if (account.balance < 0) "- " else "") + abs(account.balance).toCurrencyFormat(),
+                    text = (if (animatedBalance < 0) "- " else "") + abs(animatedBalance).toCurrencyFormat(),
                     style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"),
                     fontWeight = FontWeight.ExtraBold,
                     color = if (account.balance < 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
