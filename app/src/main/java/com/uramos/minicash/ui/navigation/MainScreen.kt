@@ -78,6 +78,22 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -304,6 +320,22 @@ fun MainScreen(
     }
     // Botón de agregar de las pestañas (Inicio e Historial) y el propio de Gastos fijos y Créditos
     val tabFabVisible = !inSubScreen && (currentScreen is Screen.Home || currentScreen is Screen.Transactions)
+
+    // Menú del botón de agregar: el primero de la lista queda más cerca del botón (el gasto es lo más frecuente)
+    var fabMenuExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(tabFabVisible, currentScreenIndex) { fabMenuExpanded = false }
+    BackHandler(enabled = fabMenuExpanded) { fabMenuExpanded = false }
+    val openAddSheetAs: (TransactionType) -> Unit = { type ->
+        haptics.click()
+        fabMenuExpanded = false
+        shortcutType = type
+        showAddSheet = true
+    }
+    val fabMenu = listOf(
+        FabMenuAction("Gasto", Icons.AutoMirrored.Filled.TrendingDown) { openAddSheetAs(TransactionType.EXPENSE) },
+        FabMenuAction("Ingreso", Icons.AutoMirrored.Filled.TrendingUp) { openAddSheetAs(TransactionType.INCOME) },
+        FabMenuAction("Transferencia", Icons.Default.SwapHoriz) { openAddSheetAs(TransactionType.TRANSFER) }
+    )
     val routeFabVisible = activeRoute == ROUTE_BUDGET || activeRoute == ROUTE_CREDITS
 
     Scaffold(
@@ -457,6 +489,9 @@ fun MainScreen(
                         ContextualFab(visible = routeFabVisible, leadingSpacer = false, onClick = onFabClick)
                     }
 
+                    // Velo detrás del menú del botón de agregar; tocarlo lo cierra
+                    FabScrim(visible = fabMenuExpanded, onDismiss = { fabMenuExpanded = false })
+
                     if (navBarStyle == NavBarStyle.FLOATING) {
                         // Capa Overlaid Flotante Desacoplada (Alineación simétrica de insets y ancho optimizado)
                         SlideVisibility(
@@ -577,7 +612,10 @@ fun MainScreen(
                                     }
                                 }
 
-                                ContextualFab(visible = tabFabVisible, leadingSpacer = true, onClick = onFabClick)
+                                ContextualFab(
+                                    visible = tabFabVisible, leadingSpacer = true, onClick = onFabClick,
+                                    menu = fabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
+                                )
                             }
                         }
                         }
@@ -585,7 +623,10 @@ fun MainScreen(
 
                     if (navBarStyle == NavBarStyle.INTEGRATED) {
                         Box(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                            ContextualFab(visible = tabFabVisible, leadingSpacer = false, onClick = onFabClick)
+                            ContextualFab(
+                                visible = tabFabVisible, leadingSpacer = false, onClick = onFabClick,
+                                menu = fabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
+                            )
                         }
                     }
                 }
@@ -659,12 +700,34 @@ private fun SlideVisibility(visible: Boolean, modifier: Modifier = Modifier, con
     ) { content() }
 }
 
-/** Botón de agregar contextual; [visible] lo decide quien lo coloca. */
+private class FabMenuAction(val label: String, val icon: ImageVector, val onClick: () -> Unit)
+
+/** Coloca el menú con su borde derecho y su base justo encima del botón. */
+private class FabMenuPositionProvider(private val gapPx: Int) : PopupPositionProvider {
+    override fun calculatePosition(
+        anchorBounds: IntRect,
+        windowSize: IntSize,
+        layoutDirection: LayoutDirection,
+        popupContentSize: IntSize
+    ) = IntOffset(
+        x = anchorBounds.right - popupContentSize.width,
+        y = anchorBounds.top - popupContentSize.height - gapPx
+    )
+}
+
+/**
+ * Botón de agregar contextual; [visible] lo decide quien lo coloca. Con [menu] el botón despliega las acciones
+ * (el primero queda más cerca del botón) en lugar de llamar a [onClick].
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ContextualFab(
     visible: Boolean,
     leadingSpacer: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    menu: List<FabMenuAction>? = null,
+    expanded: Boolean = false,
+    onExpandedChange: (Boolean) -> Unit = {}
 ) {
     val spatialFloat = minicashSpatialSpec<Float>()
     val effectsFloat = minicashEffectsSpec<Float>()
@@ -685,12 +748,28 @@ private fun ContextualFab(
                 label = "fab_corner_radius"
             )
 
+            val iconRotation by animateFloatAsState(
+                targetValue = if (expanded) 135f else 0f,
+                animationSpec = if (isAnimationRestricted) snap() else minicashSpatialSpec(),
+                label = "fab_icon_rotation"
+            )
+            val containerColor by animateColorAsState(
+                targetValue = if (expanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                animationSpec = minicashEffectsSpec(),
+                label = "fab_container"
+            )
+            val contentColor by animateColorAsState(
+                targetValue = if (expanded) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+                animationSpec = minicashEffectsSpec(),
+                label = "fab_content"
+            )
+
             FloatingActionButton(
-                onClick = onClick,
+                onClick = { if (menu != null) onExpandedChange(!expanded) else onClick() },
                 shape = RoundedCornerShape(fabRadius),
                 interactionSource = fabInteractionSource,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = containerColor,
+                contentColor = contentColor,
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 2.dp,
                     pressedElevation = 6.dp
@@ -699,10 +778,87 @@ private fun ContextualFab(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Añadir",
-                    modifier = Modifier.size(24.dp)
+                    contentDescription = if (menu != null && expanded) "Cerrar menú" else "Añadir",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .graphicsLayer { rotationZ = iconRotation }
                 )
             }
+
+            if (menu != null) {
+                // El menú vive en su propia ventana para poder crecer hacia arriba sin mover la barra; se conserva
+                // mientras corre la animación de salida
+                val menuTransition = updateTransition(targetState = expanded, label = "fab_menu")
+                if (menuTransition.currentState || menuTransition.targetState) {
+                    val gapPx = with(LocalDensity.current) { 12.dp.roundToPx() }
+                    Popup(
+                        popupPositionProvider = remember(gapPx) { FabMenuPositionProvider(gapPx) },
+                        properties = PopupProperties(focusable = false, clippingEnabled = false)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            menu.asReversed().forEach { action ->
+                                menuTransition.AnimatedVisibility(
+                                    visible = { it },
+                                    enter = fadeIn(minicashEffectsSpec()) +
+                                        scaleIn(minicashSpatialSpec(), transformOrigin = TransformOrigin(1f, 1f)) +
+                                        slideInVertically(minicashSpatialSpec()) { it / 2 },
+                                    exit = fadeOut(minicashEffectsSpec()) +
+                                        scaleOut(minicashSpatialSpec(), transformOrigin = TransformOrigin(1f, 1f))
+                                ) {
+                                    FabMenuItem(action)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Velo detrás del menú del botón de agregar; tocarlo lo cierra. Vive fuera del Column por la ambigüedad de receptores. */
+@Composable
+private fun FabScrim(visible: Boolean, onDismiss: () -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(animationSpec = minicashEffectsSpec()),
+        exit = fadeOut(animationSpec = minicashEffectsSpec())
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                .pointerInput(Unit) { detectTapGestures { onDismiss() } }
+                .clearAndSetSemantics { }
+        )
+    }
+}
+
+/** Acción del menú del botón de agregar: píldora de 56 dp con ícono y texto, en el color del botón. */
+@Composable
+private fun FabMenuItem(action: FabMenuAction) {
+    Surface(
+        onClick = action.onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shadowElevation = 3.dp
+    ) {
+        Row(
+            modifier = Modifier.height(56.dp).padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(imageVector = action.icon, contentDescription = null, modifier = Modifier.size(24.dp))
+            Text(
+                text = action.label,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
+            )
         }
     }
 }
