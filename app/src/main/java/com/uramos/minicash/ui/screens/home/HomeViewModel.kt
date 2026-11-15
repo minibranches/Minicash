@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.data.util.removeTransactions
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import com.uramos.minicash.data.local.dao.findOrCreateByName
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -228,19 +232,17 @@ class HomeViewModel(
         _selectedIds.value = emptySet()
     }
 
+    private val _deletedEvents = MutableSharedFlow<List<TransactionEntity>>(extraBufferCapacity = 1)
+
+    /** Movimientos recién borrados, para mostrar el aviso con "Deshacer". */
+    val deletedEvents: SharedFlow<List<TransactionEntity>> = _deletedEvents.asSharedFlow()
+
     fun deleteSelectedTransactions() {
         viewModelScope.launch {
             val selectedTxs = uiState.value.recentTransactions.filter { it.id in _selectedIds.value }
-            selectedTxs.forEach { transaction ->
-                when (transaction.type) {
-                    TransactionType.INCOME -> accountDao.updateBalance(transaction.sourceAccountId, -transaction.amount)
-                    TransactionType.EXPENSE -> accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
-                    TransactionType.TRANSFER -> {
-                        accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
-                        transaction.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, -transaction.amount) }
-                    }
-                }
-                transactionDao.deleteTransaction(transaction)
+            if (selectedTxs.isNotEmpty()) {
+                removeTransactions(accountDao, transactionDao, selectedTxs)
+                _deletedEvents.emit(selectedTxs)
             }
             clearSelection()
         }
@@ -273,15 +275,13 @@ class HomeViewModel(
 
     fun deleteTransaction(transaction: TransactionEntity) {
         viewModelScope.launch {
-            when (transaction.type) {
-                TransactionType.INCOME -> accountDao.updateBalance(transaction.sourceAccountId, -transaction.amount)
-                TransactionType.EXPENSE -> accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
-                TransactionType.TRANSFER -> {
-                    accountDao.updateBalance(transaction.sourceAccountId, transaction.amount)
-                    transaction.destinationAccountId?.let { destId -> accountDao.updateBalance(destId, -transaction.amount) }
-                }
-            }
-            transactionDao.deleteTransaction(transaction)
+            removeTransactions(accountDao, transactionDao, listOf(transaction))
+            _deletedEvents.emit(listOf(transaction))
         }
+    }
+
+    /** Deshace un borrado: la pantalla lo pide desde el aviso con "Deshacer". */
+    fun restoreTransactions(transactions: List<TransactionEntity>) {
+        viewModelScope.launch { com.uramos.minicash.data.util.restoreTransactions(accountDao, transactionDao, transactions) }
     }
 }

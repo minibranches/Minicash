@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarDuration
 import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
 import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.material3.ripple
@@ -292,6 +294,14 @@ fun BudgetScreen(
             },
             onDelete = { target ->
                 viewModel.deleteItem(target)
+                scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = "Partida eliminada",
+                        actionLabel = "Deshacer",
+                        duration = SnackbarDuration.Long
+                    )
+                    if (result == SnackbarResult.ActionPerformed) viewModel.restoreItem(target)
+                }
                 itemToEdit = null
             }
         )

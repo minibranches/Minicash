@@ -294,4 +294,11 @@ class BudgetViewModel(
             budgetDao.deleteItem(item)
         }
     }
+
+    /** Deshace el borrado de una partida: se vuelve a insertar con su mismo id, orden y estado. */
+    fun restoreItem(item: BudgetItemEntity) {
+        viewModelScope.launch {
+            budgetDao.insertItems(listOf(item))
+        }
+    }
 }

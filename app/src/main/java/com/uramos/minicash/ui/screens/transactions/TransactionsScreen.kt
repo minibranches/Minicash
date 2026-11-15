@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.SettingsGearButton
 import com.uramos.minicash.ui.components.fadingTopEdge
@@ -83,14 +88,20 @@ fun TransactionsScreen(
     val selectedTotalAmount by viewModel.selectedTotalAmount.collectAsState()
 
     val haptics = rememberMinicashHaptics()
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(viewModel) {
+        viewModel.deletedEvents.collect { deleted ->
+            val message = if (deleted.size == 1) "Movimiento eliminado" else "${deleted.size} movimientos eliminados"
+            val result = snackbarHostState.showSnackbar(message = message, actionLabel = "Deshacer", duration = SnackbarDuration.Long)
+            if (result == SnackbarResult.ActionPerformed) viewModel.restoreTransactions(deleted)
+        }
+    }
 
     val entranceTracker = rememberEntranceTracker()
     val isRestricted = LocalAnimationRestriction.current
 
-    var transactionToDelete by remember { mutableStateOf<TransactionEntity?>(null) }
     var transactionToEdit by remember { mutableStateOf<TransactionEntity?>(null) }
     var showFilterSheet by remember { mutableStateOf(false) }
-    var showBatchDeleteDialog by remember { mutableStateOf(false) }
 
     if (selectedIds.isNotEmpty()) {
         BackHandler {
@@ -116,78 +127,11 @@ fun TransactionsScreen(
         )
     }
 
-    if (transactionToDelete != null) {
-        val tx = transactionToDelete!!
-        MinicashAlertDialog(
-            onDismissRequest = { transactionToDelete = null },
-            title = {
-                Text(
-                    text = "¿Eliminar movimiento?",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "Esta acción no se puede deshacer. Se ajustará automáticamente el saldo de la cuenta correspondiente.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                MinicashTextButton(
-                    onClick = {
-                        haptics.confirm()
-                        viewModel.deleteTransaction(tx)
-                        transactionToDelete = null
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                MinicashTextButton(
-                    onClick = { transactionToDelete = null }
-                ) {
-                    Text("Cancelar")
-                }
-            },
-            shape = MinicashShapes.Hero,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    }
 
-    if (showBatchDeleteDialog) {
-        MinicashAlertDialog(
-            onDismissRequest = { showBatchDeleteDialog = false },
-            title = { Text("¿Eliminar ${selectedIds.size} movimientos?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción eliminará los movimientos seleccionados y reajustará automáticamente los saldos correspondientes de las cuentas. ¿Proceder?") },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        haptics.heavyOrDelete()
-                        viewModel.deleteSelectedTransactions()
-                        showBatchDeleteDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    ),
-                ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                MinicashTextButton(onClick = { showBatchDeleteDialog = false }) { Text("Cancelar") }
-            },
-            shape = MinicashShapes.Hero
-        )
-    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
         topBar = {
             TopAppBar(
                 windowInsets = WindowInsets(0.dp),
@@ -381,7 +325,7 @@ fun TransactionsScreen(
                                         viewModel.toggleSelection(id)
                                     },
                                     onTransactionClick = { transactionToEdit = it },
-                                    onTransactionDelete = { transactionToDelete = it }
+                                    onTransactionDelete = { viewModel.deleteTransaction(it) }
                                 )
                             }
                         }
@@ -435,7 +379,10 @@ fun TransactionsScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        MinicashIconButton(onClick = { showBatchDeleteDialog = true }) {
+                        MinicashIconButton(onClick = {
+                            haptics.heavyOrDelete()
+                            viewModel.deleteSelectedTransactions()
+                        }) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = "Eliminar seleccionados",

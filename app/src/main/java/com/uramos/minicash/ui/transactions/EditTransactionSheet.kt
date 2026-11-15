@@ -206,7 +206,6 @@ fun EditTransactionSheet(
     val focusManager = LocalFocusManager.current
     
 
-    var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
@@ -339,7 +338,11 @@ fun EditTransactionSheet(
                     }
 
                     if (onDeleteTransaction != null) {
-                        MinicashIconButton(onClick = { showDeleteConfirmation = true }) {
+                        MinicashIconButton(onClick = {
+                            haptics.heavyOrDelete()
+                            onDeleteTransaction(transaction)
+                            onDismiss()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Eliminar movimiento",
@@ -853,7 +856,11 @@ fun EditTransactionSheet(
 
                         if (onDeleteTransaction != null) {
                             MinicashOutlinedButton(
-                                onClick = { showDeleteConfirmation = true },
+                                onClick = {
+                                    haptics.heavyOrDelete()
+                                    onDeleteTransaction(transaction)
+                                    onDismiss()
+                                },
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = MaterialTheme.colorScheme.error
                                 ),
@@ -944,31 +951,4 @@ fun EditTransactionSheet(
         )
     }
 
-    if (showDeleteConfirmation && onDeleteTransaction != null) {
-        MinicashAlertDialog(
-            onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("¿Eliminar movimiento?", fontWeight = FontWeight.Bold) },
-            text = { Text("Esta acción eliminará permanentemente el movimiento y reajustará automáticamente los saldos correspondientes. ¿Proceder?") },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        haptics.heavyOrDelete()
-                        onDeleteTransaction(transaction)
-                        showDeleteConfirmation = false
-                        onDismiss()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    ),
-                ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                MinicashTextButton(onClick = { showDeleteConfirmation = false }) { Text("Cancelar") }
-            },
-            shape = MinicashShapes.Hero
-        )
-    }
 }
