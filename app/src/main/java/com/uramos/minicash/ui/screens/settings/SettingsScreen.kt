@@ -76,7 +76,6 @@ import com.uramos.minicash.ui.components.CardTonalLevel
 import com.uramos.minicash.ui.components.MinicashCard
 import com.uramos.minicash.ui.components.MinicashColorPicker
 import com.uramos.minicash.ui.components.MinicashEmptyState
-import com.uramos.minicash.ui.components.MinicashLogoWithText
 import com.uramos.minicash.ui.components.rememberSegmentedShape
 import com.uramos.minicash.ui.utils.MinicashColorUtils
 import com.uramos.minicash.ui.theme.MinicashShapes
@@ -343,30 +342,6 @@ fun SettingsScreen(
                         onClick = onNavigateToAbout,
                         index = dataCount - 1, count = dataCount
                     )
-                }
-            }
-
-            // Sección Acerca de Minicash
-            item {
-                MinicashCard(
-                    level = CardTonalLevel.LOW,
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(spacing.large),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(spacing.small)
-                    ) {
-                        MinicashLogoWithText(logoSize = 36.dp)
-                        Text(
-                            text = "Versión 1.0 • Control financiero personal local",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
         }

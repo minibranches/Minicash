@@ -93,6 +93,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -531,16 +532,28 @@ fun MainScreen(
                                 horizontalArrangement = Arrangement.Center,
                                 modifier = Modifier.wrapContentWidth()
                             ) {
-                                // Cápsula Flotante de Pestañas Animadas PBT
+                                // Cápsula flotante de pestañas. Su ancho es fijo (el del destino activo más largo): lo que
+                                // cambia al elegir otra pestaña es cómo se reparte entre las píldoras, así la cápsula no
+                                // se redimensiona ni mueve el botón de agregar, y las formas nunca se recortan en seco.
+                                val density = LocalDensity.current
+                                val textMeasurer = rememberTextMeasurer()
+                                val labelStyle = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                                val labelWidths = visibleScreens.map { screen ->
+                                    with(density) {
+                                        textMeasurer.measure(screen.title, labelStyle, softWrap = false, maxLines = 1).size.width.toDp()
+                                    }
+                                }
+                                val selectedPillWidth = (14 + 22 + 6 + 14).dp + (labelWidths.maxOrNull() ?: 0.dp)
+                                val capsuleWidth = 6.dp * 2 + 2.dp * (visibleScreens.size - 1) +
+                                    selectedPillWidth + FLOATING_PILL_COLLAPSED_WIDTH * (visibleScreens.size - 1)
+
                                 Surface(
                                     shape = RoundedCornerShape(28.dp),
                                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     tonalElevation = 4.dp,
                                     shadowElevation = 0.dp,
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
-                                    modifier = Modifier.animateContentSize(
-                                        animationSpec = spatialSize
-                                    )
+                                    modifier = Modifier.width(capsuleWidth)
                                 ) {
                                     WithoutMinTouchTarget {
                                         Row(
@@ -550,7 +563,7 @@ fun MainScreen(
                                         ) {
                                             visibleScreens.forEachIndexed { index, screen ->
                                                 val isSelected = currentScreenIndex == index
-                                                // El ícono "rebota" al seleccionarse y la píldora cambia de color y de ancho con suavidad
+                                                // El ícono "rebota" al seleccionarse; la píldora cambia de color y de ancho con resortes
                                                 val iconScale by animateFloatAsState(
                                                     targetValue = if (isSelected) 1.12f else 1.0f,
                                                     animationSpec = minicashFastSpatialSpec(),
@@ -567,20 +580,31 @@ fun MainScreen(
                                                     animationSpec = effectsColor,
                                                     label = "icon_tint"
                                                 )
-                                                val sidePadding by animateDpAsState(
-                                                    targetValue = if (isSelected) 14.dp else 13.dp, // 22 dp de ícono + 2 x 13 dp = 48 dp de ancho para el destino sin seleccionar
+                                                val pillWidth by animateDpAsState(
+                                                    targetValue = if (isSelected) selectedPillWidth else FLOATING_PILL_COLLAPSED_WIDTH,
                                                     animationSpec = spatialDp,
-                                                    label = "pill_padding"
+                                                    label = "pill_width"
+                                                )
+                                                // Espacio que ocupa la etiqueta junto al ícono; el texto aparece con un fundido
+                                                val labelSlot by animateDpAsState(
+                                                    targetValue = if (isSelected) labelWidths[index] + 6.dp else 0.dp,
+                                                    animationSpec = spatialDp,
+                                                    label = "label_slot"
+                                                )
+                                                val labelAlpha by animateFloatAsState(
+                                                    targetValue = if (isSelected) 1f else 0f,
+                                                    animationSpec = effectsFloat,
+                                                    label = "label_alpha"
                                                 )
 
                                                 Surface(
                                                     onClick = { onNavClick(index, screen) },
                                                     shape = MinicashShapes.Pill,
                                                     color = pillColor,
-                                                    modifier = Modifier.animateContentSize(animationSpec = spatialSize)
+                                                    modifier = Modifier.width(pillWidth)
                                                 ) {
                                                     Row(
-                                                        modifier = Modifier.height(40.dp).padding(horizontal = sidePadding),
+                                                        modifier = Modifier.height(40.dp),
                                                         verticalAlignment = Alignment.CenterVertically,
                                                         horizontalArrangement = Arrangement.Center
                                                     ) {
@@ -601,22 +625,21 @@ fun MainScreen(
                                                                     }
                                                             )
                                                         }
-                                                        AnimatedVisibility(
-                                                            visible = isSelected,
-                                                            enter = expandHorizontally(animationSpec = spatialSize) + fadeIn(animationSpec = effectsFloat),
-                                                            exit = shrinkHorizontally(animationSpec = spatialSize) + fadeOut(animationSpec = effectsFloat)
+                                                        Box(
+                                                            modifier = Modifier.width(labelSlot),
+                                                            contentAlignment = Alignment.CenterStart
                                                         ) {
-                                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                                Spacer(modifier = Modifier.width(6.dp))
-                                                                Text(
-                                                                    text = screen.title,
-                                                                    style = MaterialTheme.typography.labelMedium,
-                                                                    fontWeight = FontWeight.SemiBold,
-                                                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                                    maxLines = 1,
-                                                                    softWrap = false
-                                                                )
-                                                            }
+                                                            Text(
+                                                                text = screen.title,
+                                                                style = labelStyle,
+                                                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                                                maxLines = 1,
+                                                                softWrap = false,
+                                                                modifier = Modifier
+                                                                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                                                                    .padding(start = 6.dp)
+                                                                    .graphicsLayer { alpha = labelAlpha }
+                                                            )
                                                         }
                                                     }
                                                 }
@@ -704,6 +727,9 @@ private const val NAV_SCROLL_THRESHOLD = 2f
 
 /** Alto de la cápsula flotante de pestañas: 6 dp de relleno, el destino de 40 dp y otros 6 dp. */
 private val FLOATING_BAR_HEIGHT = 52.dp
+
+/** Ancho de una píldora de la cápsula flotante cuando no está seleccionada: solo el ícono, 22 dp y 13 dp por lado. */
+private val FLOATING_PILL_COLLAPSED_WIDTH = 48.dp
 
 /** Entra y sale deslizándose desde el borde inferior; vive fuera del Column para evitar la ambigüedad de receptores. */
 @Composable

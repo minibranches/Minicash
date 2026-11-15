@@ -19,6 +19,31 @@ Lo que M3 no define se marca como **decisión de diseño**. No se cambió códig
 | 7 | Duraciones fijas en transiciones | Parcial: el fundido de pestañas usa resortes de efectos; el eje X compartido conserva `tween` (permitido para transiciones y sin rebote). |
 | 8 | Entrada de diálogos con escala | Corregido: fundido corto y expansión vertical; sin elevación tonal extra. |
 
+## Revisión general de UX (2026-11-14 y 15)
+Segunda ronda, hecha en cinco fases con prueba en el teléfono. Detalle completo de cada hallazgo en la propuesta original; aquí solo su estado.
+
+| # | Hallazgo | Estado |
+|---|---|---|
+| 1 | Espacio duplicado sobre los títulos | Corregido (fase A): las barras superiores dentro del panel no aplican de nuevo el margen del sistema. |
+| 2 | Zonas táctiles menores a 48 dp | Corregido (fase B): flechas de mes, palomita, engrane y atrás miden 48 dp con el mismo tamaño visual. |
+| 3 | Título duplicado en Inicio | Corregido (fase A): un solo título de sección y "Gastos" / "Ingresos" dentro de la tarjeta. |
+| 4 | El botón de agregar tapa contenido | Corregido (fase A): relleno inferior revisado en cada lista. |
+| 5 | Nombres distintos para lo mismo | Corregido (fase A): "Movimientos", "Gastos fijos" y "Créditos" en barra, títulos y Extras. |
+| 6 | Jerarquía tipográfica plana | Corregido (fase D): pesos y tamaños en escala. |
+| 7 | Campos de texto con cuatro formas | Corregido (fase C): una sola forma. |
+| 8 | Hojas sin protección al descartar | Corregido (fase C): las que capturan datos usan la versión protegida. |
+| 9 | Selector de fecha antiguo | Descartado: era solo un import sin uso. |
+| 10 | Indicadores de carga | Corregido (fase C): `LoadingIndicator`. |
+| 11 | Eliminar sin deshacer | Corregido (fase E): se borra al instante y un aviso ofrece "Deshacer" (movimientos y partidas). |
+| 12 | Listas de Ajustes sin estilo expresivo | Corregido (fase D): listas segmentadas. |
+| 13 | Háptica inconsistente | Corregido (fase C): un solo ayudante. |
+| 16 | Menú del botón de agregar | Hecho: despliega Gasto, Ingreso y Transferencia. |
+| 17 | Tamaños de texto fijos en gráficas | Corregido (fase D). |
+| 18 | Textos fuera de `stringResource` | **Pendiente a propósito**: la app no se puede traducir. |
+| 19 | Archivos muy grandes | **Pendiente a propósito**: es mantenibilidad, no pantalla. |
+
+Cambios posteriores sobre la barra flotante: el botón de agregar es un círculo del mismo alto que la cápsula; la cápsula ahora tiene ancho fijo (el del destino más largo) y solo reparte el espacio entre las píldoras, de modo que no se redimensiona, no mueve el botón y las formas no se recortan en seco al animarse. Se quitó la tarjeta con el logo al final de Ajustes porque repetía "Acerca de".
+
 Revisión de color y tipografía: sin uso de roles `container` como color de texto o ícono, y los divisores usan `outline variant` por defecto. Los pesos Bold de titulares y acciones ya equivalen a los estilos enfatizados, así que no se cambió la escala tipográfica.
 
 ## Prioridad media
