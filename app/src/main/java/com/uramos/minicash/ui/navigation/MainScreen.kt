@@ -226,6 +226,9 @@ fun MainScreen(
     LaunchedEffect(currentScreenIndex) { navBarScrollVisible = true }
     // Con cualquier pantalla superpuesta abierta la barra se oculta
     val inSubScreen = routeStack.isNotEmpty()
+    // Desplazar una pantalla superpuesta (Ajustes, Reportes…) también pasa por este panel y esconde la barra;
+    // al volver a las pestañas debe reaparecer
+    LaunchedEffect(inSubScreen) { if (!inSubScreen) navBarScrollVisible = true }
 
     LaunchedEffect(shortcutAction) {
         if (!shortcutAction.isNullOrBlank()) {
@@ -396,7 +399,8 @@ fun MainScreen(
                                 is Screen.Transactions -> TransactionsScreen(
                                     viewModel = transactionsViewModel,
                                     listState = transactionsListState,
-                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) }
+                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
+                                    isActive = currentScreen is Screen.Transactions && !inSubScreen
                                 )
                                 is Screen.Extras -> ExtrasScreen(
                                     budgetViewModel = budgetViewModel,
@@ -698,6 +702,9 @@ private fun IntegratedNavBar(
 
 private const val NAV_SCROLL_THRESHOLD = 2f
 
+/** Alto de la cápsula flotante de pestañas: 6 dp de relleno, el destino de 40 dp y otros 6 dp. */
+private val FLOATING_BAR_HEIGHT = 52.dp
+
 /** Entra y sale deslizándose desde el borde inferior; vive fuera del Column para evitar la ambigüedad de receptores. */
 @Composable
 private fun SlideVisibility(visible: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
@@ -751,11 +758,13 @@ private fun ContextualFab(
             val fabInteractionSource = remember { MutableInteractionSource() }
             val isFabPressed by fabInteractionSource.collectIsPressedAsState()
             val isAnimationRestricted = LocalAnimationRestriction.current
-            val fabRadius by animateDpAsState(
-                targetValue = if (isFabPressed) 28.dp else 16.dp,
-                animationSpec = if (isAnimationRestricted) snap() else MaterialTheme.motionScheme.defaultSpatialSpec(),
-                label = "fab_corner_radius"
+            // Círculo que se encoge un poco al presionarse; en la barra flotante mide lo mismo que la cápsula
+            val pressScale by animateFloatAsState(
+                targetValue = if (isFabPressed) 0.92f else 1f,
+                animationSpec = if (isAnimationRestricted) snap() else minicashFastSpatialSpec(),
+                label = "fab_press_scale"
             )
+            val fabSize = if (leadingSpacer) FLOATING_BAR_HEIGHT else 56.dp
 
             val iconRotation by animateFloatAsState(
                 targetValue = if (expanded) 135f else 0f,
@@ -775,7 +784,7 @@ private fun ContextualFab(
 
             FloatingActionButton(
                 onClick = { if (menu != null) onExpandedChange(!expanded) else onClick() },
-                shape = RoundedCornerShape(fabRadius),
+                shape = CircleShape,
                 interactionSource = fabInteractionSource,
                 containerColor = containerColor,
                 contentColor = contentColor,
@@ -783,7 +792,12 @@ private fun ContextualFab(
                     defaultElevation = 2.dp,
                     pressedElevation = 6.dp
                 ),
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier
+                    .size(fabSize)
+                    .graphicsLayer {
+                        scaleX = pressScale
+                        scaleY = pressScale
+                    }
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,

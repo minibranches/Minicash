@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
+import com.uramos.minicash.ui.components.rememberSegmentedShape
+import com.uramos.minicash.data.util.CsvRange
 import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.foundation.lazy.rememberLazyListState
 import android.net.Uri
@@ -88,6 +92,8 @@ fun BackupSettingsScreen(
     var pendingRestoreUri by remember { mutableStateOf<Uri?>(null) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
     var showWipeDialog by remember { mutableStateOf(false) }
+    var showCsvRangeDialog by remember { mutableStateOf(false) }
+    var pendingCsvRange by remember { mutableStateOf(CsvRange.ALL) }
 
     LaunchedEffect(viewModel) {
         viewModel.messageEvent.collect { message ->
@@ -101,11 +107,23 @@ fun BackupSettingsScreen(
 
     val createCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
-    ) { uri: Uri? -> uri?.let { viewModel.exportCsv(context, it) } }
+    ) { uri: Uri? -> uri?.let { viewModel.exportCsv(context, it, pendingCsvRange) } }
 
     val openDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? -> uri?.let { pendingRestoreUri = it } }
+
+    if (showCsvRangeDialog) {
+        CsvRangeDialog(
+            onDismiss = { showCsvRangeDialog = false },
+            onPick = { range ->
+                showCsvRangeDialog = false
+                pendingCsvRange = range
+                val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
+                createCsvLauncher.launch("minicash_movimientos_$dateStr.csv")
+            }
+        )
+    }
 
     val fadeListState = rememberLazyListState()
     Scaffold(
@@ -217,10 +235,7 @@ fun BackupSettingsScreen(
                         title = "Exportar a CSV",
                         subtitle = "Guarda cada movimiento en un archivo para hojas de cálculo",
                         icon = Icons.Default.TableChart,
-                        onClick = {
-                            val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
-                            createCsvLauncher.launch("minicash_movimientos_$dateStr.csv")
-                        }
+                        onClick = { showCsvRangeDialog = true }
                     )
                 }
             }
@@ -355,4 +370,33 @@ fun BackupSettingsScreen(
             shape = MinicashShapes.Hero
         )
     }
+}
+
+/** Elige qué periodo de movimientos se exporta; al tocar una opción se abre el selector de archivos. */
+@Composable
+private fun CsvRangeDialog(onDismiss: () -> Unit, onPick: (CsvRange) -> Unit) {
+    MinicashAlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("¿Qué movimientos exportar?", fontWeight = FontWeight.SemiBold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                CsvRange.entries.forEachIndexed { index, range ->
+                    Surface(
+                        onClick = { onPick(range) },
+                        shape = rememberSegmentedShape(index = index, count = CsvRange.entries.size),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = range.label,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }

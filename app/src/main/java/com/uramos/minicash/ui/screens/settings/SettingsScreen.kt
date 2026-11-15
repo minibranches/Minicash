@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.security.showAppLockPrompt
+import com.uramos.minicash.ui.security.findFragmentActivity
+import com.uramos.minicash.ui.security.canUseAppLock
+import android.widget.Toast
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
@@ -268,6 +274,10 @@ fun SettingsScreen(
             item {
                 val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
                 val hideInRecents by viewModel.hideInRecents.collectAsState()
+                val appLockEnabled by viewModel.appLockEnabled.collectAsState()
+                val appLockTimeout by viewModel.appLockTimeoutMinutes.collectAsState()
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val dataCount = if (appLockEnabled) 5 else 4
                 SettingsSection(
                     icon = Icons.Default.CloudDone,
                     iconTint = MaterialTheme.colorScheme.tertiary,
@@ -279,7 +289,7 @@ fun SettingsScreen(
                         icon = Icons.Default.CloudDone,
                         subtitle = backupSubtitle,
                         onClick = onNavigateToBackups,
-                        index = 0, count = 3
+                        index = 0, count = dataCount
                     )
                     SettingsSwitchItem(
                         title = "Ocultar en multitarea",
@@ -291,14 +301,47 @@ fun SettingsScreen(
                             haptics.click()
                             viewModel.setHideInRecents(it)
                         },
-                        index = 1, count = 3
+                        index = 1, count = dataCount
                     )
+                    SettingsSwitchItem(
+                        title = "Bloqueo de la app",
+                        subtitle = if (appLockEnabled) com.uramos.minicash.data.util.appLockTimeoutLabel(appLockTimeout) + "; pide huella, rostro o PIN"
+                        else "Pide huella, rostro o el PIN del teléfono al abrir Minicash",
+                        icon = Icons.Default.Lock,
+                        checked = appLockEnabled,
+                        onCheckedChange = { wantsOn ->
+                            haptics.click()
+                            val activity = context.findFragmentActivity()
+                            when {
+                                !wantsOn -> activity?.let {
+                                    // Para quitar el bloqueo también se pide verificarse
+                                    showAppLockPrompt(it, "Quitar el bloqueo", "Verifica que eres tú", onSuccess = { viewModel.setAppLockEnabled(false) })
+                                } ?: viewModel.setAppLockEnabled(false)
+                                activity == null || !canUseAppLock(context) ->
+                                    Toast.makeText(context, "Configura una huella, un rostro o un PIN en los ajustes del teléfono", Toast.LENGTH_LONG).show()
+                                else -> showAppLockPrompt(activity, "Activar el bloqueo", "Verifica que puedes desbloquear", onSuccess = { viewModel.setAppLockEnabled(true) })
+                            }
+                        },
+                        index = 2, count = dataCount
+                    )
+                    if (appLockEnabled) {
+                        SettingsRowItem(
+                            title = "Volver a pedir",
+                            icon = Icons.Default.Timer,
+                            subtitle = com.uramos.minicash.data.util.appLockTimeoutLabel(appLockTimeout),
+                            onClick = {
+                                haptics.click()
+                                viewModel.setAppLockTimeoutMinutes(com.uramos.minicash.data.util.nextAppLockTimeout(appLockTimeout))
+                            },
+                            index = 3, count = dataCount
+                        )
+                    }
                     SettingsRowItem(
                         title = "Acerca de Minicash",
                         icon = Icons.Default.Info,
                         subtitle = "Versión, enlaces y compartir",
                         onClick = onNavigateToAbout,
-                        index = 2, count = 3
+                        index = dataCount - 1, count = dataCount
                     )
                 }
             }

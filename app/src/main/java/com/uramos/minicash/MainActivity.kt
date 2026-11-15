@@ -5,7 +5,12 @@ import androidx.compose.runtime.LaunchedEffect
 import android.view.WindowManager
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
+import android.os.SystemClock
+import com.uramos.minicash.data.util.shouldLock
+import com.uramos.minicash.ui.security.LockScreen
+import com.uramos.minicash.ui.security.canUseAppLock
+import com.uramos.minicash.ui.security.showAppLockPrompt
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -41,14 +46,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+/** Estado del bloqueo de la app: CHECKING solo dura el instante en que se lee si el bloqueo está activo. */
+private enum class LockStatus { CHECKING, LOCKED, UNLOCKED }
+
+// FragmentActivity (que ya es una ComponentActivity) es lo que necesita el diálogo biométrico del sistema
+class MainActivity : FragmentActivity() {
 
     private var shortcutActionState by mutableStateOf<String?>(null)
+    private var lockStatus by mutableStateOf(LockStatus.CHECKING)
+    private var promptShowing = false
+
+    /** Momento (reloj monotónico) en que la app pasó a segundo plano; nulo mientras no se haya abierto. */
+    private var backgroundedAt: Long? = null
     private lateinit var db: MinicashDatabase
     private lateinit var userPreferences: UserPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        // El splash se queda hasta saber si la app arranca bloqueada, para no mostrar un destello de otra pantalla
+        installSplashScreen().setKeepOnScreenCondition { lockStatus == LockStatus.CHECKING }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -93,7 +108,8 @@ class MainActivity : ComponentActivity() {
         val transactionsViewModel = TransactionsViewModel(
             transactionDao = db.transactionDao(),
             accountDao = db.accountDao(),
-            categoryDao = db.categoryDao()
+            categoryDao = db.categoryDao(),
+            userPreferences = userPreferences
         )
 
         val budgetViewModel = BudgetViewModel(
@@ -141,7 +157,13 @@ class MainActivity : ComponentActivity() {
                 fontPreference = fontPreference
             ) {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    AppNavigation(
+                    // Con el bloqueo activo la app no se compone hasta desbloquear: no queda ningún dato en pantalla
+                    if (lockStatus != LockStatus.UNLOCKED) {
+                        LockScreen(
+                            showUnlock = lockStatus == LockStatus.LOCKED,
+                            onUnlock = { requestUnlock() }
+                        )
+                    } else AppNavigation(
                         shortcutAction = shortcutActionState,
                         onShortcutActionHandled = { shortcutActionState = null },
                         userPreferences = userPreferences,
@@ -162,10 +184,49 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         checkAutoBackup()
+        evaluateLock()
+    }
+
+    /** Decide si hace falta bloquear al volver a la app; si ya está bloqueada se queda así hasta desbloquear. */
+    private fun evaluateLock() {
+        if (lockStatus == LockStatus.LOCKED) {
+            requestUnlock()
+            return
+        }
+        lifecycleScope.launch {
+            val enabled = userPreferences.appLockEnabled.first()
+            val timeout = userPreferences.appLockTimeoutMinutes.first()
+            // Si el teléfono ya no tiene bloqueo de pantalla configurado no se puede pedir nada: se deja entrar
+            val lock = enabled && canUseAppLock(this@MainActivity) &&
+                shouldLock(enabled, timeout, backgroundedAt, SystemClock.elapsedRealtime())
+            if (lock) {
+                lockStatus = LockStatus.LOCKED
+                requestUnlock()
+            } else {
+                lockStatus = LockStatus.UNLOCKED
+            }
+        }
+    }
+
+    private fun requestUnlock() {
+        if (promptShowing) return
+        promptShowing = true
+        showAppLockPrompt(
+            activity = this,
+            title = "Minicash",
+            subtitle = "Desbloquea para continuar",
+            onSuccess = {
+                promptShowing = false
+                lockStatus = LockStatus.UNLOCKED
+            },
+            onFailure = { promptShowing = false }
+        )
     }
 
     override fun onStop() {
         super.onStop()
+        // Mientras el diálogo del sistema está abierto no cuenta como salir de la app
+        if (lockStatus == LockStatus.UNLOCKED) backgroundedAt = SystemClock.elapsedRealtime()
         checkAutoBackup()
         // Al salir de la app los datos pudieron cambiar: se refrescan los widgets de la pantalla de inicio
         updateMinicashWidgets(applicationContext)

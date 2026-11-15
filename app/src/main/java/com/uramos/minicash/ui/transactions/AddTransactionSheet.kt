@@ -498,11 +498,13 @@ fun AddTransactionSheet(
                                 singleLine = true,
                                 shape = MinicashShapes.Input,
                                 keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.Sentences,
                                     keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Next
+                                    imeAction = ImeAction.Done
                                 ),
                                 keyboardActions = KeyboardActions(
-                                    onNext = { noteFocusRequester.requestFocus() }
+                                    // Cierra el teclado con el mismo mecanismo que las sugerencias: evita que la hoja le devuelva el foco
+                                    onDone = { isSuppressingKeyboard = true }
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -562,6 +564,7 @@ fun AddTransactionSheet(
                                 maxLines = 4,
                                 shape = MinicashShapes.Input,
                                 keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.Sentences,
                                     keyboardType = KeyboardType.Text,
                                     imeAction = ImeAction.Default
                                 ),

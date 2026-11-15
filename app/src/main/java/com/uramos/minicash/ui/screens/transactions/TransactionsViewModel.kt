@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -28,6 +29,9 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+
+/** Tiempo sin escribir tras el cual una búsqueda se guarda como reciente. */
+private const val RECENT_SEARCH_DEBOUNCE_MS = 1500L
 
 @Immutable
 data class MonthSummary(
@@ -58,11 +62,26 @@ private data class TransactionFilters(
     val categoryIds: Set<Long>
 )
 
+@OptIn(kotlinx.coroutines.FlowPreview::class)
 class TransactionsViewModel(
     private val transactionDao: TransactionDao,
     private val accountDao: AccountDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val userPreferences: com.uramos.minicash.data.preferences.UserPreferences
 ) : ViewModel() {
+
+    /** Búsquedas recientes (la más nueva primero) que el buscador ofrece al enfocarse con el campo vacío. */
+    val recentSearches: StateFlow<List<String>> = userPreferences.recentSearches
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Guarda la búsqueda actual como reciente; se llama al confirmar con el teclado o al elegir una reciente. */
+    fun commitSearch(query: String) {
+        viewModelScope.launch { userPreferences.addRecentSearch(query) }
+    }
+
+    fun clearRecentSearches() {
+        viewModelScope.launch { userPreferences.clearRecentSearches() }
+    }
 
     val accounts: StateFlow<List<AccountEntity>> = accountDao.getAllAccounts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -78,6 +97,13 @@ class TransactionsViewModel(
 
     private val currentCalendar = MutableStateFlow(Calendar.getInstance())
     private val searchQuery = MutableStateFlow("")
+
+    init {
+        // Si el usuario deja de escribir un momento, esa búsqueda cuenta como usada aunque no confirme con el teclado
+        viewModelScope.launch {
+            searchQuery.debounce(RECENT_SEARCH_DEBOUNCE_MS).collect { commitSearch(it) }
+        }
+    }
     private val selectedTypeFilter = MutableStateFlow<TransactionType?>(null)
     private val selectedAccountId = MutableStateFlow<Long?>(null)
     private val selectedCategoryIds = MutableStateFlow<Set<Long>>(emptySet())

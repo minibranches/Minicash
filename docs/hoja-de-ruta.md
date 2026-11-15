@@ -28,6 +28,15 @@ Ideas grandes que todavía no se construyen. Cada una dice qué implica, para de
 - **Pantalla:** botón de micrófono en "Agregar movimiento" que llena el formulario; el usuario revisa antes de guardar.
 - **Permisos:** micrófono, solo al usar la función.
 
+## Hecho desde la última revisión
+- **Exportar a CSV** con periodo a elegir, desde Ajustes > Copias de seguridad.
+- **Bloqueo de la app** con huella, rostro o PIN del sistema, sin permisos de red.
+- **Detalle de cuenta, menú del botón de agregar y búsquedas recientes** en Movimientos.
+
+## Ideas que se descartaron por ahora
+- **Movimientos recurrentes** y **presupuesto por categoría**: se decidió no hacerlos todavía.
+- **Transición compartida** de la tarjeta de cuenta al detalle: exigiría reestructurar la navegación entre las pestañas y las pantallas superpuestas.
+
 ## Orden sugerido
 1. Foto de recibo, porque se usa todos los días y no necesita red.
 2. Registro por voz, que comparte el analizador de frases con el punto anterior.

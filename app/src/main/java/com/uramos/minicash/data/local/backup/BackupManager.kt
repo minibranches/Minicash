@@ -1,6 +1,8 @@
 package com.uramos.minicash.data.local.backup
 
 import android.content.Context
+import com.uramos.minicash.data.util.CsvRange
+import com.uramos.minicash.data.util.buildTransactionsCsv
 import android.net.Uri
 import androidx.room.withTransaction
 import com.google.gson.Gson
@@ -123,36 +125,19 @@ class BackupManager(
     }
 
     /** Guarda todas las transacciones en un CSV (una fila por movimiento) para hojas de cálculo. */
-    suspend fun exportCsv(context: Context, uri: Uri): Result<Int> = withContext(Dispatchers.IO) {
+    suspend fun exportCsv(context: Context, uri: Uri, range: CsvRange = CsvRange.ALL): Result<Int> = withContext(Dispatchers.IO) {
         runCatching {
-            val accounts = database.accountDao().getAllAccountsList().associateBy { it.id }
-            val categories = database.categoryDao().getAllCategoriesList().associateBy { it.id }
-            val transactions = database.transactionDao().getAllTransactionsList().sortedBy { it.date }
-            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
-            fun cell(value: String): String {
-                // Neutraliza fórmulas (=, +, -, @) que las hojas de cálculo ejecutarían al abrir el archivo
-                val safe = if (value.firstOrNull() in listOf('=', '+', '-', '@')) "'$value" else value
-                return "\"" + safe.replace("\"", "\"\"") + "\""
-            }
+            val accounts = database.accountDao().getAllAccountsList().associate { it.id to it.name }
+            val categories = database.categoryDao().getAllCategoriesList().associate { it.id to it.name }
+            val zone = java.time.ZoneId.systemDefault()
+            val today = java.time.LocalDate.now(zone)
+            val transactions = database.transactionDao().getAllTransactionsList()
+                .filter { range.contains(it.date, today, zone) }
+            val csv = buildTransactionsCsv(transactions, accounts, categories, zone)
             context.contentResolver.openOutputStream(uri)?.use { out ->
                 out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())) // BOM para que Excel lea UTF-8
-                val writer = out.bufferedWriter(Charsets.UTF_8)
-                writer.write("Fecha,Tipo,Monto,Cuenta,Cuenta destino,Categoría,Nota\n")
-                transactions.forEach { tx ->
-                    val amount = String.format(java.util.Locale.US, "%.2f", tx.amount / 100.0)
-                    writer.write(
-                        listOf(
-                            cell(dateFormat.format(java.util.Date(tx.date))),
-                            cell(tx.type.displayName),
-                            amount,
-                            cell(accounts[tx.sourceAccountId]?.name.orEmpty()),
-                            cell(tx.destinationAccountId?.let { accounts[it]?.name }.orEmpty()),
-                            cell(tx.categoryId?.let { categories[it]?.name }.orEmpty()),
-                            cell(tx.note.orEmpty())
-                        ).joinToString(",") + "\n"
-                    )
-                }
-                writer.flush()
+                out.write(csv.toByteArray(Charsets.UTF_8))
+                out.flush()
             } ?: throw IOException("No se pudo abrir el archivo para escritura.")
             transactions.size
         }

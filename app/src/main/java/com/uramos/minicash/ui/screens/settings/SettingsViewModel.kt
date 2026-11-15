@@ -259,6 +259,20 @@ class SettingsViewModel(
     val hideInRecents: StateFlow<Boolean> = userPreferences.hideInRecents
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    val appLockEnabled: StateFlow<Boolean> = userPreferences.appLockEnabled
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val appLockTimeoutMinutes: StateFlow<Int> = userPreferences.appLockTimeoutMinutes
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 1)
+
+    fun setAppLockEnabled(enabled: Boolean) {
+        viewModelScope.launch { userPreferences.setAppLockEnabled(enabled) }
+    }
+
+    fun setAppLockTimeoutMinutes(minutes: Int) {
+        viewModelScope.launch { userPreferences.setAppLockTimeoutMinutes(minutes) }
+    }
+
     fun setHideInRecents(enabled: Boolean) {
         viewModelScope.launch { userPreferences.setHideInRecents(enabled) }
     }
@@ -439,9 +453,9 @@ class SettingsViewModel(
         }
     }
 
-    fun exportCsv(context: Context, uri: Uri) {
+    fun exportCsv(context: Context, uri: Uri, range: com.uramos.minicash.data.util.CsvRange) {
         viewModelScope.launch {
-            backupManager.exportCsv(context, uri)
+            backupManager.exportCsv(context, uri, range)
                 .onSuccess { count -> _messageEvent.emit("Se exportaron $count movimientos") }
                 .onFailure { _messageEvent.emit("Error al exportar el CSV: ${it.localizedMessage ?: "Error desconocido"}") }
         }

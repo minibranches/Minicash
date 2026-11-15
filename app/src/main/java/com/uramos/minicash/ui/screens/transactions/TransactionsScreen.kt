@@ -49,6 +49,17 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.DockedSearchBar
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.material.icons.filled.History
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,7 +88,9 @@ import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 fun TransactionsScreen(
     viewModel: TransactionsViewModel,
     onOpenSettings: () -> Unit = {},
-    listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
+    /** Falso cuando la pestaña no está a la vista (otra pestaña o una pantalla encima): el buscador suelta el foco. */
+    isActive: Boolean = true
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -88,6 +101,7 @@ fun TransactionsScreen(
     val selectedTotalAmount by viewModel.selectedTotalAmount.collectAsState()
 
     val haptics = rememberMinicashHaptics()
+    val recentSearches by viewModel.recentSearches.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel) {
         viewModel.deletedEvents.collect { deleted ->
@@ -245,28 +259,15 @@ fun TransactionsScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(spacing.small)
                     ) {
-                        TextField(
-                            value = state.searchQuery,
-                            onValueChange = { viewModel.onSearchQueryChange(it) },
-                            modifier = Modifier.weight(1f),
-                            placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (state.searchQuery.isNotEmpty()) {
-                                    MinicashIconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                        Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
-                                    }
-                                }
-                            },
-                            singleLine = true,
-                            shape = CircleShape,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent
-                            )
+                        RecentSearchBar(
+                            query = state.searchQuery,
+                            recents = recentSearches,
+                            onQueryChange = { viewModel.onSearchQueryChange(it) },
+                            onCommit = { viewModel.commitSearch(it) },
+                            onClearRecents = { viewModel.clearRecentSearches() },
+                            isActive = isActive,
+                            isListScrolling = listState.isScrollInProgress,
+                            modifier = Modifier.weight(1f)
                         )
 
                         Box {
@@ -408,5 +409,115 @@ fun TransactionsScreen(
             onClearCategories = { viewModel.clearCategoryFilter() },
             onDismiss = { showFilterSheet = false }
         )
+    }
+}
+
+/**
+ * Buscador de M3: el campo es el `InputField` de `SearchBar`; al enfocarlo con el campo vacío, un panel flotante
+ * debajo ofrece las búsquedas recientes para repetirlas con un toque. Los resultados son la propia lista de
+ * movimientos, que se filtra mientras se escribe. El panel flota (no empuja nada) y no le quita el foco al campo.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RecentSearchBar(
+    query: String,
+    recents: List<String>,
+    onQueryChange: (String) -> Unit,
+    onCommit: (String) -> Unit,
+    onClearRecents: () -> Unit,
+    isActive: Boolean,
+    isListScrolling: Boolean,
+    modifier: Modifier = Modifier
+) {
+    var focused by remember { mutableStateOf(false) }
+    val showRecents = isActive && focused && query.isEmpty() && recents.isNotEmpty()
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    // Las pestañas contiguas siguen compuestas: al irse de esta pestaña el panel (otra ventana) debe cerrarse
+    // Deslizar la lista (hacia arriba o abajo) también cierra el panel y el teclado
+    androidx.compose.runtime.LaunchedEffect(isActive, isListScrolling) {
+        if (!isActive || isListScrolling) {
+            focusManager.clearFocus()
+            focused = false
+        }
+    }
+    val haptics = rememberMinicashHaptics()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    var fieldWidthPx by remember { mutableStateOf(0) }
+    val gapPx = with(density) { 6.dp.roundToPx() }
+
+    Box(modifier = modifier.onSizeChanged { fieldWidthPx = it.width }) {
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SearchBarDefaults.InputField(
+                query = query,
+                onQueryChange = onQueryChange,
+                onSearch = {
+                    onCommit(it)
+                    focusManager.clearFocus()
+                },
+                expanded = false,
+                onExpandedChange = {},
+                modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused },
+                placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        MinicashIconButton(onClick = { onQueryChange("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
+                        }
+                    }
+                },
+                colors = SearchBarDefaults.inputFieldColors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
+            )
+        }
+
+        if (showRecents) {
+            androidx.compose.ui.window.Popup(
+                popupPositionProvider = object : androidx.compose.ui.window.PopupPositionProvider {
+                    override fun calculatePosition(
+                        anchorBounds: androidx.compose.ui.unit.IntRect,
+                        windowSize: androidx.compose.ui.unit.IntSize,
+                        layoutDirection: androidx.compose.ui.unit.LayoutDirection,
+                        popupContentSize: androidx.compose.ui.unit.IntSize
+                    ) = androidx.compose.ui.unit.IntOffset(anchorBounds.left, anchorBounds.bottom + gapPx)
+                },
+                properties = androidx.compose.ui.window.PopupProperties(focusable = false)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shadowElevation = 6.dp,
+                    modifier = Modifier.width(with(density) { fieldWidthPx.toDp() })
+                ) {
+                    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+                        recents.forEach { recent ->
+                            ListItem(
+                                headlineContent = { Text(recent, maxLines = 1) },
+                                leadingContent = { Icon(Icons.Default.History, contentDescription = null) },
+                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                modifier = Modifier.clickable {
+                                    haptics.tick()
+                                    onQueryChange(recent)
+                                    onCommit(recent)
+                                    focusManager.clearFocus()
+                                }
+                            )
+                        }
+                        TextButton(
+                            onClick = onClearRecents,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text("Borrar historial")
+                        }
+                    }
+                }
+            }
+        }
     }
 }

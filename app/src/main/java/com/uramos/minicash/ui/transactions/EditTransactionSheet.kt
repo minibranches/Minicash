@@ -91,6 +91,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import com.uramos.minicash.ui.utils.hideKeyboardFully
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -204,8 +206,7 @@ fun EditTransactionSheet(
     val haptics = rememberMinicashHaptics()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    
-
+    val view = androidx.compose.ui.platform.LocalView.current
     var showCategorySheet by remember { mutableStateOf(false) }
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
@@ -431,11 +432,12 @@ fun EditTransactionSheet(
                         singleLine = true,
                         shape = MinicashShapes.Input,
                         keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
                             keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
+                            imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
-                            onNext = { noteFocusRequester.requestFocus() }
+                            onDone = { hideKeyboardFully(view, focusManager, keyboardController) }
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -452,6 +454,7 @@ fun EditTransactionSheet(
                         maxLines = 4,
                         shape = MinicashShapes.Input,
                         keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Default
                         ),

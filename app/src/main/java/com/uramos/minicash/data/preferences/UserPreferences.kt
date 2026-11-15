@@ -6,6 +6,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.uramos.minicash.data.util.addRecentSearch
+import com.uramos.minicash.data.util.decodeRecentSearches
+import com.uramos.minicash.data.util.encodeRecentSearches
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -52,6 +55,9 @@ class UserPreferences(private val context: Context) {
         val NAV_BAR_STYLE_KEY = stringPreferencesKey("nav_bar_style")
         val CREDIT_REMINDER_HOUR = androidx.datastore.preferences.core.intPreferencesKey("credit_reminder_hour")
         val CREDIT_REMINDER_MINUTE = androidx.datastore.preferences.core.intPreferencesKey("credit_reminder_minute")
+        val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
+        val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
+        val APP_LOCK_TIMEOUT_MINUTES = androidx.datastore.preferences.core.intPreferencesKey("app_lock_timeout_minutes")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -140,6 +146,40 @@ class UserPreferences(private val context: Context) {
 
     val creditReminderMinute: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[CREDIT_REMINDER_MINUTE] ?: 0
+    }
+
+    /** Búsquedas recientes de Movimientos, la más nueva primero. */
+    val recentSearches: Flow<List<String>> = context.dataStore.data.map { prefs ->
+        decodeRecentSearches(prefs[RECENT_SEARCHES])
+    }
+
+    suspend fun addRecentSearch(query: String) {
+        context.dataStore.edit { prefs ->
+            val updated = addRecentSearch(decodeRecentSearches(prefs[RECENT_SEARCHES]), query)
+            prefs[RECENT_SEARCHES] = encodeRecentSearches(updated)
+        }
+    }
+
+    suspend fun clearRecentSearches() {
+        context.dataStore.edit { prefs -> prefs.remove(RECENT_SEARCHES) }
+    }
+
+    /** Bloqueo de la app con la huella, el rostro o el PIN del dispositivo. */
+    val appLockEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[APP_LOCK_ENABLED] ?: false
+    }
+
+    /** Minutos en segundo plano tras los cuales se vuelve a pedir el desbloqueo; 0 = cada vez. */
+    val appLockTimeoutMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[APP_LOCK_TIMEOUT_MINUTES] ?: 1
+    }
+
+    suspend fun setAppLockEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[APP_LOCK_ENABLED] = enabled }
+    }
+
+    suspend fun setAppLockTimeoutMinutes(minutes: Int) {
+        context.dataStore.edit { prefs -> prefs[APP_LOCK_TIMEOUT_MINUTES] = minutes }
     }
 
     suspend fun setCreditReminderTime(hour: Int, minute: Int) {
