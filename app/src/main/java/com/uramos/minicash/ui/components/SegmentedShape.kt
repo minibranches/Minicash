@@ -25,7 +25,7 @@ import com.uramos.minicash.ui.theme.LocalAnimationRestriction
 fun rememberSegmentedShape(
     index: Int,
     count: Int,
-    cornerLarge: Dp = 24.dp,
+    cornerLarge: Dp = 20.dp,
     cornerSmall: Dp = 4.dp
 ): Shape {
     val isAnimationRestricted = LocalAnimationRestriction.current

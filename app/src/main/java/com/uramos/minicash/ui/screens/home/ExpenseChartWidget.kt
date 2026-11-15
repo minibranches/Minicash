@@ -240,7 +240,7 @@ private fun SingleDonutPage(
                         Text(
                             text = totalAmount.toCurrencyFormat(),
                             style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
-                            fontWeight = FontWeight.ExtraBold,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -294,7 +294,7 @@ private fun SingleDonutPage(
                             Text(
                                 text = "$percentageText%",
                                 style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
-                                fontWeight = FontWeight.ExtraBold,
+                                fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }

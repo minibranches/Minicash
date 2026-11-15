@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import androidx.compose.material3.SwitchDefaults
@@ -145,341 +146,160 @@ fun SettingsScreen(
         ) {
             // BLOQUE 1: Tu dinero
             item {
-                MinicashCard(
-                    level = CardTonalLevel.LOW,
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth()
+                SettingsSection(
+                    icon = Icons.Default.AccountBalanceWallet,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    title = "Tu dinero",
+                    subtitle = "Administra tus cuentas, categorías e instituciones"
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(bottom = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountBalanceWallet,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                            Column {
-                                Text(
-                                    text = "Tu dinero",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Administra tus cuentas, categorías e instituciones",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        SettingsRowItem(
-                            title = "Cuentas",
-                            icon = Icons.Default.AccountBalanceWallet,
-                            subtitle = "${state.accounts.size} activas configuradas",
-                            onClick = onNavigateToAccounts
-                        )
-                        SettingsRowItem(
-                            title = "Categorías",
-                            icon = Icons.Default.Category,
-                            subtitle = "${state.expenseCategories.size + state.incomeCategories.size} registradas",
-                            onClick = onNavigateToCategories
-                        )
-                        SettingsRowItem(
-                            title = "Tarjetas e instituciones",
-                            icon = Icons.Default.CreditCard,
-                            subtitle = "${state.creditInstitutions.size} instituciones registradas",
-                            onClick = onNavigateToInstitutions
-                        )
-                    }
+                    SettingsRowItem(
+                        title = "Cuentas",
+                        icon = Icons.Default.AccountBalanceWallet,
+                        subtitle = "${state.accounts.size} activas configuradas",
+                        onClick = onNavigateToAccounts,
+                        index = 0, count = 3
+                    )
+                    SettingsRowItem(
+                        title = "Categorías",
+                        icon = Icons.Default.Category,
+                        subtitle = "${state.expenseCategories.size + state.incomeCategories.size} registradas",
+                        onClick = onNavigateToCategories,
+                        index = 1, count = 3
+                    )
+                    SettingsRowItem(
+                        title = "Tarjetas e instituciones",
+                        icon = Icons.Default.CreditCard,
+                        subtitle = "${state.creditInstitutions.size} instituciones registradas",
+                        onClick = onNavigateToInstitutions,
+                        index = 2, count = 3
+                    )
                 }
             }
 
             // BLOQUE 2: Preferencias
             item {
-                MinicashCard(
-                    level = CardTonalLevel.LOW,
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth()
+                val fontLabel = if (state.fontPreference == FontPreference.ROUNDED_QUICKSAND) "Quicksand" else "Google Sans Flex"
+                val appearanceSubtitle = "${state.themeMode.displayName} • $fontLabel${if (state.useDynamicColor) " • Color dinámico" else ""}"
+                val activeModulesCount = (if (state.showBudgetTab) 1 else 0) + (if (state.showCreditsTab) 1 else 0)
+                val modulesSubtitle = when (activeModulesCount) {
+                    2 -> "Gastos fijos y Créditos activos"
+                    1 -> if (state.showBudgetTab) "Gastos fijos activo" else "Créditos activo"
+                    else -> "Sin módulos opcionales"
+                }
+                val reminderCount = if (state.dailyReminderEnabled) 6 else 5
+                val formattedTime = "${state.dailyReminderHour.toString().padStart(2, '0')}:${state.dailyReminderMinute.toString().padStart(2, '0')}"
+                val setDailyReminder: (Boolean) -> Unit = { checked ->
+                    haptics.click()
+                    if (checked) {
+                        if (Build.VERSION.SDK_INT >= 33) {
+                            val hasPermission = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (hasPermission) {
+                                viewModel.setDailyReminderEnabled(context, true)
+                            } else {
+                                postNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        } else {
+                            viewModel.setDailyReminderEnabled(context, true)
+                        }
+                    } else {
+                        viewModel.setDailyReminderEnabled(context, false)
+                    }
+                }
+
+                SettingsSection(
+                    icon = Icons.Default.Tune,
+                    iconTint = MaterialTheme.colorScheme.secondary,
+                    title = "Preferencias",
+                    subtitle = "Personaliza la apariencia, módulos y notificaciones"
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(bottom = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.Tune,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                            Column {
-                                Text(
-                                    text = "Preferencias",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Personaliza la apariencia, módulos y notificaciones",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
+                    SettingsRowItem(
+                        title = "Tu nombre",
+                        icon = Icons.Default.Person,
+                        subtitle = state.userName.ifBlank { "Sin definir" },
+                        onClick = { showNameDialog = true },
+                        index = 0, count = reminderCount
+                    )
+                    SettingsRowItem(
+                        title = "Apariencia",
+                        icon = Icons.Default.Palette,
+                        subtitle = appearanceSubtitle,
+                        onClick = onNavigateToAppearance,
+                        index = 1, count = reminderCount
+                    )
+                    SettingsRowItem(
+                        title = "Módulos de la app",
+                        icon = Icons.Default.Widgets,
+                        subtitle = modulesSubtitle,
+                        onClick = onNavigateToModules,
+                        index = 2, count = reminderCount
+                    )
+                    SettingsRowItem(
+                        title = "Avisos de pago",
+                        icon = Icons.Default.Payments,
+                        subtitle = "Cada día a las ${creditReminderTime.first.toString().padStart(2, '0')}:${creditReminderTime.second.toString().padStart(2, '0')} hrs",
+                        onClick = { showCreditTimePickerDialog = true },
+                        index = 3, count = reminderCount
+                    )
+                    SettingsSwitchItem(
+                        title = "Recordatorio diario",
+                        subtitle = if (state.dailyReminderEnabled) "Activo a las $formattedTime hrs" else "Notificar a las 21:00 si no hay gastos",
+                        icon = Icons.Default.Notifications,
+                        checked = state.dailyReminderEnabled,
+                        onCheckedChange = setDailyReminder,
+                        index = 4, count = reminderCount
+                    )
+                    if (state.dailyReminderEnabled) {
                         SettingsRowItem(
-                            title = "Tu nombre",
-                            icon = Icons.Default.Person,
-                            subtitle = state.userName.ifBlank { "Sin definir" },
-                            onClick = { showNameDialog = true }
+                            title = "Hora del recordatorio",
+                            icon = Icons.Default.Schedule,
+                            subtitle = "$formattedTime hrs",
+                            onClick = { showTimePickerDialog = true },
+                            index = 5, count = reminderCount
                         )
-
-                        val fontLabel = if (state.fontPreference == FontPreference.ROUNDED_QUICKSAND) "Quicksand" else "Google Sans Flex"
-                        val appearanceSubtitle = "${state.themeMode.displayName} • $fontLabel${if (state.useDynamicColor) " • Color dinámico" else ""}"
-                        SettingsRowItem(
-                            title = "Apariencia",
-                            icon = Icons.Default.Palette,
-                            subtitle = appearanceSubtitle,
-                            onClick = onNavigateToAppearance
-                        )
-
-                        val activeModulesCount = (if (state.showBudgetTab) 1 else 0) + (if (state.showCreditsTab) 1 else 0)
-                        val modulesSubtitle = when (activeModulesCount) {
-                            2 -> "Presupuesto y Tarjetas activos"
-                            1 -> if (state.showBudgetTab) "Presupuesto activo" else "Tarjetas activo"
-                            else -> "Sin módulos opcionales"
-                        }
-                        SettingsRowItem(
-                            title = "Módulos de la app",
-                            icon = Icons.Default.Widgets,
-                            subtitle = modulesSubtitle,
-                            onClick = onNavigateToModules
-                        )
-
-                        SettingsRowItem(
-                            title = "Avisos de pago",
-                            icon = Icons.Default.Payments,
-                            subtitle = "Cada día a las ${creditReminderTime.first.toString().padStart(2, '0')}:${creditReminderTime.second.toString().padStart(2, '0')} hrs",
-                            onClick = { showCreditTimePickerDialog = true }
-                        )
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            SettingsLeadingIcon(Icons.Default.Notifications)
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    text = "Recordatorio diario",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                val formattedTime = "${state.dailyReminderHour.toString().padStart(2, '0')}:${state.dailyReminderMinute.toString().padStart(2, '0')}"
-                                Text(
-                                    text = if (state.dailyReminderEnabled) "Activo a las $formattedTime hrs" else "Notificar a las 21:00 si no hay gastos",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            Switch(
-                                checked = state.dailyReminderEnabled,
-                                thumbContent = if (state.dailyReminderEnabled) {
-                                    { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-                                } else null,
-                                onCheckedChange = { checked ->
-                                    haptics.click()
-                                    if (checked) {
-                                        if (Build.VERSION.SDK_INT >= 33) {
-                                            val hasPermission = ContextCompat.checkSelfPermission(
-                                                context,
-                                                Manifest.permission.POST_NOTIFICATIONS
-                                            ) == PackageManager.PERMISSION_GRANTED
-
-                                            if (hasPermission) {
-                                                viewModel.setDailyReminderEnabled(context, true)
-                                            } else {
-                                                postNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                            }
-                                        } else {
-                                            viewModel.setDailyReminderEnabled(context, true)
-                                        }
-                                    } else {
-                                        viewModel.setDailyReminderEnabled(context, false)
-                                    }
-                                }
-                            )
-                        }
-
-                        if (state.dailyReminderEnabled) {
-                            val formattedTime = "${state.dailyReminderHour.toString().padStart(2, '0')}:${state.dailyReminderMinute.toString().padStart(2, '0')}"
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                onClick = { showTimePickerDialog = true },
-                                modifier = Modifier.padding(start = 12.dp, top = 2.dp, bottom = 6.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = "Hora del recordatorio:",
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = "$formattedTime hrs",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
             }
 
             // BLOQUE 3: Datos y sistema
             item {
-                MinicashCard(
-                    level = CardTonalLevel.LOW,
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth()
+                val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
+                val hideInRecents by viewModel.hideInRecents.collectAsState()
+                SettingsSection(
+                    icon = Icons.Default.CloudDone,
+                    iconTint = MaterialTheme.colorScheme.tertiary,
+                    title = "Datos y sistema",
+                    subtitle = "Copias de seguridad e información de la app"
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(bottom = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.CloudDone,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.size(22.dp)
-                                    )
-                                }
-                            }
-                            Column {
-                                Text(
-                                    text = "Datos y sistema",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Copias de seguridad e información de la app",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        val backupSubtitle = if (state.autoBackupEnabled) "Automático activo" else "Manual únicamente"
-                        SettingsRowItem(
-                            title = "Copias de seguridad",
-                            icon = Icons.Default.CloudDone,
-                            subtitle = backupSubtitle,
-                            onClick = onNavigateToBackups
-                        )
-                        val hideInRecents by viewModel.hideInRecents.collectAsState()
-                        val toggleHide = {
+                    SettingsRowItem(
+                        title = "Copias de seguridad",
+                        icon = Icons.Default.CloudDone,
+                        subtitle = backupSubtitle,
+                        onClick = onNavigateToBackups,
+                        index = 0, count = 3
+                    )
+                    SettingsSwitchItem(
+                        title = "Ocultar en multitarea",
+                        subtitle = if (hideInRecents) "Vista previa oculta; también se bloquean las capturas"
+                        else "Oculta la vista previa al ver las apps abiertas",
+                        icon = Icons.Default.VisibilityOff,
+                        checked = hideInRecents,
+                        onCheckedChange = {
                             haptics.click()
-                            viewModel.setHideInRecents(!hideInRecents)
-                        }
-                        // Misma estructura que SettingsRowItem; al final lleva el interruptor en lugar del chevron
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .clickable(onClick = toggleHide)
-                                .padding(horizontal = 12.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            SettingsLeadingIcon(Icons.Default.VisibilityOff)
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(
-                                    text = "Ocultar en multitarea",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = if (hideInRecents) "Vista previa oculta; también se bloquean las capturas"
-                                    else "Oculta la vista previa al ver las apps abiertas",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Switch(
-                                checked = hideInRecents,
-                                thumbContent = if (hideInRecents) {
-                                    { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-                                } else null,
-                                onCheckedChange = { toggleHide() }
-                            )
-                        }
-                        SettingsRowItem(
-                            title = "Acerca de Minicash",
-                            icon = Icons.Default.Info,
-                            subtitle = "Versión, enlaces y compartir",
-                            onClick = onNavigateToAbout
-                        )
-                    }
+                            viewModel.setHideInRecents(it)
+                        },
+                        index = 1, count = 3
+                    )
+                    SettingsRowItem(
+                        title = "Acerca de Minicash",
+                        icon = Icons.Default.Info,
+                        subtitle = "Versión, enlaces y compartir",
+                        onClick = onNavigateToAbout,
+                        index = 2, count = 3
+                    )
                 }
             }
 
@@ -713,42 +533,133 @@ fun SettingsScreen(
     }
 }
 
+/** Sección de Ajustes: encabezado con ícono y, debajo, filas segmentadas separadas por 2 dp (lista expresiva de M3E). */
+@Composable
+private fun SettingsSection(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Row(
+            modifier = Modifier.padding(start = 8.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.size(44.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
+                }
+            }
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        content()
+    }
+}
+
+/** Contenedor de una fila segmentada: las esquinas exteriores del grupo son grandes y las interiores pequeñas. */
+@Composable
+private fun SettingsSegmentedItem(
+    index: Int,
+    count: Int,
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = rememberSegmentedShape(index = index, count = count),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun RowScope.SettingsItemText(title: String, subtitle: String) {
+    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 @Composable
 private fun SettingsRowItem(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    index: Int = 0,
+    count: Int = 1
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+    SettingsSegmentedItem(index = index, count = count, onClick = onClick) {
         SettingsLeadingIcon(icon)
         Spacer(modifier = Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        SettingsItemText(title, subtitle)
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
+        )
+    }
+}
+
+/** Fila con interruptor: tocar cualquier parte de la fila lo cambia, igual que en los ajustes del sistema. */
+@Composable
+private fun SettingsSwitchItem(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    index: Int,
+    count: Int
+) {
+    SettingsSegmentedItem(index = index, count = count, onClick = { onCheckedChange(!checked) }) {
+        SettingsLeadingIcon(icon)
+        Spacer(modifier = Modifier.width(14.dp))
+        SettingsItemText(title, subtitle)
+        Spacer(modifier = Modifier.width(12.dp))
+        Switch(
+            checked = checked,
+            thumbContent = if (checked) {
+                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
+            } else null,
+            onCheckedChange = onCheckedChange
         )
     }
 }

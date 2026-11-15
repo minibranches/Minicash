@@ -638,7 +638,7 @@ fun ReactivateBudgetItemDialog(
 ) {
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("¿Reactivar partida?", fontWeight = FontWeight.Bold) },
+        title = { Text("¿Reactivar partida?", fontWeight = FontWeight.SemiBold) },
         text = {
             Text(
                 "¿Deseas marcar esta partida como pendiente nuevamente?",
@@ -671,7 +671,7 @@ fun ConfirmPaymentDialog(
 
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Confirmar ${item.concept}", fontWeight = FontWeight.Bold) },
+        title = { Text("Confirmar ${item.concept}", fontWeight = FontWeight.SemiBold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
@@ -763,7 +763,7 @@ fun AddBudgetItemDialog(
                 Text(
                     text = "Nueva partida de presupuesto",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.Bold
                 )
                 val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: "Sin fecha"
                 Surface(
@@ -827,7 +827,7 @@ fun AddBudgetItemDialog(
                     Text(
                         text = cents.toCurrencyFormat(),
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -993,7 +993,7 @@ fun EditBudgetItemSheet(
                 Text(
                     text = "Editar partida",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.ExtraBold
+                    fontWeight = FontWeight.Bold
                 )
                 val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: "Sin fecha"
                 Surface(
@@ -1057,7 +1057,7 @@ fun EditBudgetItemSheet(
                     Text(
                         text = cents.toCurrencyFormat(),
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black,
+                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -1342,7 +1342,7 @@ fun CopyFortnightSheet(
                                 Text(
                                     text = item.amount.toCurrencyFormat(),
                                     style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"),
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }

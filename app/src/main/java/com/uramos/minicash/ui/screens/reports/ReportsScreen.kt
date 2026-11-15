@@ -293,7 +293,7 @@ private fun StatTile(
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -345,7 +345,7 @@ private fun IncomeExpenseChart(months: List<MonthlyTotals>) {
     val inkMuted = MaterialTheme.colorScheme.onSurfaceVariant
     val grid = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 10.sp, color = inkMuted, textAlign = TextAlign.Center)
+    val labelStyle = MaterialTheme.typography.labelSmall.copy(color = inkMuted, textAlign = TextAlign.Center)
 
     val maxValue = (months.maxOfOrNull { maxOf(it.income, it.expense) } ?: 0L).coerceAtLeast(100L)
     val ticks = listOf(0f, 0.5f, 1f)
@@ -458,8 +458,8 @@ private fun CumulativeLine(months: List<MonthlyTotals>, values: List<Long>) {
     val inkMuted = MaterialTheme.colorScheme.onSurfaceVariant
     val grid = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 10.sp, color = inkMuted, textAlign = TextAlign.Center)
-    val valueStyle = TextStyle(fontSize = 11.sp, color = ink, fontWeight = FontWeight.Bold)
+    val labelStyle = MaterialTheme.typography.labelSmall.copy(color = inkMuted, textAlign = TextAlign.Center)
+    val valueStyle = MaterialTheme.typography.labelMedium.copy(color = ink, fontWeight = FontWeight.Bold)
 
     // El eje siempre incluye el cero para que se vea cuándo el acumulado pasa a negativo
     val minValue = minOf(0L, values.min())
@@ -530,7 +530,7 @@ private fun MonthRow(month: MonthlyTotals) {
                 MoneyTextView(
                     amountCents = month.balance,
                     type = if (month.balance >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.ExtraBold)
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {

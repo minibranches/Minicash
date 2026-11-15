@@ -694,7 +694,7 @@ private fun PlanStep(
                 Text(
                     text = monthlyCents.toCurrencyFormat(),
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary
                 )
             }

@@ -199,7 +199,7 @@ private fun ExtrasCard(
                 MoneyTextView(
                     amountCents = amountCents,
                     type = amountType,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold, fontFeatureSettings = "tnum")
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")
                 )
             }
             if (progress != null) {

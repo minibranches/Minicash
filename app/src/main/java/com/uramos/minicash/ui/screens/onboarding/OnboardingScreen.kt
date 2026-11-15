@@ -498,7 +498,7 @@ private fun AccountPage(
                 Text(
                     text = balanceCents.toCurrencyFormat(),
                     style = MaterialTheme.typography.displaySmall.copy(fontFeatureSettings = "tnum"),
-                    fontWeight = FontWeight.Black,
+                    fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
