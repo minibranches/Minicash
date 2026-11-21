@@ -1,8 +1,11 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.underHeaderBlur
+import com.uramos.minicash.ui.components.BlurHeaderScaffold
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.components.MinicashBackButton
-import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.TabTopBarActions
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Notifications
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -84,7 +87,11 @@ fun CreditsScreen(
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
     onOpenAddTransactionForCredit: (amountCents: Long, conceptStr: String, notesStr: String) -> Unit = { _, _, _ -> },
-    onBack: (() -> Unit)? = null
+    onBack: (() -> Unit)? = null,
+    onOpenReports: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    /** Verdadero cuando Créditos es la pestaña a la vista (no solo compuesta junto a la visible). */
+    isActive: Boolean = true
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -92,6 +99,12 @@ fun CreditsScreen(
     val institutions by viewModel.institutions.collectAsState()
     val haptics = rememberMinicashHaptics()
     val entranceTracker = rememberEntranceTracker()
+
+    // Si la pestaña se compone junto a la visible (pager) y luego se muestra, la lista puede quedarse sin
+    // redibujar hasta que algo la toque. Pedir el mismo desplazamiento fuerza un nuevo medido al mostrarla.
+    LaunchedEffect(isActive) {
+        if (isActive) listState.requestScrollToItem(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset)
+    }
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
@@ -149,107 +162,109 @@ fun CreditsScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
-                title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) }
-            )
-        }
+        contentWindowInsets = WindowInsets(0.dp),
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        BlurHeaderScaffold(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            header = {
+                Column {
+                    TopAppBar(
+                                    windowInsets = WindowInsets(0.dp),
+                                    colors = TopAppBarDefaults.topAppBarColors(
+                                        containerColor = Color.Transparent
+                                    ),
+                                    navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
+                                    title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
+                                    actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
+                                )
             // Resumen compacto de deuda
-            Surface(
-                shape = MinicashShapes.ContainerLarge,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.small)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.standard, vertical = spacing.medium),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Deuda pendiente",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        MoneyTextView(
-                            amountCents = state.summary.totalPendingDebt,
-                            type = MoneyDisplayType.NEUTRAL,
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "Mensual · ${state.summary.activeCreditsCount} activos",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        MoneyTextView(
-                            amountCents = state.summary.monthlyPaymentCommitment,
-                            type = MoneyDisplayType.NEUTRAL,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-                }
-            }
-
-            // Selector de Pestañas con Botón de Filtro
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.extraSmall),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.small)
-            ) {
-                MinicashPillTabs(
-                    labels = listOf("Activos (${state.activeCount})", "Liquidados (${state.settledCount})"),
-                    selectedIndex = if (state.selectedTab == CreditTab.ACTIVE) 0 else 1,
-                    onSelect = { index ->
-                        haptics.tick()
-                        viewModel.onSelectTab(if (index == 0) CreditTab.ACTIVE else CreditTab.SETTLED)
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-
-                Box {
-                    MinicashTonalIconButton(
-                        onClick = {
-                            haptics.tick()
-                            showFilterSheet = true
-                        },
-                        modifier = Modifier.size(48.dp),
+                    Surface(
+                        shape = MinicashShapes.ContainerLarge,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = spacing.standard, vertical = spacing.small)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filtros de créditos"
-                        )
-                    }
-
-                    if (state.hasActiveFilters) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(10.dp)
-                                .align(Alignment.TopEnd)
-                                .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        )
+                                .fillMaxWidth()
+                                .padding(horizontal = spacing.standard, vertical = spacing.medium),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Deuda pendiente",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                MoneyTextView(
+                                    amountCents = state.summary.totalPendingDebt,
+                                    type = MoneyDisplayType.NEUTRAL,
+                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "Mensual · ${state.summary.activeCreditsCount} activos",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                MoneyTextView(
+                                    amountCents = state.summary.monthlyPaymentCommitment,
+                                    type = MoneyDisplayType.NEUTRAL,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        }
                     }
+        
+                    // Selector de Pestañas con Botón de Filtro
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = spacing.standard, vertical = spacing.extraSmall),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                    ) {
+                        MinicashPillTabs(
+                            labels = listOf("Activos (${state.activeCount})", "Liquidados (${state.settledCount})"),
+                            selectedIndex = if (state.selectedTab == CreditTab.ACTIVE) 0 else 1,
+                            onSelect = { index ->
+                                haptics.tick()
+                                viewModel.onSelectTab(if (index == 0) CreditTab.ACTIVE else CreditTab.SETTLED)
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+        
+                        Box {
+                            MinicashTonalIconButton(
+                                onClick = {
+                                    haptics.tick()
+                                    showFilterSheet = true
+                                },
+                                modifier = Modifier.size(48.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FilterList,
+                                    contentDescription = "Filtros de créditos"
+                                )
+                            }
+        
+                            if (state.hasActiveFilters) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .align(Alignment.TopEnd)
+                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                )
+                            }
+                        }
+                    }
+        
                 }
             }
-
+        ) { headerHeight ->
             // Lista de Créditos
             if (state.credits.isEmpty()) {
                 val emptyTitle = if (state.selectedTab == CreditTab.ACTIVE) "Sin créditos activos" else "Sin compras liquidadas"
@@ -264,13 +279,13 @@ fun CreditsScreen(
                     subtitle = emptySubtitle,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = spacing.hero)
+                        .padding(top = headerHeight + spacing.hero)
                 )
             } else {
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
-                    contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp),
+                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
+                    contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     itemsIndexed(state.credits, key = { _, item -> item.id }) { index, credit ->

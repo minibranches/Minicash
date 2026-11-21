@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import com.uramos.minicash.ui.security.showAppLockPrompt
 import com.uramos.minicash.ui.security.findFragmentActivity
 import com.uramos.minicash.ui.security.canUseAppLock
@@ -12,7 +15,6 @@ import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material.icons.filled.VisibilityOff
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material.icons.filled.Payments
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -139,14 +141,14 @@ fun SettingsScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(listState),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.standard,
                 end = spacing.standard,
                 bottom = 120.dp
-            ),
+            ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // BLOQUE 1: Tu dinero

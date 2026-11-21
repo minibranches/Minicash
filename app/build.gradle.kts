@@ -16,7 +16,8 @@ val hasReleaseKey = keystoreProps.containsKey("storeFile")
 android {
     namespace = "com.uramos.minicash"
     compileSdk {
-        version = release(37)
+        // 37.1 lo exige Compose UI 1.13, que trae el desenfoque progresivo nativo (Modifier.blur con BlurRadiusSpec)
+        version = release(37) { minorApiLevel = 1 }
     }
 
     defaultConfig {

@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.foundation.lazy.rememberLazyListState
 import android.content.Context
 import android.content.Intent
@@ -40,7 +43,6 @@ import com.uramos.minicash.ui.components.MinicashOptionGroup
 import com.uramos.minicash.ui.components.MinicashOptionRow
 import com.uramos.minicash.ui.components.MinicashSectionLabel
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 import java.io.File
 
@@ -66,9 +68,9 @@ fun AboutScreen(onBackClick: () -> Unit) {
             state = fadeListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(fadeListState),
-            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
         ) {
             item {

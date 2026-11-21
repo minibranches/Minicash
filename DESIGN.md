@@ -128,6 +128,12 @@ La barra de navegación inferior opera como un overlay desacoplado, flotante y c
 - **Destino activo:** icono relleno (`selectedIcon`) + etiqueta en `labelLarge` con `FontWeight.Bold`, dentro de una píldora tonal (`secondaryContainer`). La etiqueta entra y sale con expansión horizontal y desvanecimiento.
 - **Destinos inactivos:** únicamente el icono de contorno (`unselectedIcon`), centrado en un área táctil compacta, sin etiqueta.
 - **FAB contextual:** botón cuadrado de esquinas redondeadas (`FABShape`, `56.dp × 56.dp`) a la derecha de la cápsula. Se reposiciona con resortes cuando cambia el ancho de la barra y se oculta con animación elástica en la pestaña de Ajustes. Todo el conjunto (cápsula + FAB) se mantiene centrado.
+- **Desenfoque progresivo (API nativa de Compose 1.13, Android 13 o más):** el contenido pasa por debajo de zonas fijas y se desenfoca ahí con `Modifier.blur` y `BlurRadiusSpec.verticalGradient` (`components/BlurHeaderScaffold.kt`).
+  - **Arriba:** las cuatro pestañas usan `BlurHeaderScaffold`: la barra superior y lo que deba quedar fijo (resumen, pestañas, selector de periodo) forman un encabezado que se mide primero; su alto entra al relleno de la lista, que lleva `underHeaderBlur`. Desenfoque máximo en el borde y nulo 12 dp después del encabezado, con un velo del color de fondo. Sin franja aparte: la barra es transparente.
+  - **Abajo:** `bottomEdgeBlur` en el pager, fijo detrás de la cápsula flotante (140 dp). Solo en el estilo flotante.
+  - **Aire:** `TopBarBreathing` (12 dp) sobre las barras superiores.
+  - **Antes de Android 13** no hay desenfoque progresivo: arriba queda un velo casi opaco y abajo nada. Las subpantallas (Ajustes, Reportes…) conservan el velo de color de `fadingTopEdge`.
+  - Exige `compileSdk` 37.1 (Compose UI 1.13).
 - **Margen de seguridad:** toda lista con scroll aplica `contentPadding = PaddingValues(bottom = 120.dp)` para que ningún elemento quede tapado por la cápsula o el FAB.
 - **Restricción para el dev:** no envolver con `TooltipBox` ni usar `weight` dentro del `RowScope` de la barra (rompe el layout).
 
@@ -231,7 +237,7 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 | Numpad con calculadora | Propio embebido con cinta de operadores | `AddTransactionSheet` | Implementado |
 | Chips en píldora | `FilterChip` (`CircleShape`) | Historial, Ajustes | Implementado |
 | Animación en listas segmentadas | Morphing de esquinas con `motionScheme` | Historial, Fijos, Créditos | Pendiente |
-| `ButtonGroup` / `ToggleButton` | M3E oficial (verificado que compila en 1.5.0-beta01) | Selectores de tipo y filtros | Pendiente |
+| `ButtonGroup` / `ToggleButton` | M3E oficial (compila con la estable 1.5.0) | Selectores de tipo y filtros | Pendiente |
 | `LoadingIndicator` | M3E oficial (verificado que compila) | Carga de reportes y restauración | Pendiente |
 | `LinearWavyProgressIndicator` | M3E oficial (verificado que compila) | Créditos, Fijos | Pendiente (evaluación comparativa) |
 

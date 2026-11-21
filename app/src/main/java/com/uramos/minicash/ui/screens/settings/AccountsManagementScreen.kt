@@ -1,9 +1,11 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -135,9 +137,9 @@ fun AccountsManagementScreen(
                 state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-                .fadingTopEdge(lazyListState),
-                contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp),
+                    .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp).plusTop(paddingValues.calculateTopPadding()),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 item {

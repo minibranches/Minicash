@@ -15,8 +15,8 @@ class RouteDepthTest {
     @Test
     fun firstLevelScreensAreDepthOne() {
         assertEquals(1, routeDepth("settings"))
-        assertEquals(1, routeDepth("extras/budget"))
-        assertEquals(1, routeDepth("extras/reports"))
+        assertEquals(1, routeDepth("reports"))
+        assertEquals(1, routeDepth("settings"))
     }
 
     @Test
@@ -28,6 +28,6 @@ class RouteDepthTest {
     @Test
     fun pushingGoesForwardAndPoppingGoesBack() {
         assertTrue(routeDepth("settings/backups") > routeDepth("settings"))
-        assertTrue(routeDepth(null) < routeDepth("extras/credits"))
+        assertTrue(routeDepth(null) < routeDepth("reports"))
     }
 }

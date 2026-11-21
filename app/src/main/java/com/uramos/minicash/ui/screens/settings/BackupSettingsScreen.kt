@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import com.uramos.minicash.ui.components.rememberSegmentedShape
@@ -65,7 +68,6 @@ import com.uramos.minicash.ui.components.MinicashSectionLabel
 import com.uramos.minicash.ui.components.MinicashSectionNote
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MinicashTextButton
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
@@ -142,9 +144,9 @@ fun BackupSettingsScreen(
             state = fadeListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(fadeListState),
-            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
         ) {
             item { MinicashSectionLabel("Copia de seguridad") }

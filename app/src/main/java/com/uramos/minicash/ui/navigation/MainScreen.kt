@@ -2,13 +2,13 @@ package com.uramos.minicash.ui.navigation
 
 import com.uramos.minicash.ui.theme.minicashFastEffectsSpec
 import com.uramos.minicash.ui.theme.minicashFastSpatialSpec
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import android.view.accessibility.AccessibilityManager
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
-import com.uramos.minicash.ui.screens.extras.ExtrasScreen
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.Crossfade
@@ -31,6 +31,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import com.uramos.minicash.ui.components.bottomEdgeBlur
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import androidx.compose.foundation.layout.height
 import androidx.activity.compose.BackHandler
@@ -180,8 +181,9 @@ fun MainScreen(
     val showCreditsTab = settingsState.showCreditsTab
     val navBarStyle by settingsViewModel.navBarStyle.collectAsState()
 
-    // La barra tiene tres destinos fijos; Gastos fijos, Créditos y Reportes viven en Extras y Ajustes arriba a la derecha
-    val visibleScreens = remember { bottomNavItems }
+    // Inicio y Movimientos son fijos; Gastos fijos y Créditos solo si su módulo está activo.
+    // Reportes y Ajustes se abren desde los íconos de arriba a la derecha de cada pestaña.
+    val visibleScreens = remember(showBudgetTab, showCreditsTab) { navScreens(showBudgetTab, showCreditsTab) }
     val numPages = visibleScreens.size
 
     val pageCount = 10_000
@@ -196,18 +198,30 @@ fun MainScreen(
     val currentScreenIndex = pagerState.currentPage % numPages
     val currentScreen = visibleScreens[currentScreenIndex]
 
+    // Al mostrar u ocultar módulos cambia el número de páginas: se reubica el pager para seguir en la misma pestaña
+    val previousScreens = remember { arrayOf(visibleScreens) }
+    LaunchedEffect(visibleScreens) {
+        val previous = previousScreens[0]
+        if (previous != visibleScreens) {
+            val page = pagerState.currentPage
+            val staying = previous[page % previous.size]
+            val newIndex = visibleScreens.indexOf(staying).takeIf { it >= 0 } ?: 0
+            previousScreens[0] = visibleScreens
+            pagerState.scrollToPage((page / visibleScreens.size) * visibleScreens.size + newIndex)
+        }
+    }
+
     val homeListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val transactionsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val budgetListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val creditsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val settingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
-    val extrasListState = androidx.compose.foundation.lazy.rememberLazyListState()
 
     var showAddSheet by remember { mutableStateOf(false) }
     var shortcutType by remember { mutableStateOf<TransactionType?>(null) }
     var showAddBudgetItemFromMain by remember { mutableStateOf(false) }
     var showAddCreditFromMain by remember { mutableStateOf(false) }
-    // Pila de pantallas superpuestas (Ajustes, sus subpantallas y las de Extras); vacía = se ven las pestañas
+    // Pila de pantallas superpuestas (Reportes, Ajustes y sus subpantallas); vacía = se ven las pestañas
     val routeStack = remember { mutableStateListOf<String>() }
     val activeRoute = routeStack.lastOrNull()
 
@@ -306,7 +320,8 @@ fun MainScreen(
                 when (screen) {
                     is Screen.Home -> homeListState.animateScrollToItem(0)
                     is Screen.Transactions -> transactionsListState.animateScrollToItem(0)
-                    is Screen.Extras -> extrasListState.animateScrollToItem(0)
+                    is Screen.Budget -> budgetListState.animateScrollToItem(0)
+                    is Screen.Credits -> creditsListState.animateScrollToItem(0)
                     else -> {}
                 }
             }
@@ -317,14 +332,14 @@ fun MainScreen(
 
     val onFabClick: () -> Unit = {
         haptics.click()
-        when (activeRoute) {
-            ROUTE_BUDGET -> showAddBudgetItemFromMain = true
-            ROUTE_CREDITS -> showAddCreditFromMain = true
-            else -> if (currentScreen is Screen.Home || currentScreen is Screen.Transactions) showAddSheet = true
+        when (currentScreen) {
+            is Screen.Budget -> showAddBudgetItemFromMain = true
+            is Screen.Credits -> showAddCreditFromMain = true
+            else -> showAddSheet = true
         }
     }
-    // Botón de agregar de las pestañas (Inicio e Historial) y el propio de Gastos fijos y Créditos
-    val tabFabVisible = !inSubScreen && (currentScreen is Screen.Home || currentScreen is Screen.Transactions)
+    // El botón de agregar está en las cuatro pestañas; en Inicio y Movimientos despliega el menú de tipos
+    val tabFabVisible = !inSubScreen
 
     // Menú del botón de agregar: el primero de la lista queda más cerca del botón (el gasto es lo más frecuente)
     var fabMenuExpanded by remember { mutableStateOf(false) }
@@ -341,7 +356,7 @@ fun MainScreen(
         FabMenuAction("Ingreso", Icons.AutoMirrored.Filled.TrendingUp) { openAddSheetAs(TransactionType.INCOME) },
         FabMenuAction("Transferencia", Icons.Default.SwapHoriz) { openAddSheetAs(TransactionType.TRANSFER) }
     )
-    val routeFabVisible = activeRoute == ROUTE_BUDGET || activeRoute == ROUTE_CREDITS
+    val tabFabMenu = if (currentScreen is Screen.Home || currentScreen is Screen.Transactions) fabMenu else null
 
     Scaffold(
         containerColor = minicashFrameColor()
@@ -365,6 +380,7 @@ fun MainScreen(
                         beyondViewportPageCount = 1,
                         modifier = Modifier
                             .fillMaxSize()
+                            .bottomEdgeBlur(FLOATING_BAR_BLUR_HEIGHT, enabled = navBarStyle == NavBarStyle.FLOATING)
                             .graphicsLayer {
                                 val fade = tabFade.value
                                 alpha = fade
@@ -390,6 +406,7 @@ fun MainScreen(
                                     viewModel = homeViewModel,
                                     listState = homeListState,
                                     onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
+                                    onOpenReports = { routeStack.add(ROUTE_REPORTS) },
                                     onAddTransactionClick = { showAddSheet = true },
                                     onOpenAccount = { id -> routeStack.add("$ROUTE_ACCOUNT_PREFIX$id") },
                                     onSeeMoreTransactionsClick = {
@@ -401,19 +418,33 @@ fun MainScreen(
                                     viewModel = transactionsViewModel,
                                     listState = transactionsListState,
                                     onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
+                                    onOpenReports = { routeStack.add(ROUTE_REPORTS) },
                                     isActive = currentScreen is Screen.Transactions && !inSubScreen
                                 )
-                                is Screen.Extras -> ExtrasScreen(
-                                    budgetViewModel = budgetViewModel,
-                                    creditsViewModel = creditsViewModel,
-                                    reportsViewModel = reportsViewModel,
-                                    showBudget = showBudgetTab,
-                                    showCredits = showCreditsTab,
-                                    listState = extrasListState,
-                                    onOpenBudget = { routeStack.add(ROUTE_BUDGET) },
-                                    onOpenCredits = { routeStack.add(ROUTE_CREDITS) },
+                                is Screen.Budget -> BudgetScreen(
+                                    viewModel = budgetViewModel,
+                                    listState = budgetListState,
+                                    showAddDialogExternal = showAddBudgetItemFromMain,
+                                    onAddDialogExternalHandled = { showAddBudgetItemFromMain = false },
+                                    onOpenAddTransactionForBudgetItem = { item ->
+                                        addTransactionViewModel.prefillForBudgetItem(item)
+                                        showAddSheet = true
+                                    },
                                     onOpenReports = { routeStack.add(ROUTE_REPORTS) },
                                     onOpenSettings = { routeStack.add(ROUTE_SETTINGS) }
+                                )
+                                is Screen.Credits -> CreditsScreen(
+                                    viewModel = creditsViewModel,
+                                    listState = creditsListState,
+                                    showAddDialogExternal = showAddCreditFromMain,
+                                    onAddDialogExternalHandled = { showAddCreditFromMain = false },
+                                    onOpenAddTransactionForCredit = { amountCents, conceptStr, notesStr ->
+                                        addTransactionViewModel.prefillForCredit(amountCents, conceptStr, notesStr)
+                                        showAddSheet = true
+                                    },
+                                    onOpenReports = { routeStack.add(ROUTE_REPORTS) },
+                                    onOpenSettings = { routeStack.add(ROUTE_SETTINGS) },
+                                    isActive = currentScreen is Screen.Credits && !inSubScreen
                                 )
                                 else -> Unit
                             }
@@ -440,28 +471,6 @@ fun MainScreen(
                         val back: () -> Unit = { routeStack.removeLastOrNull() }
                         when (route) {
                             null -> Box(Modifier.fillMaxSize())
-                            ROUTE_BUDGET -> BudgetScreen(
-                                viewModel = budgetViewModel,
-                                listState = budgetListState,
-                                showAddDialogExternal = showAddBudgetItemFromMain,
-                                onAddDialogExternalHandled = { showAddBudgetItemFromMain = false },
-                                onOpenAddTransactionForBudgetItem = { item ->
-                                    addTransactionViewModel.prefillForBudgetItem(item)
-                                    showAddSheet = true
-                                },
-                                onBack = back
-                            )
-                            ROUTE_CREDITS -> CreditsScreen(
-                                viewModel = creditsViewModel,
-                                listState = creditsListState,
-                                showAddDialogExternal = showAddCreditFromMain,
-                                onAddDialogExternalHandled = { showAddCreditFromMain = false },
-                                onOpenAddTransactionForCredit = { amountCents, conceptStr, notesStr ->
-                                    addTransactionViewModel.prefillForCredit(amountCents, conceptStr, notesStr)
-                                    showAddSheet = true
-                                },
-                                onBack = back
-                            )
                             ROUTE_REPORTS -> ReportsScreen(viewModel = reportsViewModel, onBackClick = back)
                             ROUTE_SETTINGS -> SettingsScreen(
                                 viewModel = settingsViewModel,
@@ -491,16 +500,6 @@ fun MainScreen(
                                 }
                             }
                         }
-                    }
-
-                    // Botón de agregar propio de Gastos fijos y Créditos (se abren sobre las pestañas, sin barra)
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .navigationBarsPadding()
-                            .padding(16.dp)
-                    ) {
-                        ContextualFab(visible = routeFabVisible, leadingSpacer = false, onClick = onFabClick)
                     }
 
                     // Velo detrás del menú del botón de agregar; tocarlo lo cierra
@@ -544,8 +543,15 @@ fun MainScreen(
                                     }
                                 }
                                 val selectedPillWidth = (14 + 22 + 6 + 14).dp + (labelWidths.maxOrNull() ?: 0.dp)
-                                val capsuleWidth = 6.dp * 2 + 2.dp * (visibleScreens.size - 1) +
-                                    selectedPillWidth + FLOATING_PILL_COLLAPSED_WIDTH * (visibleScreens.size - 1)
+                                // Con cuatro destinos el ancho puede no alcanzar junto al botón de agregar en pantallas
+                                // angostas: las píldoras cerradas se encogen (hasta 40 dp) en lugar de desbordar
+                                val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+                                val collapsedCount = visibleScreens.size - 1
+                                val fixedWidth = 6.dp * 2 + 2.dp * collapsedCount + selectedPillWidth
+                                val fabWidth = if (tabFabVisible) FLOATING_BAR_HEIGHT + 8.dp else 0.dp
+                                val collapsedWidth = ((screenWidth - 24.dp - fabWidth - fixedWidth) / collapsedCount.coerceAtLeast(1))
+                                    .coerceIn(FLOATING_PILL_MIN_WIDTH, FLOATING_PILL_COLLAPSED_WIDTH)
+                                val capsuleWidth = fixedWidth + collapsedWidth * collapsedCount
 
                                 Surface(
                                     shape = RoundedCornerShape(28.dp),
@@ -581,7 +587,7 @@ fun MainScreen(
                                                     label = "icon_tint"
                                                 )
                                                 val pillWidth by animateDpAsState(
-                                                    targetValue = if (isSelected) selectedPillWidth else FLOATING_PILL_COLLAPSED_WIDTH,
+                                                    targetValue = if (isSelected) selectedPillWidth else collapsedWidth,
                                                     animationSpec = spatialDp,
                                                     label = "pill_width"
                                                 )
@@ -650,7 +656,7 @@ fun MainScreen(
 
                                 ContextualFab(
                                     visible = tabFabVisible, leadingSpacer = true, onClick = onFabClick,
-                                    menu = fabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
+                                    menu = tabFabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
                                 )
                             }
                         }
@@ -661,7 +667,7 @@ fun MainScreen(
                         Box(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                             ContextualFab(
                                 visible = tabFabVisible, leadingSpacer = false, onClick = onFabClick,
-                                menu = fabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
+                                menu = tabFabMenu, expanded = fabMenuExpanded, onExpandedChange = { fabMenuExpanded = it }
                             )
                         }
                     }
@@ -729,6 +735,9 @@ private const val NAV_SCROLL_THRESHOLD = 2f
 private val FLOATING_BAR_HEIGHT = 52.dp
 
 /** Ancho de una píldora de la cápsula flotante cuando no está seleccionada: solo el ícono, 22 dp y 13 dp por lado. */
+/** Alto de la franja desenfocada al pie: la cápsula (52 dp), su margen, el borde del sistema y un degradado. */
+private val FLOATING_BAR_BLUR_HEIGHT = 140.dp
+private val FLOATING_PILL_MIN_WIDTH = 40.dp
 private val FLOATING_PILL_COLLAPSED_WIDTH = 48.dp
 
 /** Entra y sale deslizándose desde el borde inferior; vive fuera del Column para evitar la ambigüedad de receptores. */
@@ -935,9 +944,7 @@ private const val ROUTE_APPEARANCE = "settings/appearance"
 private const val ROUTE_MODULES = "settings/modules"
 private const val ROUTE_BACKUPS = "settings/backups"
 private const val ROUTE_ABOUT = "settings/about"
-private const val ROUTE_BUDGET = "extras/budget"
-private const val ROUTE_CREDITS = "extras/credits"
-private const val ROUTE_REPORTS = "extras/reports"
+private const val ROUTE_REPORTS = "reports"
 private const val ROUTE_ACCOUNT_PREFIX = "account/"
 
 /** Profundidad de una ruta: 0 sin pantalla superpuesta, 1 pantallas de primer nivel, 2 subpantallas de Ajustes. */

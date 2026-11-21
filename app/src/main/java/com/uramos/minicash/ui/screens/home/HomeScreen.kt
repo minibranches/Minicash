@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.underHeaderBlur
+import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.SnackbarResult
@@ -8,8 +10,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarHost
 import com.uramos.minicash.ui.components.MinicashLoading
 import androidx.compose.foundation.layout.WindowInsets
-import com.uramos.minicash.ui.components.SettingsGearButton
-import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.TabTopBarActions
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -103,6 +104,7 @@ fun HomeScreen(
     userName: String,
     viewModel: HomeViewModel,
     onOpenSettings: () -> Unit = {},
+    onOpenReports: () -> Unit = {},
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     onAddTransactionClick: () -> Unit,
     onOpenAccount: (Long) -> Unit = {},
@@ -168,38 +170,38 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = greetingText,
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                },
-                actions = { SettingsGearButton(onClick = onOpenSettings) }
-            )
-        }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        BlurHeaderScaffold(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            header = {
+                TopAppBar(
+                                windowInsets = WindowInsets(0.dp),
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = Color.Transparent
+                                ),
+                                title = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = greetingText,
+                                                style = MaterialTheme.typography.headlineMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                },
+                                actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
+                            )
+            }
+        ) { headerHeight ->
+        Box(modifier = Modifier.fillMaxSize()) {
             if (state.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     MinicashLoading()
@@ -212,9 +214,9 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
+                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
                     contentPadding = PaddingValues(
-                        top = spacing.standard,
+                        top = headerHeight + spacing.standard,
                         start = spacing.standard,
                         end = spacing.standard,
                         bottom = 120.dp
@@ -400,7 +402,8 @@ fun HomeScreen(
                     }
                 }
             }
-        }
+                }
+    }
     }
 }
 

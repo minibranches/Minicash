@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.reports
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -60,7 +63,6 @@ import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MoneyDisplayType
 import com.uramos.minicash.ui.components.MoneyTextView
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 import com.uramos.minicash.ui.utils.MinicashColorUtils
 import com.uramos.minicash.ui.utils.toCompactCurrency
@@ -109,14 +111,14 @@ fun ReportsScreen(
             state = fadeListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(fadeListState),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.standard,
                 end = spacing.standard,
                 bottom = 120.dp
-            ),
+            ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
         ) {
             item {

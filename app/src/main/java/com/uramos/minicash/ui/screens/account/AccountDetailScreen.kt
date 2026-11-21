@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.account
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -50,7 +53,6 @@ import com.uramos.minicash.ui.components.CardTonalLevel
 import com.uramos.minicash.ui.components.MinicashCard
 import com.uramos.minicash.ui.components.MinicashEmptyState
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.rememberAnimatedCents
 import com.uramos.minicash.ui.screens.home.GroupedTransactionCard
 import com.uramos.minicash.ui.screens.home.HomeViewModel
@@ -131,14 +133,14 @@ fun AccountDetailScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(listState),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.standard,
                 end = spacing.standard,
                 bottom = 120.dp
-            ),
+            ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
         ) {
             item(key = "hero") { AccountHeroCard(account) }

@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.components.underHeaderBlur
+import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SnackbarDuration
 import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
@@ -10,8 +12,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.compositeOver
 import com.uramos.minicash.ui.components.MinicashBackButton
+import com.uramos.minicash.ui.components.TabTopBarActions
 import androidx.compose.material3.Checkbox
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import com.uramos.minicash.ui.theme.minicashFastSpatialSpec
 import androidx.compose.material3.MaterialShapes
@@ -132,7 +134,9 @@ fun BudgetScreen(
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
     onOpenAddTransactionForBudgetItem: ((BudgetItemEntity) -> Unit)? = null,
-    onBack: (() -> Unit)? = null
+    onBack: (() -> Unit)? = null,
+    onOpenReports: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val state by viewModel.uiState.collectAsState()
@@ -172,67 +176,70 @@ fun BudgetScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
-                title = {
-                    Text(
-                        "Gastos fijos",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                actions = {
-                    MinicashIconButton(
-                        onClick = {
-                            showSelectiveCloneDialog = true
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copiar partidas de quincena"
-                        )
-                    }
-                }
-            )
-        }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        BlurHeaderScaffold(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            header = {
+                Column {
+                    TopAppBar(
+                                    windowInsets = WindowInsets(0.dp),
+                                    colors = TopAppBarDefaults.topAppBarColors(
+                                        containerColor = Color.Transparent
+                                    ),
+                                    navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
+                                    title = {
+                                        Text(
+                                            "Gastos fijos",
+                                            style = MaterialTheme.typography.headlineMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    },
+                                    actions = {
+                                        MinicashIconButton(
+                                            onClick = {
+                                                showSelectiveCloneDialog = true
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.ContentCopy,
+                                                contentDescription = "Copiar partidas de quincena"
+                                            )
+                                        }
+                                        TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings)
+                                    }
+                                )
+                    BudgetPeriodBar(
+                                    monthLabel = state.currentMonthLabel,
+                                    fortnight = state.selectedFortnight,
+                                    onPreviousMonth = {
+                                        haptics.tick()
+                                        viewModel.previousMonth()
+                                    },
+                                    onNextMonth = {
+                                        haptics.tick()
+                                        viewModel.nextMonth()
+                                    },
+                                    onSelectFortnight = {
+                                        haptics.tick()
+                                        viewModel.selectFortnight(it)
+                                    },
+                                    modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.extraSmall)
+                                )
+                }
+            }
+        ) { headerHeight ->
             // Una sola fila: mes y quincena
-            BudgetPeriodBar(
-                monthLabel = state.currentMonthLabel,
-                fortnight = state.selectedFortnight,
-                onPreviousMonth = {
-                    haptics.tick()
-                    viewModel.previousMonth()
-                },
-                onNextMonth = {
-                    haptics.tick()
-                    viewModel.nextMonth()
-                },
-                onSelectFortnight = {
-                    haptics.tick()
-                    viewModel.selectFortnight(it)
-                },
-                modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.extraSmall)
-            )
+
 
             // El resumen va dentro de la cuadrícula para que se desplace junto con las partidas
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 state = listState,
-                modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
                 contentPadding = PaddingValues(
-                    top = spacing.small,
+                    top = headerHeight + spacing.small,
                     start = spacing.standard,
                     end = spacing.standard,
                     bottom = 120.dp

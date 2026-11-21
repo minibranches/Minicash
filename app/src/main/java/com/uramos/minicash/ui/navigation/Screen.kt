@@ -1,7 +1,5 @@
 package com.uramos.minicash.ui.navigation
 
-import androidx.compose.material.icons.outlined.Dashboard
-import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
@@ -25,14 +23,19 @@ sealed class Screen(
     object Transactions : Screen("transactions", "Movimientos", Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
     object Budget : Screen("budget", "Gastos fijos", Icons.Filled.PieChart, Icons.Outlined.PieChart)
     object Credits : Screen("credits", "Créditos", Icons.Filled.CreditCard, Icons.Outlined.CreditCard)
-    object Extras : Screen("extras", "Extras", Icons.Filled.Dashboard, Icons.Outlined.Dashboard)
     object Settings : Screen("settings", "Ajustes", Icons.Filled.Settings, Icons.Outlined.Settings)
     object AccountsManagement : Screen("accounts_management", "Gestión de cuentas", Icons.Filled.Settings, Icons.Outlined.Settings)
     object CategoriesManagement : Screen("categories_management", "Gestión de categorías", Icons.Filled.Settings, Icons.Outlined.Settings)
 }
 
-val bottomNavItems = listOf(
-    Screen.Home,
-    Screen.Transactions,
-    Screen.Extras
-)
+/**
+ * Destinos de la barra de navegación, en orden. Inicio y Movimientos son fijos; Gastos fijos y Créditos
+ * aparecen solo si su módulo está activo. Reportes y Ajustes no están en la barra: se abren desde los
+ * íconos de arriba a la derecha de cada pestaña.
+ */
+fun navScreens(showBudget: Boolean, showCredits: Boolean): List<Screen> = buildList {
+    add(Screen.Home)
+    add(Screen.Transactions)
+    if (showBudget) add(Screen.Budget)
+    if (showCredits) add(Screen.Credits)
+}

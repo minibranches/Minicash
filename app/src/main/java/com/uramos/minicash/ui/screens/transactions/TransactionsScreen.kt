@@ -1,13 +1,14 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.underHeaderBlur
+import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.foundation.layout.WindowInsets
-import com.uramos.minicash.ui.components.SettingsGearButton
-import com.uramos.minicash.ui.components.fadingTopEdge
+import com.uramos.minicash.ui.components.TabTopBarActions
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashTonalIconButton
@@ -88,6 +89,7 @@ import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 fun TransactionsScreen(
     viewModel: TransactionsViewModel,
     onOpenSettings: () -> Unit = {},
+    onOpenReports: () -> Unit = {},
     listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
     /** Falso cuando la pestaña no está a la vista (otra pestaña o una pantalla encima): el buscador suelta el foco. */
     isActive: Boolean = true
@@ -145,23 +147,23 @@ fun TransactionsScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
-                actions = { SettingsGearButton(onClick = onOpenSettings) }
-            )
-        }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        BlurHeaderScaffold(
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            header = {
+                TopAppBar(
+                                windowInsets = WindowInsets(0.dp),
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = Color.Transparent
+                                ),
+                                title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
+                                actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
+                            )
+            }
+        ) { headerHeight ->
+        Box(modifier = Modifier.fillMaxSize()) {
             val categoryMap = remember(categories) { categories.associateBy({ it.id }, { it.name }) }
             val accountMap = remember(accounts) { accounts.associateBy({ it.id }, { it.name }) }
             val groupedTransactions = remember(state.transactions) {
@@ -171,9 +173,9 @@ fun TransactionsScreen(
 
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().fadingTopEdge(listState),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
                 contentPadding = PaddingValues(
-                    top = spacing.small,
+                    top = headerHeight + spacing.small,
                     start = spacing.standard,
                     end = spacing.standard,
                     bottom = 120.dp
@@ -393,7 +395,8 @@ fun TransactionsScreen(
                     }
                 }
             }
-        }
+                }
+    }
     }
 
     if (showFilterSheet) {

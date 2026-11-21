@@ -1,10 +1,12 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.plusTop
+import com.uramos.minicash.ui.components.withoutTop
+import com.uramos.minicash.ui.components.underHeaderBlur
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import com.uramos.minicash.ui.components.fadingTopEdge
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -65,12 +67,12 @@ fun AppearanceSettingsScreen(
             state = fadeListState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .fadingTopEdge(fadeListState),
+                .padding(paddingValues.withoutTop())
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 horizontal = spacing.standard,
                 vertical = spacing.small
-            ),
+            ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
         ) {
             item {

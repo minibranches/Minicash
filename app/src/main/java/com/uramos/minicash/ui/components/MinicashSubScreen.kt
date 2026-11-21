@@ -1,6 +1,7 @@
 package com.uramos.minicash.ui.components
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
@@ -52,9 +53,8 @@ fun MinicashSubScreenTopBar(
     scrollBehavior: TopAppBarScrollBehavior,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    val background = MaterialTheme.colorScheme.surfaceContainerLowest
     LargeFlexibleTopAppBar(
-        windowInsets = WindowInsets(0.dp),
+        windowInsets = WindowInsets(top = TopBarBreathing),
         title = {
             Text(
                 text = title,
@@ -66,8 +66,8 @@ fun MinicashSubScreenTopBar(
         navigationIcon = { MinicashBackButton(onClick = onBack) },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = background,
-            scrolledContainerColor = background
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent
         ),
         scrollBehavior = scrollBehavior
     )
@@ -242,4 +242,27 @@ fun SettingsGearButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+/** Botón de Reportes de las barras superiores de las pestañas: mismo tamaño y círculo tonal que el engrane. */
+@Composable
+fun ReportsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    MinicashIconButton(onClick = onClick, modifier = modifier.padding(end = 4.dp).size(48.dp)) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.size(40.dp)) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Outlined.BarChart,
+                    contentDescription = "Reportes",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+/** Reportes y Ajustes, juntos arriba a la derecha de todas las pestañas. */
+@Composable
+fun RowScope.TabTopBarActions(onOpenReports: () -> Unit, onOpenSettings: () -> Unit) {
+    ReportsButton(onClick = onOpenReports)
+    SettingsGearButton(onClick = onOpenSettings)
 }
