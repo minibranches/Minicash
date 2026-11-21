@@ -96,7 +96,9 @@ class SettingsViewModel(
     private val accountDao: AccountDao,
     private val categoryDao: CategoryDao,
     private val userPreferences: UserPreferences,
-    private val database: MinicashDatabase
+    private val database: MinicashDatabase,
+    /** Estilo de barra ya leído al arrancar, para que la primera composición no muestre el predeterminado. */
+    initialNavBarStyle: NavBarStyle = NavBarStyle.INTEGRATED
 ) : ViewModel() {
 
     private val creditDao = database.creditDao()
@@ -278,7 +280,7 @@ class SettingsViewModel(
     }
 
     val navBarStyle: StateFlow<NavBarStyle> = userPreferences.navBarStyle
-        .stateIn(viewModelScope, SharingStarted.Eagerly, NavBarStyle.INTEGRATED)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, initialNavBarStyle)
 
     val creditReminderTime: StateFlow<Pair<Int, Int>> = combine(
         userPreferences.creditReminderHour,

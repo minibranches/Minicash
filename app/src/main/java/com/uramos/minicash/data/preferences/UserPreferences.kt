@@ -1,6 +1,7 @@
 package com.uramos.minicash.data.preferences
 
 import android.content.Context
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -30,6 +31,31 @@ enum class FontPreference {
 enum class NavBarStyle {
     FLOATING,
     INTEGRATED
+}
+
+/** Preferencias de apariencia, con sus valores predeterminados, tal como las necesita el primer cuadro. */
+data class ThemeSnapshot(
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val useDynamicColor: Boolean = false,
+    val isAmoledMode: Boolean = false,
+    val accentColorHex: String = "#1A73E8",
+    val fontPreference: FontPreference = FontPreference.ROUNDED_QUICKSAND,
+    val navBarStyle: NavBarStyle = NavBarStyle.INTEGRATED
+)
+
+fun Preferences.toThemeSnapshot(): ThemeSnapshot {
+    val defaults = ThemeSnapshot()
+    return ThemeSnapshot(
+        themeMode = this[UserPreferences.THEME_MODE]
+            ?.let { raw -> runCatching { ThemeMode.valueOf(raw) }.getOrNull() } ?: defaults.themeMode,
+        useDynamicColor = this[UserPreferences.DYNAMIC_COLOR_KEY] ?: defaults.useDynamicColor,
+        isAmoledMode = this[UserPreferences.AMOLED_MODE_KEY] ?: defaults.isAmoledMode,
+        accentColorHex = this[UserPreferences.ACCENT_COLOR_HEX] ?: defaults.accentColorHex,
+        fontPreference = this[UserPreferences.FONT_PREFERENCE_KEY]
+            ?.let { raw -> runCatching { FontPreference.valueOf(raw) }.getOrNull() } ?: defaults.fontPreference,
+        navBarStyle = this[UserPreferences.NAV_BAR_STYLE_KEY]
+            ?.let { raw -> runCatching { NavBarStyle.valueOf(raw) }.getOrNull() } ?: defaults.navBarStyle
+    )
 }
 
 class UserPreferences(private val context: Context) {
@@ -68,14 +94,9 @@ class UserPreferences(private val context: Context) {
         prefs[USER_NAME] ?: ""
     }
 
-    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { prefs ->
-        val rawName = prefs[THEME_MODE] ?: ThemeMode.SYSTEM.name
-        runCatching { ThemeMode.valueOf(rawName) }.getOrDefault(ThemeMode.SYSTEM)
-    }
+    val themeMode: Flow<ThemeMode> = context.dataStore.data.map { it.toThemeSnapshot().themeMode }
 
-    val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[DYNAMIC_COLOR_KEY] ?: false
-    }
+    val useDynamicColor: Flow<Boolean> = context.dataStore.data.map { it.toThemeSnapshot().useDynamicColor }
 
     /** Oculta la vista previa de la app en multitarea (y bloquea capturas de pantalla). */
     val hideInRecents: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -86,9 +107,7 @@ class UserPreferences(private val context: Context) {
         context.dataStore.edit { prefs -> prefs[HIDE_IN_RECENTS_KEY] = enabled }
     }
 
-    val isAmoledMode: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[AMOLED_MODE_KEY] ?: false
-    }
+    val isAmoledMode: Flow<Boolean> = context.dataStore.data.map { it.toThemeSnapshot().isAmoledMode }
 
     val lastAutoBackupTimestamp: Flow<Long> = context.dataStore.data.map { prefs ->
         prefs[LAST_AUTO_BACKUP_TIMESTAMP] ?: 0L
@@ -126,19 +145,17 @@ class UserPreferences(private val context: Context) {
         prefs[SHOW_CREDITS_TAB] ?: true
     }
 
-    val accentColorHex: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[ACCENT_COLOR_HEX] ?: "#1A73E8"
-    }
+    val accentColorHex: Flow<String> = context.dataStore.data.map { it.toThemeSnapshot().accentColorHex }
 
-    val fontPreference: Flow<FontPreference> = context.dataStore.data.map { prefs ->
-        val rawName = prefs[FONT_PREFERENCE_KEY] ?: FontPreference.ROUNDED_QUICKSAND.name
-        runCatching { FontPreference.valueOf(rawName) }.getOrDefault(FontPreference.ROUNDED_QUICKSAND)
-    }
+    val fontPreference: Flow<FontPreference> = context.dataStore.data.map { it.toThemeSnapshot().fontPreference }
 
-    val navBarStyle: Flow<NavBarStyle> = context.dataStore.data.map { prefs ->
-        val rawName = prefs[NAV_BAR_STYLE_KEY] ?: NavBarStyle.INTEGRATED.name
-        runCatching { NavBarStyle.valueOf(rawName) }.getOrDefault(NavBarStyle.INTEGRATED)
-    }
+    val navBarStyle: Flow<NavBarStyle> = context.dataStore.data.map { it.toThemeSnapshot().navBarStyle }
+
+    /**
+     * Lectura única de todo lo que pinta el primer cuadro (tema, color, fuente y barra). Se pide antes de
+     * componer para que la app abra ya con la apariencia configurada, sin pasar por la predeterminada.
+     */
+    suspend fun themeSnapshot(): ThemeSnapshot = context.dataStore.data.first().toThemeSnapshot()
 
     val creditReminderHour: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[CREDIT_REMINDER_HOUR] ?: 9

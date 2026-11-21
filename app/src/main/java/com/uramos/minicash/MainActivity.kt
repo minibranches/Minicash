@@ -45,6 +45,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /** Estado del bloqueo de la app: CHECKING solo dura el instante en que se lee si el bloqueo está activo. */
 private enum class LockStatus { CHECKING, LOCKED, UNLOCKED }
@@ -72,6 +73,10 @@ class MainActivity : FragmentActivity() {
         db = MinicashDatabase.getDatabase(applicationContext)
 
         userPreferences = UserPreferences(applicationContext)
+
+        // Una sola lectura bloqueante del tema, mientras el sistema aún muestra el splash: así el primer cuadro
+        // ya sale con el color y la barra configurados y no hay un destello con los valores predeterminados.
+        val themeSnapshot = runBlocking { userPreferences.themeSnapshot() }
 
         lifecycleScope.launch(Dispatchers.IO) {
             com.uramos.minicash.data.worker.CreditPaymentScheduler.schedule(
@@ -133,21 +138,22 @@ class MainActivity : FragmentActivity() {
             accountDao = db.accountDao(),
             categoryDao = db.categoryDao(),
             userPreferences = userPreferences,
-            database = db
+            database = db,
+            initialNavBarStyle = themeSnapshot.navBarStyle
         )
 
         setContent {
-            val themeMode by userPreferences.themeMode.collectAsState(initial = com.uramos.minicash.data.preferences.ThemeMode.SYSTEM)
-            val fontPreference by userPreferences.fontPreference.collectAsState(initial = com.uramos.minicash.data.preferences.FontPreference.ROUNDED_QUICKSAND)
-            val useDynamicColor by userPreferences.useDynamicColor.collectAsState(initial = false)
-            val isAmoledMode by userPreferences.isAmoledMode.collectAsState(initial = false)
+            val themeMode by userPreferences.themeMode.collectAsState(initial = themeSnapshot.themeMode)
+            val fontPreference by userPreferences.fontPreference.collectAsState(initial = themeSnapshot.fontPreference)
+            val useDynamicColor by userPreferences.useDynamicColor.collectAsState(initial = themeSnapshot.useDynamicColor)
+            val isAmoledMode by userPreferences.isAmoledMode.collectAsState(initial = themeSnapshot.isAmoledMode)
             val hideInRecents by userPreferences.hideInRecents.collectAsState(initial = false)
             // FLAG_SECURE oculta la vista previa en multitarea; como efecto secundario también bloquea las capturas
             LaunchedEffect(hideInRecents) {
                 if (hideInRecents) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
-            val accentColorHex by userPreferences.accentColorHex.collectAsState(initial = "#1A73E8")
+            val accentColorHex by userPreferences.accentColorHex.collectAsState(initial = themeSnapshot.accentColorHex)
 
             MinicashTheme(
                 themeMode = themeMode,
