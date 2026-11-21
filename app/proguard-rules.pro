@@ -27,3 +27,15 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class com.google.gson.** { *; }
+
+# Widgets (Glance): R8 fusionaba MinicashWidget y QuickActionsWidget en una sola clase y,
+# como Glance registra cada receptor por el nombre de su widget, ambos se quedaban cargando.
+-keep class * extends androidx.glance.appwidget.GlanceAppWidget
+-keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver
+-keep class com.uramos.minicash.widget.** { *; }
+
+# WorkManager 2.9.1 solo conserva la clase de InputMerger, no su constructor; Glance carga cada widget
+# con WorkManager y sin el constructor falla con NoSuchMethodException (el widget queda cargando).
+-keepclassmembers class * extends androidx.work.InputMerger {
+    public <init>();
+}
