@@ -17,10 +17,10 @@ Hecha con Kotlin, Jetpack Compose y Material 3 Expressive. Las ideas a futuro es
 - **Créditos.** Compras a meses con avance por mensualidad, fecha estimada de término y aviso antes de cada pago. El día de pago se configura en la institución (tarjeta o banco) y las compras lo heredan; cada compra puede usar otro día.
 - **Reportes.** Dashboard con balance del periodo y tasa de ahorro, ingresos contra gastos por mes (6 o 12 meses), gasto por categoría, balance acumulado y desglose mensual.
 - **Copias de seguridad.** Exportación e importación en JSON, con copia automática opcional. Los movimientos también se exportan a CSV (este mes, últimos 3 meses, este año o todo) para hojas de cálculo.
-- **Extras.** Centro con tarjetas de resumen hacia Gastos fijos, Créditos y Reportes; los módulos que ocultes no aparecen. Ajustes queda en el engrane de arriba a la derecha.
+- **Navegación.** Barra con Inicio, Movimientos, Gastos fijos y Créditos (los módulos que ocultes no aparecen). Reportes y Ajustes están arriba a la derecha de cada pestaña.
 - **Widgets.** Uno con patrimonio, gasto del mes y botones de registro, y otro solo con los botones de gasto, ingreso y transferencia.
 - **Privacidad.** Opción para ocultar la vista previa en multitarea (también bloquea capturas de pantalla) y bloqueo de la app con la huella, el rostro o el PIN del teléfono, que se pide al abrir o tras un tiempo fuera de la app.
-- **Personalización.** Tema claro, oscuro o AMOLED, color dinámico o de acento, barra de navegación integrada o flotante (se oculta al desplazar) y módulos opcionales de Gastos fijos y Créditos.
+- **Personalización.** Tema claro, oscuro o AMOLED, color dinámico o de acento, barra de navegación integrada o flotante (se oculta al desplazar), módulos opcionales de Gastos fijos y Créditos y, desde Android 13, desenfoque progresivo del contenido bajo los encabezados y la barra flotante.
 
 ## Privacidad
 
@@ -36,7 +36,7 @@ Requiere Android 8.0 (API 26) o superior.
 
 ## Compilar
 
-Necesitas Android Studio reciente o el JDK y el SDK de Android configurados.
+Necesitas Android Studio reciente o el JDK y el SDK de Android configurados, con la plataforma 37.1 instalada (la exige Compose UI 1.13).
 
 ```bash
 ./gradlew :app:testDebugUnitTest
@@ -86,7 +86,7 @@ Las pruebas unitarias cubren el cálculo de fechas de pago y la herencia entre i
 
 ## Estado
 
-Proyecto personal en uso diario. Está en versión 1.0.0. Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
+Proyecto personal en uso diario. Está en versión 1.1.0. Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md). Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
 
 ## Licencia
 
