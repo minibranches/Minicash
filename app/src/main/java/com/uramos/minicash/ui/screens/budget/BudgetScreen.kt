@@ -1,5 +1,14 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.material.icons.outlined.ContentCopy
+import com.uramos.minicash.ui.components.TabActionButton
+import com.uramos.minicash.ui.components.LocalBottomBlurBand
+import androidx.compose.ui.unit.sp
+import com.uramos.minicash.ui.components.StatPill
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.trackSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.underHeaderBlur
 import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import androidx.compose.material3.SnackbarResult
@@ -175,7 +184,7 @@ fun BudgetScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
     ) { paddingValues ->
@@ -197,16 +206,11 @@ fun BudgetScreen(
                                         )
                                     },
                                     actions = {
-                                        MinicashIconButton(
-                                            onClick = {
-                                                showSelectiveCloneDialog = true
-                                            }
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.ContentCopy,
-                                                contentDescription = "Copiar partidas de quincena"
-                                            )
-                                        }
+                                        TabActionButton(
+                                            icon = Icons.Outlined.ContentCopy,
+                                            contentDescription = "Copiar partidas de quincena",
+                                            onClick = { showSelectiveCloneDialog = true }
+                                        )
                                         TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings)
                                     }
                                 )
@@ -225,7 +229,7 @@ fun BudgetScreen(
                                         haptics.tick()
                                         viewModel.selectFortnight(it)
                                     },
-                                    modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.extraSmall)
+                                    modifier = Modifier.padding(horizontal = spacing.screen, vertical = spacing.extraSmall)
                                 )
                 }
             }
@@ -237,11 +241,11 @@ fun BudgetScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 state = listState,
-                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
                 contentPadding = PaddingValues(
                     top = headerHeight + spacing.small,
-                    start = spacing.standard,
-                    end = spacing.standard,
+                    start = spacing.screen,
+                    end = spacing.screen,
                     bottom = 120.dp
                 ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -379,7 +383,7 @@ internal fun BudgetPeriodBar(
 
     Surface(
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.trackSurface,
         modifier = modifier.fillMaxWidth()
     ) {
         WithoutMinTouchTarget {
@@ -460,7 +464,7 @@ internal fun BudgetPeriodBar(
     }
 }
 
-/** Resumen de la quincena en tres líneas: disponible, cifras ejecutadas y avance ondulado. */
+/** Resumen de la quincena en estadios: disponible con el avance de pago como relleno y las tres cifras ejecutadas. */
 @Composable
 private fun BudgetSummaryCard(summary: BudgetSummary) {
     val financialColors = MinicashThemeExtensions.financialColors
@@ -468,72 +472,37 @@ private fun BudgetSummaryCard(summary: BudgetSummary) {
         (summary.paidExpense.toFloat() / summary.expectedExpense.toFloat()).coerceIn(0f, 1f)
     } else 0f
 
-    MinicashCard(
-        level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(20.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Column {
-                    Text(
-                        text = "Disponible",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    MoneyTextView(
-                        amountCents = summary.actualFreeAmount,
-                        type = if (summary.actualFreeAmount >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
-                    )
-                }
-                Text(
-                    text = "${(progress * 100).toInt()}% pagado",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                SummaryFigure("Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income)
-                SummaryFigure("Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income)
-                SummaryFigure("Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense)
-            }
-
-            WavyProgressIndicator(
-                progress = progress,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(20.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        StatPill(
+            label = "Disponible · ${(progress * 100).toInt()}% pagado",
+            progress = progress,
+            modifier = Modifier.fillMaxWidth()
+        ) { style, _ ->
+            MoneyTextView(
+                amountCents = summary.actualFreeAmount,
+                type = if (summary.actualFreeAmount >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
+                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum")
             )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            SummaryFigure("Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income, Modifier.weight(1f))
+            SummaryFigure("Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income, Modifier.weight(1f))
+            SummaryFigure("Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun SummaryFigure(label: String, value: String, color: Color) {
-    Column {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+private fun SummaryFigure(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
+    StatPill(label = label, valueColor = color, modifier = modifier) { style, tint ->
         Text(
             text = value,
-            style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"),
-            fontWeight = FontWeight.Bold,
-            color = color
+            style = style.copy(fontSize = 16.sp),
+            color = tint,
+            maxLines = 1
         )
     }
 }
@@ -554,7 +523,7 @@ fun BudgetItemCard(
     val colorScheme = MaterialTheme.colorScheme
     // Pendiente: tarjeta más clara y elevada. Pagada: tinte del color primario y más recesiva; además lleva la palomita
     val containerColor = if (item.isPaid) {
-        colorScheme.primaryContainer.copy(alpha = 0.30f).compositeOver(colorScheme.surfaceContainerLow)
+        colorScheme.primaryContainer.copy(alpha = 0.30f).compositeOver(colorScheme.cardSurface)
     } else {
         colorScheme.surfaceContainerHigh
     }
@@ -575,7 +544,7 @@ fun BudgetItemCard(
 
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(20.dp),
+        shape = MinicashShapes.Card,
         containerColor = containerColor,
         onClick = onClick,
         modifier = modifier
@@ -626,8 +595,8 @@ fun BudgetItemCard(
                         ),
                     contentAlignment = Alignment.TopEnd
                 ) {
-                    // Al marcarla pagada el círculo se transforma en una galleta y la palomita "salta"
-                    val checkMorph = remember { Morph(MaterialShapes.Circle, MaterialShapes.Cookie6Sided) }
+                    // Al marcarla pagada el círculo se transforma en un sello festoneado de 12 lóbulos y la palomita "salta"
+                    val checkMorph = remember { Morph(MaterialShapes.Circle, MaterialShapes.Cookie12Sided) }
                     val morphProgress by animateFloatAsState(
                         targetValue = if (item.isPaid) 1f else 0f,
                         animationSpec = minicashFastSpatialSpec(),
@@ -701,7 +670,7 @@ fun ReactivateBudgetItemDialog(
                 Text("Cancelar")
             }
         },
-        shape = RoundedCornerShape(28.dp)
+        shape = MinicashShapes.Hero
     )
 }
 
@@ -750,7 +719,7 @@ fun ConfirmPaymentDialog(
                 Text("Cancelar")
             }
         },
-        shape = RoundedCornerShape(28.dp)
+        shape = MinicashShapes.Hero
     )
 }
 
@@ -787,8 +756,8 @@ fun AddBudgetItemDialog(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -852,7 +821,7 @@ fun AddBudgetItemDialog(
             // Importe destacado
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = MinicashShapes.Card,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Column(
@@ -870,7 +839,7 @@ fun AddBudgetItemDialog(
                     val cents = calculatedAmount.toCents()
                     Text(
                         text = cents.toCurrencyFormat(),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"),
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1017,8 +986,8 @@ fun EditBudgetItemSheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -1082,7 +1051,7 @@ fun EditBudgetItemSheet(
             // Importe destacado
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = MinicashShapes.Card,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Column(
@@ -1100,7 +1069,7 @@ fun EditBudgetItemSheet(
                     val cents = calculatedAmount.toCents()
                     Text(
                         text = cents.toCurrencyFormat(),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"),
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -1267,8 +1236,8 @@ fun CopyFortnightSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -1414,7 +1383,7 @@ fun CopyFortnightSheet(
                     .height(48.dp)
             ) {
                 Text(
-                    text = "Copiar ${selectedIds.size} partidas",
+                    text = if (selectedIds.size == 1) "Copiar 1 partida" else "Copiar ${selectedIds.size} partidas",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

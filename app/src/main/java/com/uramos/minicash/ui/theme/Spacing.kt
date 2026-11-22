@@ -13,6 +13,8 @@ data class Spacing(
     val medium: Dp = 12.dp,
     val standard: Dp = 16.dp,
     val large: Dp = 20.dp,
+    /** Margen lateral de las pantallas. */
+    val screen: Dp = 20.dp,
     val extraLarge: Dp = 24.dp,
     val hero: Dp = 32.dp
 )

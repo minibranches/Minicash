@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -54,7 +57,7 @@ fun AppearanceSettingsScreen(
     val fadeListState = rememberLazyListState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Apariencia",
@@ -78,7 +81,7 @@ fun AppearanceSettingsScreen(
             item {
                 MinicashCard(
                     level = CardTonalLevel.LOW,
-                    shape = RoundedCornerShape(20.dp),
+                    shape = MinicashShapes.Card,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(

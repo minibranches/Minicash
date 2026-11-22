@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.cardSurface
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.fadeIn
@@ -167,7 +169,7 @@ fun AccountCard(
     val accountColor = MinicashColorUtils.parseHexColor(account.colorHex, MaterialTheme.colorScheme.primary)
     val containerColor = MinicashColorUtils.tintedContainerColor(
         baseColor = accountColor,
-        surfaceColor = MaterialTheme.colorScheme.surfaceContainer,
+        surfaceColor = MaterialTheme.colorScheme.cardSurface,
         ratio = 0.18f
     )
     val iconShape = MaterialShapes.Cookie9Sided.toShape()
@@ -175,7 +177,7 @@ fun AccountCard(
     MinicashCard(
         level = CardTonalLevel.LOW,
         containerColor = containerColor,
-        shape = RoundedCornerShape(28.dp),
+        shape = MinicashShapes.Card,
         onClick = onClick,
         modifier = modifier
     ) {

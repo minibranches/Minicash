@@ -36,6 +36,7 @@ val SurfaceContainerLowLight = Color(0xFFF2F4F8)
 val SurfaceContainerLight = Color(0xFFECEEF2)
 val SurfaceContainerHighLight = Color(0xFFE6E8EE)
 val SurfaceContainerHighestLight = Color(0xFFE0E2E8)
+val SurfaceBrightLight = Color(0xFFFFFFFF)
 
 // Semántica financiera Light
 val IncomeGreenLight = Color(0xFF1B6D2F)
@@ -77,6 +78,7 @@ val SurfaceContainerLowDark = Color(0xFF141923)
 val SurfaceContainerDark = Color(0xFF181E29)
 val SurfaceContainerHighDark = Color(0xFF222936)
 val SurfaceContainerHighestDark = Color(0xFF2C3444)
+val SurfaceBrightDark = Color(0xFF2E3646)
 
 // Semántica financiera Dark
 val IncomeGreenDark = Color(0xFF89D98E)

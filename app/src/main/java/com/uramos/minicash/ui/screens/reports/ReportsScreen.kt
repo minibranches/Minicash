@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.reports
 
+import com.uramos.minicash.ui.components.InsightCard
+import com.uramos.minicash.ui.components.StatPill
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -98,7 +104,7 @@ fun ReportsScreen(
     val fadeListState = rememberLazyListState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Reportes",
@@ -115,8 +121,8 @@ fun ReportsScreen(
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
-                start = spacing.standard,
-                end = spacing.standard,
+                start = spacing.screen,
+                end = spacing.screen,
                 bottom = 120.dp
             ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
@@ -143,6 +149,8 @@ fun ReportsScreen(
                 }
             } else {
                 item { HeroBalanceCard(state) }
+
+                item { InsightCard(title = "Ahorro", text = savingsMessage(state.savingsRate)) }
 
                 item { StatTiles(state) }
 
@@ -189,15 +197,8 @@ fun ReportsScreen(
 private fun HeroBalanceCard(state: ReportsUiState) {
     val container = MaterialTheme.colorScheme.primaryContainer
     val onContainer = MaterialTheme.colorScheme.onPrimaryContainer
-    val rate = state.savingsRate
-    val rateText = when {
-        rate == null -> "Sin ingresos en el periodo"
-        rate >= 0f -> "Ahorraste el ${(rate * 100).roundToInt()} % de tus ingresos"
-        else -> "Gastaste ${(abs(rate) * 100).roundToInt()} % más de lo que ingresó"
-    }
-
     Surface(
-        shape = RoundedCornerShape(28.dp),
+        shape = MinicashShapes.Card,
         color = container,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -228,82 +229,43 @@ private fun HeroBalanceCard(state: ReportsUiState) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Surface(shape = CircleShape, color = onContainer.copy(alpha = 0.12f)) {
-                    Text(
-                        text = rateText,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = onContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
-                }
             }
         }
     }
 }
 
-/** Cuatro cifras en cuadrícula; las esquinas alternan 28 y 8 dp en tablero para dar tensión entre formas. */
+/** Mensaje de ahorro del periodo, el mismo texto de siempre, ahora en una tarjeta de aviso. */
+private fun savingsMessage(rate: Float?): String = when {
+    rate == null -> "Sin ingresos en el periodo"
+    rate >= 0f -> "Ahorraste el ${(rate * 100).roundToInt()} % de tus ingresos"
+    else -> "Gastaste ${(abs(rate) * 100).roundToInt()} % más de lo que ingresó"
+}
+
+/** Cuatro cifras en estadios, dos por fila. */
 @Composable
 private fun StatTiles(state: ReportsUiState) {
     val colors = MinicashThemeExtensions.financialColors
     val best = state.bestMonth
-    val big = 28.dp
-    val small = 8.dp
-    val shapeA = RoundedCornerShape(topStart = big, topEnd = small, bottomEnd = big, bottomStart = small)
-    val shapeB = RoundedCornerShape(topStart = small, topEnd = big, bottomEnd = small, bottomStart = big)
+    val savings = state.averageBalance.toCompactCurrency().let { if (state.averageBalance < 0) "-$it" else it }
+    val bestName = best?.month?.month?.getDisplayName(JavaTextStyle.FULL, esMx)?.replaceFirstChar { it.uppercase() } ?: "—"
+    val bestLabel = best?.balance?.let { b -> "Mejor mes · " + (if (b < 0) "-" else "") + b.toCompactCurrency() } ?: "Mejor mes"
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            StatTile("Ingreso promedio", state.averageIncome.toCompactCurrency(), colors.income, shapeA, Modifier.weight(1f))
-            StatTile("Gasto promedio", state.averageExpense.toCompactCurrency(), colors.expense, shapeB, Modifier.weight(1f))
+            StatFigure("Ingreso promedio", state.averageIncome.toCompactCurrency(), colors.income, Modifier.weight(1f))
+            StatFigure("Gasto promedio", state.averageExpense.toCompactCurrency(), colors.expense, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            StatTile(
-                label = "Ahorro mensual",
-                value = state.averageBalance.toCompactCurrency().let { if (state.averageBalance < 0) "-$it" else it },
-                dot = MaterialTheme.colorScheme.primary,
-                shape = shapeB,
-                modifier = Modifier.weight(1f)
-            )
-            StatTile(
-                label = "Mejor mes",
-                value = best?.month?.month?.getDisplayName(JavaTextStyle.FULL, esMx)?.replaceFirstChar { it.uppercase() } ?: "—",
-                dot = MaterialTheme.colorScheme.tertiary,
-                shape = shapeA,
-                modifier = Modifier.weight(1f),
-                caption = best?.balance?.toCompactCurrency()
-            )
+            StatFigure("Ahorro mensual", savings, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+            StatFigure(bestLabel, bestName, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
         }
     }
 }
 
-/** Cifra con un punto de color que identifica la serie; el valor va en la tinta de texto, no en el color de la serie. */
 @Composable
-private fun StatTile(
-    label: String,
-    value: String,
-    dot: Color,
-    shape: androidx.compose.ui.graphics.Shape,
-    modifier: Modifier = Modifier,
-    caption: String? = null
-) {
-    MinicashCard(level = CardTonalLevel.LOW, shape = shape, modifier = modifier) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Box(Modifier.size(8.dp).background(dot, CircleShape))
-                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Text(
-                text = value,
-                style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"),
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (caption != null) {
-                Text(caption, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
+private fun StatFigure(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
+    StatPill(label = label, valueColor = color, modifier = modifier) { style, tint ->
+        Text(text = value, style = style, color = tint, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -311,7 +273,7 @@ private fun StatTile(
 private fun ChartCard(title: String, content: @Composable () -> Unit) {
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(20.dp),
+        shape = MinicashShapes.Card,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
@@ -465,7 +427,7 @@ private fun CategoryBars(spend: List<CategorySpend>) {
 private fun CumulativeLine(months: List<MonthlyTotals>, values: List<Long>) {
     if (values.size < 2) return
     val line = MaterialTheme.colorScheme.primary
-    val surface = MaterialTheme.colorScheme.surfaceContainerLow
+    val surface = MaterialTheme.colorScheme.cardSurface
     val ink = MaterialTheme.colorScheme.onSurface
     val inkMuted = MaterialTheme.colorScheme.onSurfaceVariant
     val grid = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
@@ -529,7 +491,7 @@ private fun CumulativeLine(months: List<MonthlyTotals>, values: List<Long>) {
 private fun MonthRow(month: MonthlyTotals) {
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = RoundedCornerShape(20.dp),
+        shape = MinicashShapes.Card,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

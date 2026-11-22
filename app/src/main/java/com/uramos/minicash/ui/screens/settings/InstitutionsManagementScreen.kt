@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -125,7 +127,7 @@ fun InstitutionsManagementScreen(
     val fadeListState = rememberLazyListState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Tarjetas e instituciones",
@@ -183,8 +185,8 @@ fun InstitutionsManagementScreen(
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
                 contentPadding = PaddingValues(
                     top = spacing.small,
-                    start = spacing.standard,
-                    end = spacing.standard,
+                    start = spacing.screen,
+                    end = spacing.screen,
                     bottom = 120.dp
                 ).plusTop(paddingValues.calculateTopPadding()),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
@@ -342,9 +344,9 @@ fun AddInstitutionSheet(
     DiscardChangesDialog(guard)
     GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -370,13 +372,13 @@ fun AddInstitutionSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Color distintivo:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             MinicashColorPicker(
                 selectedColorHex = selectedColorHex,
                 onColorSelected = { selectedColorHex = it }
             )
 
-            Text("Pago de las compras a meses:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text("Pago de las compras a meses", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             Text(
                 text = "Las compras de esta institución heredan este día; cada una puede usar otro.",
                 style = MaterialTheme.typography.bodySmall,

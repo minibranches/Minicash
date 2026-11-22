@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.components.LocalBottomBlurBand
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.underHeaderBlur
 import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
@@ -131,6 +135,11 @@ fun HomeScreen(
 
     val entranceTracker = rememberEntranceTracker()
     val isRestricted = LocalAnimationRestriction.current
+    // Fecha de hoy bajo el saludo, p. ej. Sábado 21 de noviembre
+    val todayLabel = remember {
+        java.text.SimpleDateFormat("EEEE d 'de' MMMM", java.util.Locale("es", "MX")).format(java.util.Date())
+            .replaceFirstChar { it.uppercase() }
+    }
 
     if (selectedIds.isNotEmpty()) {
         BackHandler {
@@ -169,7 +178,7 @@ fun HomeScreen(
 
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
     ) { paddingValues ->
@@ -194,6 +203,11 @@ fun HomeScreen(
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onSurface
                                             )
+                                            Text(
+                                                text = todayLabel,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                         }
                                     }
                                 },
@@ -214,11 +228,11 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
+                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
                     contentPadding = PaddingValues(
                         top = headerHeight + spacing.standard,
-                        start = spacing.standard,
-                        end = spacing.standard,
+                        start = spacing.screen,
+                        end = spacing.screen,
                         bottom = 120.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(spacing.hero)
@@ -248,7 +262,7 @@ fun HomeScreen(
                                 val account = state.accounts[index]
                                 AccountCard(
                                     account = account,
-                                    modifier = Modifier.fillMaxSize().maskClip(RoundedCornerShape(28.dp)),
+                                    modifier = Modifier.fillMaxSize().maskClip(MinicashShapes.Card),
                                     onClick = { onOpenAccount(account.id) }
                                 )
                             }
@@ -371,7 +385,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "${selectedIds.size} seleccionados",
+                                text = if (selectedIds.size == 1) "1 seleccionado" else "${selectedIds.size} seleccionados",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -464,7 +478,7 @@ fun GroupedTransactionCard(
             val isSelectionMode = selectedIds.isNotEmpty()
 
             val rowColor by animateColorAsState(
-                targetValue = if (tx.id in selectedIds) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                targetValue = if (tx.id in selectedIds) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.cardSurface,
                 animationSpec = minicashEffectsSpec(),
                 label = "transaction_row_color"
             )
@@ -605,9 +619,9 @@ fun CompactTransactionRow(
         }
 
         Surface(
-            shape = CircleShape,
+            shape = com.uramos.minicash.ui.components.rememberScallopedShape(),
             color = containerColor,
-            modifier = Modifier.size(36.dp)
+            modifier = Modifier.size(40.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(

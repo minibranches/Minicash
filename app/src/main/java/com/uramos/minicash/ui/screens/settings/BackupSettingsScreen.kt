@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTimePickerDialog
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -131,7 +134,7 @@ fun BackupSettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Copias de seguridad",
@@ -347,25 +350,15 @@ fun BackupSettingsScreen(
     }
 
     if (showTimePickerDialog) {
-        val timePickerState = rememberTimePickerState(
+        MinicashTimePickerDialog(
+            title = "Hora del respaldo automático",
             initialHour = state.autoBackupHour,
             initialMinute = state.autoBackupMinute,
-            is24Hour = true
-        )
-        MinicashAlertDialog(
-            onDismissRequest = { showTimePickerDialog = false },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        viewModel.setAutoBackupTime(context, timePickerState.hour, timePickerState.minute)
-                        showTimePickerDialog = false
-                    },
-                ) { Text("Guardar", fontWeight = FontWeight.Bold) }
+            onConfirm = { hour, minute ->
+                viewModel.setAutoBackupTime(context, hour, minute)
+                showTimePickerDialog = false
             },
-            dismissButton = { MinicashTextButton(onClick = { showTimePickerDialog = false }) { Text("Cancelar") } },
-            title = { Text("Hora del respaldo automático", fontWeight = FontWeight.Bold) },
-            text = { TimePicker(state = timePickerState) },
-            shape = MinicashShapes.Hero
+            onDismiss = { showTimePickerDialog = false }
         )
     }
 }

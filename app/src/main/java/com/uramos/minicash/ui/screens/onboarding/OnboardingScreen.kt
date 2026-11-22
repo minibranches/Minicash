@@ -1,5 +1,19 @@
 package com.uramos.minicash.ui.screens.onboarding
 
+import kotlinx.coroutines.delay
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.layout.imePadding
+import com.uramos.minicash.ui.components.MinicashFilterChip
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashLogo
 import androidx.compose.animation.animateColorAsState
@@ -119,7 +133,8 @@ fun OnboardingScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        modifier = Modifier.imePadding(),
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             Row(
                 modifier = Modifier
@@ -385,7 +400,7 @@ private fun WelcomePage(
 
         Surface(
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerLow
+            color = MaterialTheme.colorScheme.cardSurface
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -417,11 +432,16 @@ private fun PillTextField(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
+    val requester = remember { BringIntoViewRequester() }
+    val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
     TextField(
         value = value,
         onValueChange = onValueChange,
         placeholder = { Text(placeholder) },
         singleLine = true,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         shape = CircleShape,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -430,6 +450,14 @@ private fun PillTextField(
             unfocusedIndicatorColor = Color.Transparent
         ),
         modifier = modifier
+            .bringIntoViewRequester(requester)
+            .onFocusEvent { focus ->
+                // Con el teclado abierto el campo quedaba tapado: se espera a que termine de subir y se trae a la vista
+                if (focus.isFocused) scope.launch {
+                    delay(300)
+                    requester.bringIntoView()
+                }
+            }
     )
 }
 
@@ -467,10 +495,9 @@ private fun AccountPage(
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(AccountType.entries) { type ->
-                FilterChip(
+                MinicashFilterChip(
                     selected = state.accountType == type,
                     onClick = { onAccountTypeChange(type) },
-                    shape = CircleShape,
                     label = { Text(type.displayName) }
                 )
             }
@@ -532,7 +559,7 @@ private fun AccountPage(
                                     containerColor = if (isBackspace) {
                                         MaterialTheme.colorScheme.errorContainer
                                     } else {
-                                        MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.7f)
+                                        MaterialTheme.colorScheme.screenBackground.copy(alpha = 0.7f)
                                     },
                                     contentColor = if (isBackspace) {
                                         MaterialTheme.colorScheme.onErrorContainer

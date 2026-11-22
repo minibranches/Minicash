@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
+import com.uramos.minicash.ui.components.evaluateMathExpression
+import com.uramos.minicash.ui.components.processKeypadPress
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
@@ -112,83 +116,9 @@ import com.uramos.minicash.ui.utils.toCurrencyFormat
 import java.util.Locale
 import kotlin.math.roundToLong
 
-private fun evaluateMathExpression(expression: String): Double {
-    if (expression.isBlank()) return 0.0
-    val clean = expression.replace('×', '*').replace('÷', '/').replace(',', '.').trim()
-    return runCatching {
-        val tokenRegex = Regex("(\\d+(?:\\.\\d+)?|[+\\-*\\/])")
-        val tokens = tokenRegex.findAll(clean).map { it.value }.toList()
-        if (tokens.isEmpty()) return@runCatching 0.0
-
-        var total = tokens[0].toDoubleOrNull() ?: 0.0
-        var i = 1
-        while (i < tokens.size - 1) {
-            val op = tokens[i]
-            val nextVal = tokens[i + 1].toDoubleOrNull()
-            if (nextVal != null) {
-                when (op) {
-                    "+" -> total += nextVal
-                    "-" -> total -= nextVal
-                    "*" -> total *= nextVal
-                    "/" -> if (nextVal != 0.0) total /= nextVal
-                }
-                i += 2
-            } else {
-                i += 1
-            }
-        }
-        if (total.isNaN() || total.isInfinite()) 0.0 else total
-    }.getOrDefault(0.0)
-}
-
 private fun onKeypadPressHandler(currentExpr: String, key: String): Pair<String, Double> {
-    val newExpr = when (key) {
-        "⌫" -> {
-            if (currentExpr.endsWith(" ")) {
-                currentExpr.trimEnd().dropLast(1).trimEnd()
-            } else if (currentExpr.isNotEmpty()) {
-                currentExpr.dropLast(1)
-            } else {
-                ""
-            }
-        }
-        "C" -> ""
-        "+", "-", "×", "÷" -> {
-            val trimmed = currentExpr.trim()
-            if (trimmed.isEmpty()) {
-                ""
-            } else {
-                val lastChar = trimmed.last().toString()
-                if (lastChar in listOf("+", "-", "×", "÷")) {
-                    trimmed.dropLast(1).trim() + " $key "
-                } else {
-                    "$trimmed $key "
-                }
-            }
-        }
-        "." -> {
-            val tokens = currentExpr.split(" ")
-            val lastToken = tokens.lastOrNull() ?: ""
-            if (lastToken.contains(".")) {
-                currentExpr
-            } else if (lastToken.isEmpty() || lastToken in listOf("+", "-", "×", "÷")) {
-                if (currentExpr.endsWith(" ")) "${currentExpr}0." else "${currentExpr} 0."
-            } else {
-                "$currentExpr."
-            }
-        }
-        else -> {
-            if (currentExpr == "0" && key != "0") {
-                key
-            } else if (currentExpr == "0" && key == "0") {
-                "0"
-            } else {
-                currentExpr + key
-            }
-        }
-    }
-    val calc = evaluateMathExpression(newExpr)
-    return Pair(newExpr, calc)
+    val newExpr = processKeypadPress(currentExpr, key)
+    return Pair(newExpr, evaluateMathExpression(newExpr))
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -211,6 +141,7 @@ fun EditTransactionSheet(
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     var showNumpad by remember { mutableStateOf(true) }
 
     val conceptFocusRequester = remember { FocusRequester() }
@@ -280,8 +211,8 @@ fun EditTransactionSheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -337,22 +268,30 @@ fun EditTransactionSheet(
                             )
                         }
                     }
-
-                    if (onDeleteTransaction != null) {
-                        MinicashIconButton(onClick = {
-                            haptics.heavyOrDelete()
-                            onDeleteTransaction(transaction)
-                            onDismiss()
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Eliminar movimiento",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    }
                 }
             }
+
+            // Selector Segmentado: Gasto, Ingreso, Transferencia
+            MinicashSegmentedChoice(
+                options = listOf(TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
+                isSelected = { type == it },
+                onSelect = { itemType ->
+                    haptics.click()
+                    type = itemType
+                    if (itemType == TransactionType.TRANSFER) {
+                        selectedCategoryId = null
+                        if (selectedDestinationAccountId == null) {
+                            selectedDestinationAccountId = accounts.firstOrNull { it.id != selectedAccountId }?.id
+                        }
+                    } else {
+                        selectedDestinationAccountId = null
+                        if (selectedCategoryId == null || categories.none { it.id == selectedCategoryId && it.type == itemType }) {
+                            selectedCategoryId = categories.firstOrNull { it.type == itemType }?.id
+                        }
+                    }
+                },
+                label = { it.displayName }
+            )
 
             // Cifra del Importe Destacada
             val amountColor = when (type) {
@@ -392,34 +331,12 @@ fun EditTransactionSheet(
                     )
                     Text(
                         text = if (rawAmount == 0L) rawAmount.toCurrencyFormat() else "$amountPrefix${rawAmount.toCurrencyFormat()}",
-                        style = MaterialTheme.typography.displayMedium,
+                        style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum"),
                         fontWeight = FontWeight.Bold,
                         color = if (rawAmount == 0L) MinicashThemeExtensions.financialColors.neutral else amountColor
                     )
                 }
             }
-
-            // Selector Segmentado: Gasto, Ingreso, Transferencia
-            MinicashSegmentedChoice(
-                options = listOf(TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
-                isSelected = { type == it },
-                onSelect = { itemType ->
-                    haptics.click()
-                    type = itemType
-                    if (itemType == TransactionType.TRANSFER) {
-                        selectedCategoryId = null
-                        if (selectedDestinationAccountId == null) {
-                            selectedDestinationAccountId = accounts.firstOrNull { it.id != selectedAccountId }?.id
-                        }
-                    } else {
-                        selectedDestinationAccountId = null
-                        if (selectedCategoryId == null || categories.none { it.id == selectedCategoryId && it.type == itemType }) {
-                            selectedCategoryId = categories.firstOrNull { it.type == itemType }?.id
-                        }
-                    }
-                },
-                label = { it.displayName }
-            )
 
             // Campos de Texto para Concepto y Notas (Ocultos en Transferencia)
             AnimatedVisibility(visible = !isTransfer) {
@@ -860,16 +777,15 @@ fun EditTransactionSheet(
                         if (onDeleteTransaction != null) {
                             MinicashOutlinedButton(
                                 onClick = {
-                                    haptics.heavyOrDelete()
-                                    onDeleteTransaction(transaction)
-                                    onDismiss()
+                                    haptics.tick()
+                                    showDeleteConfirm = true
                                 },
                                 colors = ButtonDefaults.outlinedButtonColors(
                                     contentColor = MaterialTheme.colorScheme.error
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(min = 44.dp)
+                                    .heightIn(min = 48.dp)
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
@@ -889,8 +805,33 @@ fun EditTransactionSheet(
         }
     }
 
+    if (showDeleteConfirm && onDeleteTransaction != null) {
+        MinicashAlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("¿Eliminar movimiento?") },
+            text = { Text("Se quitará el movimiento y el saldo de la cuenta se ajusta. Podrás deshacerlo unos segundos.") },
+            confirmButton = {
+                MinicashFilledButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        haptics.heavyOrDelete()
+                        onDeleteTransaction(transaction)
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) { Text("Eliminar") }
+            },
+            dismissButton = {
+                MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = normalizeLocalToUtcMillis(selectedDateMillis))
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {

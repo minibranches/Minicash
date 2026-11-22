@@ -21,7 +21,6 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import com.uramos.minicash.data.preferences.ThemeMode
@@ -97,7 +96,8 @@ private val DarkColorScheme = darkColorScheme(
     surfaceContainerLow = SurfaceContainerLowDark,
     surfaceContainer = SurfaceContainerDark,
     surfaceContainerHigh = SurfaceContainerHighDark,
-    surfaceContainerHighest = SurfaceContainerHighestDark
+    surfaceContainerHighest = SurfaceContainerHighestDark,
+    surfaceBright = SurfaceBrightDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -127,7 +127,8 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerLow = SurfaceContainerLowLight,
     surfaceContainer = SurfaceContainerLight,
     surfaceContainerHigh = SurfaceContainerHighLight,
-    surfaceContainerHighest = SurfaceContainerHighestLight
+    surfaceContainerHighest = SurfaceContainerHighestLight,
+    surfaceBright = SurfaceBrightLight
 )
 
 /**
@@ -138,13 +139,14 @@ private fun tintDynamicDarkSurfaces(scheme: ColorScheme): ColorScheme {
     fun tint(base: Color, ratio: Float) =
         com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(scheme.primary, base, ratio)
     return scheme.copy(
-        background = tint(scheme.background, 0.10f),
-        surface = tint(scheme.surface, 0.10f),
-        surfaceContainerLowest = tint(scheme.surfaceContainerLowest, 0.08f),
-        surfaceContainerLow = tint(scheme.surfaceContainerLow, 0.12f),
-        surfaceContainer = tint(scheme.surfaceContainer, 0.14f),
-        surfaceContainerHigh = tint(scheme.surfaceContainerHigh, 0.17f),
-        surfaceContainerHighest = tint(scheme.surfaceContainerHighest, 0.20f)
+        background = tint(scheme.background, 0.04f),
+        surface = tint(scheme.surface, 0.04f),
+        surfaceContainerLowest = tint(scheme.surfaceContainerLowest, 0.03f),
+        surfaceContainerLow = tint(scheme.surfaceContainerLow, 0.05f),
+        surfaceContainer = tint(scheme.surfaceContainer, 0.06f),
+        surfaceContainerHigh = tint(scheme.surfaceContainerHigh, 0.08f),
+        surfaceContainerHighest = tint(scheme.surfaceContainerHighest, 0.10f),
+        surfaceBright = tint(scheme.surfaceBright, 0.12f)
     )
 }
 
@@ -249,6 +251,7 @@ fun MinicashTheme(
             val surfaceNorm = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, DarkColorScheme.surfaceContainer, ratio = 0.06f)
             val surfaceHigh = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, DarkColorScheme.surfaceContainerHigh, ratio = 0.08f)
             val surfaceHighest = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, DarkColorScheme.surfaceContainerHighest, ratio = 0.10f)
+            val surfaceBright = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, DarkColorScheme.surfaceBright, ratio = 0.12f)
             val outlineVar = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, DarkColorScheme.outlineVariant, ratio = 0.20f)
 
             DarkColorScheme.copy(
@@ -266,6 +269,7 @@ fun MinicashTheme(
                 surfaceContainer = surfaceNorm,
                 surfaceContainerHigh = surfaceHigh,
                 surfaceContainerHighest = surfaceHighest,
+                surfaceBright = surfaceBright,
                 outlineVariant = outlineVar
             )
         }
@@ -274,9 +278,10 @@ fun MinicashTheme(
             val secondaryContainer = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color.White, ratio = 0.16f)
             val surfaceLowest = Color.White
             val surfaceLow = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color(0xFFF7F8F9), ratio = 0.08f)
-            val surfaceNorm = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color(0xFFF1F3F5), ratio = 0.12f)
+            val surfaceNorm = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color(0xFFF1F3F5), ratio = 0.05f)
             val surfaceHigh = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color(0xFFE9ECF0), ratio = 0.16f)
             val surfaceHighest = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color(0xFFDFE3E8), ratio = 0.20f)
+            val surfaceBright = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, Color.White, ratio = 0.03f)
             val outlineVar = com.uramos.minicash.ui.utils.MinicashColorUtils.tintedContainerColor(customAccentColor, LightColorScheme.outlineVariant, ratio = 0.18f)
 
             LightColorScheme.copy(
@@ -296,6 +301,7 @@ fun MinicashTheme(
                 surfaceContainer = surfaceNorm,
                 surfaceContainerHigh = surfaceHigh,
                 surfaceContainerHighest = surfaceHighest,
+                surfaceBright = surfaceBright,
                 outlineVariant = outlineVar
             )
         }
@@ -307,10 +313,11 @@ fun MinicashTheme(
                 surface = Color.Black,
                 background = Color.Black,
                 surfaceContainerLowest = Color.Black,
-                surfaceContainerLow = Color.Black,
-                surfaceContainer = Color(0xFF0F0F0F),
-                surfaceContainerHigh = Color(0xFF1A1A1A),
-                surfaceContainerHighest = Color(0xFF262626)
+                surfaceContainerLow = Color(0xFF111111),
+                surfaceContainer = Color(0xFF1C1C1C),
+                surfaceContainerHigh = Color(0xFF2A2A2A),
+                surfaceContainerHighest = Color(0xFF383838),
+                surfaceBright = Color(0xFF303030)
             )
         } else {
             scheme
@@ -348,14 +355,20 @@ fun MinicashTheme(
     }
 }
 
-/** Color del marco que rodea al panel de contenido: más oscuro que el panel en modo oscuro, un gris suave en modo claro. */
-@Composable
-@ReadOnlyComposable
-fun minicashFrameColor(): Color {
-    val scheme = androidx.compose.material3.MaterialTheme.colorScheme
-    return if (scheme.surface.luminance() > 0.5f) {
-        scheme.surfaceContainer
-    } else {
-        lerp(scheme.surfaceContainerLowest, Color.Black, 0.55f)
-    }
-}
+/**
+ * Jerarquía de superficies: el fondo de las pantallas es el gris tonal ([screenBackground]) y las tarjetas, filas y
+ * hojas son más claras ([cardSurface], [sheetBackground]); las pistas de pestañas, selectores y chips van un tono
+ * por encima del fondo ([trackSurface]).
+ */
+private val ColorScheme.isLight: Boolean get() = surface.luminance() > 0.5f
+
+/** Fondo de pantalla: gris tonal en claro y la superficie base en oscuro (mucho más oscuro que las tarjetas). */
+val ColorScheme.screenBackground: Color get() = if (isLight) surfaceContainer else surface
+/** Tarjetas y filas: más claras que el fondo en ambos temas. */
+val ColorScheme.cardSurface: Color get() = if (isLight) surfaceBright else surfaceContainer
+val ColorScheme.sheetBackground: Color get() = cardSurface
+/** Pistas de pestañas, selectores y chips: un nivel por encima de las tarjetas. */
+val ColorScheme.trackSurface: Color get() = surfaceContainerHigh
+
+/** Diálogos: claros como las tarjetas en claro y un nivel por encima de ellas en oscuro. */
+val ColorScheme.dialogSurface: Color get() = if (isLight) surfaceBright else surfaceContainerHigh

@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.cardSurface
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.Card
@@ -34,8 +35,8 @@ fun MinicashCard(
     }
 
     val resolvedColor = containerColor ?: when (level) {
-        CardTonalLevel.LOW -> MaterialTheme.colorScheme.surfaceContainerLow
-        CardTonalLevel.DEFAULT -> MaterialTheme.colorScheme.surfaceContainer
+        CardTonalLevel.LOW -> MaterialTheme.colorScheme.cardSurface
+        CardTonalLevel.DEFAULT -> MaterialTheme.colorScheme.surfaceContainerLow
         CardTonalLevel.HIGH -> MaterialTheme.colorScheme.surfaceContainerHigh
     }
 

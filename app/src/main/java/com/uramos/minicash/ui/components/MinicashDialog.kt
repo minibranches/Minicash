@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.dialogSurface
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
@@ -45,7 +46,7 @@ fun MinicashAlertDialog(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
     shape: Shape = MinicashShapes.Hero,
-    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHigh
+    containerColor: Color = MaterialTheme.colorScheme.dialogSurface
 ) {
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     val fadeSpec = minicashEffectsSpec<Float>()

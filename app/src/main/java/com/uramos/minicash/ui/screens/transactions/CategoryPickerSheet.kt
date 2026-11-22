@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.MinicashIconButton
 import com.uramos.minicash.ui.components.MinicashTextButton
 import androidx.compose.foundation.layout.Arrangement
@@ -73,8 +75,8 @@ fun CategoryPickerSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier

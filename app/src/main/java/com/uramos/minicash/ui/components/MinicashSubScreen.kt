@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.screenBackground
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Settings
@@ -100,8 +103,8 @@ fun MinicashSectionNote(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun MinicashOptionGroup(content: @Composable () -> Unit) {
     Surface(
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MinicashShapes.Card,
+        color = MaterialTheme.colorScheme.cardSurface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) { content() }
@@ -129,11 +132,7 @@ fun MinicashOptionRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Surface(shape = CircleShape, color = iconContainer, modifier = Modifier.size(40.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
-                }
-            }
+            ScallopedIcon(icon = icon, size = 40.dp, container = iconContainer, tint = iconTint)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -186,7 +185,7 @@ fun Modifier.fadingTopEdge(state: LazyGridState, height: Dp = SCRIM_HEIGHT): Mod
 
 @Composable
 private fun Modifier.headerScrim(height: Dp, progress: () -> Float): Modifier {
-    val color = MaterialTheme.colorScheme.surfaceContainerLowest
+    val color = MaterialTheme.colorScheme.screenBackground
     return drawWithContent {
         drawContent()
         val strength = progress()
@@ -244,20 +243,27 @@ fun SettingsGearButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** Botón de Reportes de las barras superiores de las pestañas: mismo tamaño y círculo tonal que el engrane. */
+/** Botón de acción de las barras superiores de las pestañas: círculo tonal de 40 dp con zona táctil de 48 dp. */
 @Composable
-fun ReportsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TabActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     MinicashIconButton(onClick = onClick, modifier = modifier.padding(end = 4.dp).size(48.dp)) {
         Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.size(40.dp)) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Outlined.BarChart,
-                    contentDescription = "Reportes",
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                Icon(imageVector = icon, contentDescription = contentDescription, tint = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
+}
+
+/** Botón de Reportes de las barras superiores de las pestañas. */
+@Composable
+fun ReportsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    TabActionButton(Icons.Outlined.BarChart, "Reportes", onClick, modifier)
 }
 
 /** Reportes y Ajustes, juntos arriba a la derecha de todas las pestañas. */

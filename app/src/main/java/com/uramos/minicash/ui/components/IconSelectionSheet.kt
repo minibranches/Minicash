@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -157,9 +159,9 @@ fun IconSelectionSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier

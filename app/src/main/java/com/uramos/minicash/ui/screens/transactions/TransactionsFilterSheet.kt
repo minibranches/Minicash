@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.MinicashFilterChip
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashSegmentedChoice
 import com.uramos.minicash.ui.components.MinicashTextButton
@@ -61,8 +63,8 @@ fun TransactionsFilterSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -122,7 +124,7 @@ fun TransactionsFilterSheet(
                         null -> "Todos"
                         TransactionType.EXPENSE -> "Gasto"
                         TransactionType.INCOME -> "Ingreso"
-                        TransactionType.TRANSFER -> "Transfer."
+                        TransactionType.TRANSFER -> "Transferencia"
                     }
                 }
             )
@@ -144,7 +146,7 @@ fun TransactionsFilterSheet(
                 ) {
                     item {
                         val isSelected = selectedAccountId == null
-                        FilterChip(
+                        MinicashFilterChip(
                             selected = isSelected,
                             onClick = {
                                 haptics.tick()
@@ -153,14 +155,7 @@ fun TransactionsFilterSheet(
                             label = { Text("Todas las cuentas") },
                             leadingIcon = if (isSelected) {
                                 { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                            } else null,
-                            shape = CircleShape,
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
-                        )
+                            } else null)
                     }
                     items(accounts, key = { it.id }) { account ->
                         val isSelected = selectedAccountId == account.id
@@ -171,7 +166,7 @@ fun TransactionsFilterSheet(
                                 null
                             }
                         }
-                        FilterChip(
+                        MinicashFilterChip(
                             selected = isSelected,
                             onClick = {
                                 haptics.tick()
@@ -191,14 +186,7 @@ fun TransactionsFilterSheet(
                                             )
                                     )
                                 }
-                            },
-                            shape = CircleShape,
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
-                        )
+                            })
                     }
                 }
             }

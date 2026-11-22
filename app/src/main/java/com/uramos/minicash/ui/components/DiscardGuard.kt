@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.dialogSurface
+import com.uramos.minicash.ui.theme.MinicashShapes
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
@@ -99,8 +101,8 @@ fun DiscardChangesDialog(guard: DiscardGuard) {
         dismissButton = {
             MinicashTextButton(onClick = { guard.showConfirm = false }) { Text("Seguir editando") }
         },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        shape = MinicashShapes.Hero,
+        containerColor = MaterialTheme.colorScheme.dialogSurface
     )
 }
 

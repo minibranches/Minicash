@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -83,7 +85,7 @@ fun AccountsManagementScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Cuentas",
@@ -139,7 +141,7 @@ fun AccountsManagementScreen(
                     .fillMaxSize()
                     .padding(paddingValues.withoutTop())
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
-                contentPadding = PaddingValues(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp).plusTop(paddingValues.calculateTopPadding()),
+                contentPadding = PaddingValues(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp).plusTop(paddingValues.calculateTopPadding()),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 item {

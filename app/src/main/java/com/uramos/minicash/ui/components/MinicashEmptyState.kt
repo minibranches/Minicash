@@ -51,20 +51,7 @@ fun MinicashEmptyState(
         verticalArrangement = Arrangement.Center
     ) {
         // Avatar tonal circular único
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            modifier = Modifier.size(64.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
+        ScallopedIcon(icon = icon, size = 72.dp)
         Spacer(modifier = Modifier.height(spacing.medium))
         Text(
             text = title,

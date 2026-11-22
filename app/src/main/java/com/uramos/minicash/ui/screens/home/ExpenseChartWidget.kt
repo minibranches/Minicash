@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.trackSurface
+import com.uramos.minicash.ui.theme.cardSurface
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import com.uramos.minicash.ui.utils.getIconVectorByName
@@ -57,9 +60,9 @@ fun TwoFacedStatsChartWidget(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
+        shape = MinicashShapes.Card,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.cardSurface
         )
     ) {
         Box {
@@ -321,7 +324,7 @@ fun ChartMonthSelector(
     }
     Surface(
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.trackSurface,
         modifier = modifier.fillMaxWidth()
     ) {
         com.uramos.minicash.ui.components.WithoutMinTouchTarget {

@@ -1,5 +1,13 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
+import com.uramos.minicash.ui.theme.sheetBackground
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.LaunchedEffect
@@ -124,9 +132,8 @@ fun AddTransactionSheet(
     val isPrefilled = remember {
         state.concept.isNotBlank() || state.amountExpression.isNotBlank() || state.calculatedAmount > 0.0
     }
-    var step by remember(initialType) {
-        mutableIntStateOf(if (initialType != null || isPrefilled) 1 else 0)
-    }
+    // El tipo de movimiento se elige dentro del formulario (selector segmentado), ya no en un paso previo
+    var step by remember(initialType) { mutableIntStateOf(1) }
 
     val handleDismiss = {
         viewModel.resetForm()
@@ -142,14 +149,6 @@ fun AddTransactionSheet(
     val conceptFocusRequester = remember { FocusRequester() }
     val noteFocusRequester = remember { FocusRequester() }
     var isSuppressingKeyboard by remember { mutableStateOf(false) }
-
-    LaunchedEffect(step, state.type) {
-        if (step == 1 && state.type != TransactionType.TRANSFER && state.concept.isBlank()) {
-            delay(120)
-            conceptFocusRequester.requestFocus()
-            keyboardController?.show()
-        }
-    }
 
     LaunchedEffect(isSuppressingKeyboard) {
         if (isSuppressingKeyboard) {
@@ -200,14 +199,18 @@ fun AddTransactionSheet(
         state.concept.isNotBlank()
     }
 
-    val initialFormSnapshot = remember { Triple(state.concept, state.amountExpression, state.note) }
-    val guard = rememberDiscardGuard(isDirty = Triple(state.concept, state.amountExpression, state.note) != initialFormSnapshot, onDismiss = handleDismiss)
+    val currentSnapshot = listOf(
+        state.concept, state.amountExpression, state.note,
+        state.selectedCategoryId, state.selectedAccountId, state.selectedDestinationAccountId, state.selectedDate
+    )
+    val initialFormSnapshot = remember { currentSnapshot }
+    val guard = rememberDiscardGuard(isDirty = currentSnapshot != initialFormSnapshot, onDismiss = handleDismiss)
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         contentWindowInsets = { BottomSheetDefaults.windowInsets },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         AnimatedContent(
             targetState = step,
@@ -220,170 +223,7 @@ fun AddTransactionSheet(
             },
             label = "step_transition"
         ) { currentStep ->
-            if (currentStep == 0) {
-                // PASO 1: Selector modal de tipo de movimiento (Gasto | Ingreso | Transferencia)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = spacing.standard)
-                        .padding(bottom = spacing.large),
-                    verticalArrangement = Arrangement.spacedBy(spacing.medium),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Selecciona el tipo de movimiento",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(spacing.extraSmall))
-
-                    val financialColors = MinicashThemeExtensions.financialColors
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        // Tarjeta Gasto
-                        Surface(
-                            onClick = {
-                                haptics.click()
-                                viewModel.onTypeChange(TransactionType.EXPENSE)
-                                step = 1
-                            },
-                            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 4.dp, bottomEnd = 4.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(spacing.standard),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(spacing.medium)
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = financialColors.expenseContainer,
-                                    modifier = Modifier.size(44.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.TrendingDown,
-                                            contentDescription = null,
-                                            tint = financialColors.expense,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                                Column {
-                                    Text(
-                                        text = "Gasto",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Registrar un egreso o compra",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        // Tarjeta Ingreso
-                        Surface(
-                            onClick = {
-                                haptics.click()
-                                viewModel.onTypeChange(TransactionType.INCOME)
-                                step = 1
-                            },
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(spacing.standard),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(spacing.medium)
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = financialColors.incomeContainer,
-                                    modifier = Modifier.size(44.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                            contentDescription = null,
-                                            tint = financialColors.income,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                                Column {
-                                    Text(
-                                        text = "Ingreso",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Registrar depósito o cobro",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        // Tarjeta Transferencia
-                        Surface(
-                            onClick = {
-                                haptics.click()
-                                viewModel.onTypeChange(TransactionType.TRANSFER)
-                                step = 1
-                            },
-                            shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp, bottomStart = 24.dp, bottomEnd = 24.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(spacing.standard),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(spacing.medium)
-                            ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = financialColors.transfer.copy(alpha = 0.2f),
-                                    modifier = Modifier.size(44.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Default.SwapHoriz,
-                                            contentDescription = null,
-                                            tint = financialColors.transfer,
-                                            modifier = Modifier.size(24.dp)
-                                        )
-                                    }
-                                }
-                                Column {
-                                    Text(
-                                        text = "Transferencia",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = "Traspaso entre tus cuentas",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
+            run {
                 // PASO 2: Formulario de Registro
                 Column(
                     modifier = Modifier
@@ -442,6 +282,22 @@ fun AddTransactionSheet(
                         }
                     }
 
+                    MinicashSegmentedChoice(
+                        options = listOf(TransactionType.EXPENSE, TransactionType.INCOME, TransactionType.TRANSFER),
+                        isSelected = { state.type == it },
+                        onSelect = {
+                            haptics.tick()
+                            viewModel.onTypeChange(it)
+                        },
+                        label = {
+                            when (it) {
+                                TransactionType.EXPENSE -> "Gasto"
+                                TransactionType.INCOME -> "Ingreso"
+                                TransactionType.TRANSFER -> "Transferencia"
+                            }
+                        }
+                    )
+
                     // Cifra del Importe Destacada
                     val amountColor = when (state.type) {
                         TransactionType.INCOME -> MinicashThemeExtensions.financialColors.income
@@ -480,7 +336,7 @@ fun AddTransactionSheet(
                             )
                             Text(
                                 text = if (rawAmount == 0L) rawAmount.toCurrencyFormat() else "$amountPrefix${rawAmount.toCurrencyFormat()}",
-                                style = MaterialTheme.typography.displayMedium,
+                                style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum"),
                                 fontWeight = FontWeight.Bold,
                                 color = if (rawAmount == 0L) MinicashThemeExtensions.financialColors.neutral else amountColor
                             )
@@ -924,7 +780,25 @@ fun AddTransactionSheet(
 
                             Spacer(modifier = Modifier.height(spacing.extraSmall))
 
-                            // Botón Añadir al Pie Ancho Completo
+                            // Si no se puede guardar, se dice qué falta
+                            if (!canSave) {
+                                val missing = when {
+                                    rawAmount <= 0L -> "Ingresa un monto"
+                                    isTransfer -> "Elige dos cuentas distintas"
+                                    state.concept.isBlank() -> "Falta el concepto"
+                                    selectedCategory == null -> "Falta elegir la categoría"
+                                    else -> "Falta elegir la cuenta"
+                                }
+                                Text(
+                                    text = missing,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+
+                            // Botón Guardar al pie, ancho completo
                             MinicashFilledButton(
                                 onClick = {
                                     haptics.confirm()
@@ -940,7 +814,7 @@ fun AddTransactionSheet(
                                     .heightIn(min = 48.dp)
                             ) {
                                 Text(
-                                    text = "Añadir",
+                                    text = "Guardar",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -993,7 +867,8 @@ fun AddTransactionSheet(
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = state.selectedDate
+            // El selector trabaja en medianoche UTC: sin convertir, de noche mostraba (y guardaba) el día siguiente
+            initialSelectedDateMillis = normalizeLocalToUtcMillis(state.selectedDate)
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -1050,8 +925,26 @@ fun KeypadButton(
     // pointerInput(Unit) no se reinicia: sin esto el clic usaría la expresión de la primera composición.
     val currentOnClick by rememberUpdatedState(onClick)
 
+    val spoken = when (text) {
+        "⌫" -> "Borrar"
+        "." -> "Punto decimal"
+        "+" -> "Más"
+        "-" -> "Menos"
+        "×" -> "Por"
+        "÷" -> "Entre"
+        else -> text
+    }
     Box(
         modifier = modifier
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                contentDescription = spoken
+                onClick(label = spoken) {
+                    haptics.tick()
+                    currentOnClick()
+                    true
+                }
+            }
             .graphicsLayer {
                 scaleX = scale.value
                 scaleY = scale.value
@@ -1129,8 +1022,8 @@ fun CategorySelectionSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -1310,8 +1203,8 @@ fun AccountSelectionSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier

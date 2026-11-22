@@ -12,11 +12,13 @@ Minicash estructura la profundidad visual mediante los niveles tonales de superf
 
 | Nivel de Superficie | Rol en Minicash | Token de Forma Asociado |
 | :--- | :--- | :--- |
-| **`surfaceContainerLowest`** | Fondo general de pantalla y Scaffolds | Plano (`0.dp`) |
-| **`surfaceContainerLow`** | Agrupadores grandes, fondos de sección y Donut Chart | `MinicashShapes.ContainerLarge` (24.dp) |
-| **`surfaceContainer`** | Tarjetas de contenido estándar y modales (`BottomSheet`) | `MinicashShapes.Card` (20.dp) |
-| **`surfaceContainerHigh`** | Filas interactivas, chips inactivos y cápsula flotante | `MinicashShapes.Card` (20.dp) o `Pill` |
-| **`surfaceContainerHighest`** | Destacados, botones activos y micro-badges | `Pill` o `MinicashShapes.Hero` (28.dp) |
+| **`surfaceContainer`** (claro) / **`surface`** (oscuro) | Fondo de pantalla y Scaffolds (`screenBackground`): plano, de borde a borde, sin marco ni esquinas redondeadas arriba | Plano (`0.dp`) |
+| **`surfaceBright`** (claro) / **`surfaceContainer`** (oscuro) | Tarjetas, filas y hojas inferiores (`cardSurface`, `sheetBackground`): siempre más claras que el fondo | `MinicashShapes.Card` (28.dp), `SheetTop` (32.dp) |
+| **`surfaceContainerLow`** | Tarjeta de segundo nivel (`CardTonalLevel.DEFAULT`) | `MinicashShapes.Card` (28.dp) |
+| **`surfaceContainerHigh`** | Pistas de pestañas, selectores y chips (`trackSurface`), cápsula flotante, botones circulares y diálogos | `Pill`, `MinicashShapes.Hero` (32.dp) |
+| **`surfaceContainerHighest`** | Avance, destacados y micro-badges | `Pill` |
+
+> **Fondo y tarjetas:** la jerarquía se invirtió respecto a la 1.1: el fondo es el gris tonal y las tarjetas son las claras (como en las referencias de Pixel). En **claro** el fondo es `surfaceContainer` y las tarjetas `surfaceBright`; en **oscuro** el fondo es `surface` (mucho más oscuro) y las tarjetas `surfaceContainer`, de modo que las pistas, chips y elementos elevados (`surfaceContainerHigh` y `Highest`) siguen viéndose sobre ellas. `surfaceContainerLowest` ya no se usa como fondo. En AMOLED el fondo es negro y las tarjetas `#0F0F0F`. Los tintes del esquema dinámico oscuro son bajos (0.04 a 0.10) para no aclarar el fondo. Se accede con `MaterialTheme.colorScheme.screenBackground`, `.cardSurface`, `.sheetBackground`, `.trackSurface` y `.dialogSurface` (`ui/theme/Theme.kt`).
 
 > **Regla de neutros teñidos:** los neutros de superficie no deben ser grises puros monocromáticos; deben conservar un matiz sutil derivado de la tonalidad primaria esmeralda.
 
@@ -32,20 +34,21 @@ Para erradicar colisiones con los nombres estándar de Material 3 (donde `medium
 | **`Element`** | `RoundedCornerShape(8.dp)` | Botones de calculadora y selectores compactos |
 | **`Input`** | `RoundedCornerShape(12.dp)` | Campos de texto y áreas de entrada de datos |
 | **`Compact`** | `RoundedCornerShape(16.dp)` | Chips y tarjetas pequeñas de baja jerarquía |
-| **`Card`** | `RoundedCornerShape(20.dp)` | Tarjetas interactivas estándar de listas y transacciones |
-| **`ContainerLarge`** | `RoundedCornerShape(24.dp)` | Agrupadores principales, tarjetas de resumen y Donut |
-| **`Hero`** | `RoundedCornerShape(28.dp)` | Contenedores principales de cabecera en Inicio |
+| **`Card`** | `RoundedCornerShape(28.dp)` | Tarjetas interactivas estándar de listas y transacciones |
+| **`ContainerLarge`** | `RoundedCornerShape(28.dp)` | Agrupadores principales, tarjetas de resumen y Donut |
+| **`Hero`** | `RoundedCornerShape(32.dp)` | Contenedores principales de cabecera, diálogos |
+| **`SheetTop`** | `RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)` | Hojas inferiores |
 | **`Pill`** | `CircleShape` | Botones de acción, chips de filtro y pestañas activas |
-| **`FABShape`** | `RoundedCornerShape(18.dp)` | Botón de acción flotante (FAB) cuadrado suavizado (ver sección 11) |
+| **`FABShape`** | `RoundedCornerShape(18.dp)` | Botón de acción flotante (FAB) cuadrado suavizado |
 
 ### Contraste de formas y listas segmentadas
 
 - **Contraste de formas:** el elemento protagonista de una pantalla se distingue tanto por escala como por una curvatura más pronunciada respecto a las tarjetas secundarias.
 - **Listas segmentadas:** todo grupo continuo (movimientos por día, partidas presupuestales, cuentas, créditos) utiliza el helper `rememberSegmentedShape`:
-  - **Elemento único (`count == 1`):** 4 esquinas con `ContainerLarge` (24.dp).
-  - **Primer elemento (`index == 0`):** esquinas superiores `ContainerLarge` (24.dp), inferiores `Sharp` (4.dp).
+  - **Elemento único (`count == 1`):** 4 esquinas con `ContainerLarge` (28.dp).
+  - **Primer elemento (`index == 0`):** esquinas superiores `ContainerLarge` (28.dp), inferiores `Sharp` (4.dp).
   - **Elementos intermedios:** las 4 esquinas `Sharp` (4.dp).
-  - **Último elemento (`index == count - 1`):** esquinas superiores `Sharp` (4.dp), inferiores `ContainerLarge` (24.dp).
+  - **Último elemento (`index == count - 1`):** esquinas superiores `Sharp` (4.dp), inferiores `ContainerLarge` (28.dp).
   - **Reinicio por grupo:** cada grupo (por ejemplo, cada fecha en Historial) reinicia el conteo de forma independiente.
 - **Morphing:** al interactuar o seleccionar botones principales, la forma anima sus radios mediante resortes gobernados por el esquema de movimiento. Prohibido hardcodear radios fijos en composables.
 
@@ -63,12 +66,13 @@ Se accede a la escala de espaciado centralizada mediante `MinicashThemeExtension
 | **`medium`** | `12.dp` | Margen interno de tarjetas y separación entre ítems |
 | **`standard`** | `16.dp` | Padding general de pantalla y márgenes laterales |
 | **`large`** | `20.dp` | Separación entre secciones medianas |
+| **`screen`** | `20.dp` | Margen lateral de las pantallas |
 | **`extraLarge`** | `24.dp` | Separación entre bloques principales |
 | **`hero`** | `32.dp` | Separación entre secciones mayores de una pantalla |
 
 ### Ritmo y espacio en pantalla
 
-- Margen lateral: `spacing.standard` (16.dp).
+- Margen lateral: `spacing.screen` (20.dp).
 - Separación entre secciones mayores: `spacing.hero` (32.dp).
 - Los títulos de sección se ubican **fuera de las tarjetas**, con el estilo "título de sección" (ver sección 8) y una separación de `spacing.medium` (12.dp) hacia su contenido.
 - El aire separa: no se usan divisores pesados ni sombras para delimitar bloques.
@@ -231,6 +235,11 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 | :--- | :--- | :--- | :--- |
 | Barra flotante con FAB | Propia desacoplada con resortes | `MainScreen` | Implementado |
 | Listas segmentadas | Helper propio `rememberSegmentedShape` | Historial, Fijos, Créditos, Cuentas | Implementado (estático) |
+| Estadio de dato (`StatPill`, `StatPillMoney`) | Propio: cifra grande, etiqueta y avance como relleno del estadio | Movimientos, Créditos, Gastos fijos, Reportes | Implementado |
+| Aviso punteado (`InsightCard`) | Propio: borde punteado y destello, solo para mensajes que la app ya muestra | Reportes (mensaje de ahorro) | Implementado |
+| Sección plegable (`CollapsibleSectionHeader`) | Propio: píldora con contador y flecha | Créditos (Liquidados) | Implementado |
+| Chip de filtro tonal (`MinicashFilterChip`) | `FilterChip` en píldora, sin borde | Movimientos y hojas de filtros, Ajustes, Onboarding | Implementado |
+| Ícono festoneado (`ScallopedIcon`) | `MaterialShapes.Cookie9Sided` | Filas de opciones, estados vacíos, avatares de movimientos | Implementado |
 | Wavy Progress Indicator | `WavyProgressIndicator` propio (Canvas) | Créditos, Fijos | Implementado (provisional) |
 | Hero de 3 tarjetas | Propio (Patrimonio, Ingresos, Gastos) | `HomeScreen` | Implementado (simétrico; ver sección 11) |
 | Donut Chart Split | Canvas propio horizontal con Top 4 | `HomeScreen` | Implementado |
@@ -243,9 +252,17 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 
 ---
 
-## 11. Decisiones Pendientes del PO
+## 10b. Modales de alta y edición
 
-Estas decisiones no se cambian sin aprobación explicita del PO:
+- **Un solo cuerpo para alta y edición de movimientos:** encabezado con título y fecha, selector de tipo siempre visible (Gasto, Ingreso, Transferencia; ya no hay un paso aparte para elegirlo), monto grande con números tabulares, concepto, selectores de categoría y cuenta, teclado numérico y botón fijo abajo.
+- **Teclado:** el concepto ya no toma el foco al abrir (el teclado del sistema no tapa el numérico ni el botón). Alta y edición usan las mismas reglas del teclado (`processKeypadPress`: máximo 2 decimales, sin ceros a la izquierda). Las teclas son botones accesibles (rol, descripción y acción de clic).
+- **Acciones:** alta usa «Guardar» y edición «Guardar cambios»; si no se puede guardar, un texto dice qué falta. Eliminar tiene un único botón, abajo, y siempre pide confirmación («¿Eliminar movimiento?»); después el aviso ofrece «Deshacer».
+- **Descartar cambios:** protege concepto, monto, nota, categoría, cuentas y fecha.
+- **Compra a meses:** al editar, «Guardar» está disponible desde cualquier paso.
+- **Etiquetas:** sentence case, sin dos puntos al final, «Transferencia» sin abreviar y plural correcto («Copiar 1 partida»).
+
+## 11. Decisiones del PO
 
 1. **Hero de Inicio:** hoy es simétrico de 3 tarjetas. Queda abierta la opción de evolucionarlo a un diseño asimétrico (una pieza grande de patrimonio y dos piezas pequeñas apiladas).
-2. **Radio del FAB:** `FABShape` está en 18.dp. Puede ajustarse a un radio mayor tras revisión visual contra la referencia.
+2. **Lenguaje visual (1.2):** se toma como referencia el estilo de las apps Pixel (fondo gris, tarjetas claras, radios de 28 a 32 dp, estadios para las cifras, íconos festoneados, chips tonales). No se incorpora nada de Liquid Glass ni efectos similares: la cápsula flotante es sólida y los diálogos solo atenúan el fondo. El desenfoque progresivo nativo del contenido (sección 6) se conserva.
+3. **FAB:** `FABShape` queda en 18.dp (cuadrado suavizado).

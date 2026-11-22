@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -40,7 +43,7 @@ fun ModulesSettingsScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Mostrar módulos",
@@ -58,7 +61,7 @@ fun ModulesSettingsScreen(
         ) {
             MinicashCard(
                 level = CardTonalLevel.LOW,
-                shape = RoundedCornerShape(20.dp),
+                shape = MinicashShapes.Card,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(

@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashFilterChip
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashOutlinedButton
 import com.uramos.minicash.ui.components.MinicashTonalButton
@@ -54,7 +56,7 @@ fun ColorAndIconSelector(
     val color = MinicashColorUtils.parseHexColor(selectedColorHex, MaterialTheme.colorScheme.primary)
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Color distintivo:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
         MinicashColorPicker(
             selectedColorHex = selectedColorHex,
             onColorSelected = onColorSelected
@@ -62,7 +64,7 @@ fun ColorAndIconSelector(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        Text("Icono:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text("Icono", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
         Surface(
             onClick = { showIconSheet = true },
             shape = CircleShape,
@@ -136,9 +138,9 @@ fun EditAccountSheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -175,15 +177,13 @@ fun EditAccountSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Tipo de cuenta:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text("Tipo de cuenta", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AccountType.entries) { type ->
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = selectedType == type,
                         onClick = { selectedType = type },
-                        label = { Text(type.displayName) },
-                        shape = CircleShape
-                    )
+                        label = { Text(type.displayName) })
                 }
             }
 
@@ -266,9 +266,9 @@ fun EditCategorySheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -346,9 +346,9 @@ fun AddAccountSheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -385,15 +385,13 @@ fun AddAccountSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Tipo de cuenta:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text("Tipo de cuenta", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AccountType.entries) { type ->
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = selectedType == type,
                         onClick = { selectedType = type },
-                        label = { Text(type.displayName) },
-                        shape = CircleShape
-                    )
+                        label = { Text(type.displayName) })
                 }
             }
 
@@ -450,9 +448,9 @@ fun AddCategorySheet(
     DiscardChangesDialog(guard)
         GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -478,20 +476,16 @@ fun AddCategorySheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Aplica para:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text("Aplica para", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                MinicashFilterChip(
                     selected = selectedType == TransactionType.EXPENSE,
                     onClick = { selectedType = TransactionType.EXPENSE },
-                    label = { Text("Gasto") },
-                    shape = CircleShape
-                )
-                FilterChip(
+                    label = { Text("Gasto") })
+                MinicashFilterChip(
                     selected = selectedType == TransactionType.INCOME,
                     onClick = { selectedType = TransactionType.INCOME },
-                    label = { Text("Ingreso") },
-                    shape = CircleShape
-                )
+                    label = { Text("Ingreso") })
             }
 
             ColorAndIconSelector(

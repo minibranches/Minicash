@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import androidx.compose.material3.ToggleButtonDefaults
@@ -220,9 +221,9 @@ fun CreditFormSheet(
 
     GuardedModalBottomSheet(
         guard = guard,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -314,6 +315,30 @@ fun CreditFormSheet(
                 }
             }
 
+            val save: () -> Unit = {
+                                if (canSubmit) {
+                                    haptics.confirm()
+                                    keyboard?.hide()
+                                    focusManager.clearFocus()
+                                    onSubmit(
+                                        CreditFormValues(
+                                            article = article.trim(),
+                                            institution = selectedInstitution.trim(),
+                                            responsible = responsible.trim(),
+                                            totalInstallments = totalInstallments,
+                                            paidInstallments = paidInstallments ?: 0,
+                                            monthlyAmount = calculatedMonthlyAmount,
+                                            originalPrice = originalPriceStr.toDoubleOrNull() ?: 0.0,
+                                            purchaseDate = purchaseDate,
+                                            paymentDay = paymentDay?.takeIf { paymentOverride && !paymentInvalid },
+                                            reminderDaysBefore = effectiveReminder.takeIf { it != NO_REMINDER },
+                                            paymentOverride = paymentOverride
+                                        )
+                                    )
+                                    onDismiss()
+                                }
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -337,6 +362,14 @@ fun CreditFormSheet(
                             enabled = step1Valid,
                             modifier = Modifier.weight(1f)
                         )
+                        if (isEdit) {
+                            MinicashButton(
+                                text = "Guardar",
+                                onClick = { save() },
+                                enabled = canSubmit,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                     1 -> {
                         MinicashTonalButton(
@@ -355,6 +388,14 @@ fun CreditFormSheet(
                             enabled = step2Valid,
                             modifier = Modifier.weight(1f)
                         )
+                        if (isEdit) {
+                            MinicashButton(
+                                text = "Guardar",
+                                onClick = { save() },
+                                enabled = canSubmit,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                     else -> {
                         if (isEdit && onDelete != null) {
@@ -377,27 +418,7 @@ fun CreditFormSheet(
                         MinicashButton(
                             text = if (isEdit) "Guardar" else "Guardar compra",
                             onClick = {
-                                if (canSubmit) {
-                                    haptics.confirm()
-                                    keyboard?.hide()
-                                    focusManager.clearFocus()
-                                    onSubmit(
-                                        CreditFormValues(
-                                            article = article.trim(),
-                                            institution = selectedInstitution.trim(),
-                                            responsible = responsible.trim(),
-                                            totalInstallments = totalInstallments,
-                                            paidInstallments = paidInstallments ?: 0,
-                                            monthlyAmount = calculatedMonthlyAmount,
-                                            originalPrice = originalPriceStr.toDoubleOrNull() ?: 0.0,
-                                            purchaseDate = purchaseDate,
-                                            paymentDay = paymentDay?.takeIf { paymentOverride && !paymentInvalid },
-                                            reminderDaysBefore = effectiveReminder.takeIf { it != NO_REMINDER },
-                                            paymentOverride = paymentOverride
-                                        )
-                                    )
-                                    onDismiss()
-                                }
+                                save()
                             },
                             enabled = canSubmit,
                             modifier = Modifier.weight(1.4f)
@@ -668,7 +689,7 @@ private fun PlanStep(
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
+            shape = MinicashShapes.Card,
             color = MaterialTheme.colorScheme.surfaceContainerHigh
         ) {
             Row(
@@ -693,7 +714,7 @@ private fun PlanStep(
                 }
                 Text(
                     text = monthlyCents.toCurrencyFormat(),
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"),
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary
                 )

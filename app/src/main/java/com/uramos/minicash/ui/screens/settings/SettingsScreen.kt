@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashTimePickerDialog
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -132,7 +136,7 @@ fun SettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(title = "Ajustes", onBack = onBackClick, scrollBehavior = scrollBehavior)
         }
@@ -145,8 +149,8 @@ fun SettingsScreen(
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
-                start = spacing.standard,
-                end = spacing.standard,
+                start = spacing.screen,
+                end = spacing.screen,
                 bottom = 120.dp
             ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -219,7 +223,7 @@ fun SettingsScreen(
 
                 SettingsSection(
                     icon = Icons.Default.Tune,
-                    iconTint = MaterialTheme.colorScheme.secondary,
+                    iconTint = MaterialTheme.colorScheme.primary,
                     title = "Preferencias",
                     subtitle = "Personaliza la apariencia, módulos y notificaciones"
                 ) {
@@ -281,7 +285,7 @@ fun SettingsScreen(
                 val dataCount = if (appLockEnabled) 5 else 4
                 SettingsSection(
                     icon = Icons.Default.CloudDone,
-                    iconTint = MaterialTheme.colorScheme.tertiary,
+                    iconTint = MaterialTheme.colorScheme.primary,
                     title = "Datos y sistema",
                     subtitle = "Copias de seguridad e información de la app"
                 ) {
@@ -445,110 +449,41 @@ fun SettingsScreen(
     }
 
     if (showTimePickerDialog) {
-        val timePickerState = rememberTimePickerState(
+        MinicashTimePickerDialog(
+            title = "Hora del recordatorio",
             initialHour = state.dailyReminderHour,
             initialMinute = state.dailyReminderMinute,
-            is24Hour = true
-        )
-        MinicashAlertDialog(
-            onDismissRequest = { showTimePickerDialog = false },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        viewModel.setDailyReminderTime(context, timePickerState.hour, timePickerState.minute)
-                        showTimePickerDialog = false
-                    },
-                ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold)
-                }
+            onConfirm = { hour, minute ->
+                viewModel.setDailyReminderTime(context, hour, minute)
+                showTimePickerDialog = false
             },
-            dismissButton = {
-                MinicashTextButton(onClick = { showTimePickerDialog = false }) {
-                    Text("Cancelar")
-                }
-            },
-            title = { Text("Hora del recordatorio", fontWeight = FontWeight.Bold) },
-            text = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TimePicker(state = timePickerState)
-                }
-            },
-            shape = MinicashShapes.Hero
+            onDismiss = { showTimePickerDialog = false }
         )
     }
 
     if (showCreditTimePickerDialog) {
-        val timePickerState = rememberTimePickerState(
+        MinicashTimePickerDialog(
+            title = "Hora de los avisos de pago",
             initialHour = creditReminderTime.first,
             initialMinute = creditReminderTime.second,
-            is24Hour = true
-        )
-        MinicashAlertDialog(
-            onDismissRequest = { showCreditTimePickerDialog = false },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        viewModel.setCreditReminderTime(context, timePickerState.hour, timePickerState.minute)
-                        showCreditTimePickerDialog = false
-                    },
-                ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold)
-                }
+            onConfirm = { hour, minute ->
+                viewModel.setCreditReminderTime(context, hour, minute)
+                showCreditTimePickerDialog = false
             },
-            dismissButton = {
-                MinicashTextButton(onClick = { showCreditTimePickerDialog = false }) {
-                    Text("Cancelar")
-                }
-            },
-            title = { Text("Hora de los avisos de pago", fontWeight = FontWeight.Bold) },
-            text = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TimePicker(state = timePickerState)
-                }
-            },
-            shape = MinicashShapes.Hero
+            onDismiss = { showCreditTimePickerDialog = false }
         )
     }
 
     if (showAutoBackupTimePickerDialog) {
-        val timePickerState = rememberTimePickerState(
+        MinicashTimePickerDialog(
+            title = "Hora de respaldo",
             initialHour = state.autoBackupHour,
             initialMinute = state.autoBackupMinute,
-            is24Hour = true
-        )
-        MinicashAlertDialog(
-            onDismissRequest = { showAutoBackupTimePickerDialog = false },
-            confirmButton = {
-                MinicashFilledButton(
-                    onClick = {
-                        viewModel.setAutoBackupTime(context, timePickerState.hour, timePickerState.minute)
-                        showAutoBackupTimePickerDialog = false
-                    },
-                ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold)
-                }
+            onConfirm = { hour, minute ->
+                viewModel.setAutoBackupTime(context, hour, minute)
+                showAutoBackupTimePickerDialog = false
             },
-            dismissButton = {
-                MinicashTextButton(onClick = { showAutoBackupTimePickerDialog = false }) {
-                    Text("Cancelar")
-                }
-            },
-            title = { Text("Hora de respaldo", fontWeight = FontWeight.Bold) },
-            text = {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TimePicker(state = timePickerState)
-                }
-            },
-            shape = MinicashShapes.Hero
+            onDismiss = { showAutoBackupTimePickerDialog = false }
         )
     }
 }
@@ -606,7 +541,7 @@ private fun SettingsSegmentedItem(
     Surface(
         onClick = onClick,
         shape = rememberSegmentedShape(index = index, count = count),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.cardSurface,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -760,9 +695,9 @@ fun InstitutionsManagementSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -876,7 +811,7 @@ fun InstitutionsManagementSheet(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Color distintivo:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     MinicashColorPicker(
                         selectedColorHex = selectedColorHex,
                         onColorSelected = { selectedColorHex = it }

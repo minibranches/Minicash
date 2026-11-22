@@ -1,5 +1,12 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.components.LocalBottomBlurBand
+import com.uramos.minicash.data.local.entities.TransactionType
+import androidx.compose.material.icons.filled.ArrowDropDown
+import com.uramos.minicash.ui.components.MinicashFilterChip
+import com.uramos.minicash.ui.components.StatPillMoney
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.underHeaderBlur
 import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import com.uramos.minicash.ui.utils.FLOATING_NAV_CLEARANCE
@@ -146,7 +153,7 @@ fun TransactionsScreen(
 
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
     ) { paddingValues ->
@@ -173,11 +180,11 @@ fun TransactionsScreen(
 
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
                 contentPadding = PaddingValues(
                     top = headerHeight + spacing.small,
-                    start = spacing.standard,
-                    end = spacing.standard,
+                    start = spacing.screen,
+                    end = spacing.screen,
                     bottom = 120.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(spacing.medium)
@@ -198,58 +205,43 @@ fun TransactionsScreen(
                         }
                     )
                 }
-                // 2. Tarjeta de Balance Mensual
+                // 2. Resumen del mes: el balance primero; ingresos y gastos debajo, y al tocarlos filtran por tipo
                 item(key = "header_monthly_summary") {
-                    MinicashCard(
-                        level = CardTonalLevel.LOW,
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(spacing.standard),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Ingresos",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                MoneyTextView(
-                                    amountCents = state.summary.totalIncome,
-                                    type = MoneyDisplayType.INCOME,
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-
-                            Column {
-                                Text(
-                                    text = "Gastos",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                MoneyTextView(
-                                    amountCents = state.summary.totalExpense,
-                                    type = MoneyDisplayType.EXPENSE,
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "Balance",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                MoneyTextView(
-                                    amountCents = state.summary.netBalance,
-                                    type = if (state.summary.netBalance >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
+                    val income = state.summary.totalIncome
+                    val expense = state.summary.totalExpense
+                    val total = income + expense
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
+                        StatPillMoney(
+                            label = "Balance",
+                            amountCents = state.summary.netBalance,
+                            type = if (state.summary.netBalance >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
+                            StatPillMoney(
+                                label = "Ingresos",
+                                amountCents = income,
+                                type = MoneyDisplayType.INCOME,
+                                progress = if (total > 0) income.toFloat() / total else null,
+                                selected = state.selectedTypeFilter == TransactionType.INCOME,
+                                onClick = {
+                                    haptics.tick()
+                                    viewModel.onTypeFilterSelect(TransactionType.INCOME)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatPillMoney(
+                                label = "Gastos",
+                                amountCents = expense,
+                                type = MoneyDisplayType.EXPENSE,
+                                progress = if (total > 0) expense.toFloat() / total else null,
+                                selected = state.selectedTypeFilter == TransactionType.EXPENSE,
+                                onClick = {
+                                    haptics.tick()
+                                    viewModel.onTypeFilterSelect(TransactionType.EXPENSE)
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }
@@ -364,7 +356,7 @@ fun TransactionsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = "${selectedIds.size} seleccionados",
+                                text = if (selectedIds.size == 1) "1 seleccionado" else "${selectedIds.size} seleccionados",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

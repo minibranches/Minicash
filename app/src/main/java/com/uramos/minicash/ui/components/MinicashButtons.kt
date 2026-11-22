@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.text.TextAutoSize
@@ -110,9 +111,11 @@ private fun RowScope.ChoiceButton(
             last -> ButtonGroupDefaults.connectedTrailingButtonShapes()
             else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
         },
-        modifier = Modifier.weight(1f)
+        // Las etiquetas largas (p. ej. «Transferencia») reciben más ancho para no cortarse junto a otras cortas
+        contentPadding = PaddingValues(horizontal = 8.dp),
+        modifier = Modifier.weight(if (text.length > 10) 1.5f else 1f)
     ) {
-        Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis, autoSize = buttonTextAutoSize)
     }
 }
 

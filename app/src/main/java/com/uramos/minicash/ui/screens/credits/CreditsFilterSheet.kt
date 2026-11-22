@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.MinicashFilterChip
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
 import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
@@ -44,8 +47,8 @@ fun CreditsFilterSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -96,7 +99,7 @@ fun CreditsFilterSheet(
             ) {
                 item {
                     val isSelected = selectedResponsible == null
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -105,18 +108,11 @@ fun CreditsFilterSheet(
                         label = { Text("Todos") },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
                 items(responsibles) { resp ->
                     val isSelected = selectedResponsible == resp
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -125,14 +121,7 @@ fun CreditsFilterSheet(
                         label = { Text(resp) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
             }
 
@@ -152,7 +141,7 @@ fun CreditsFilterSheet(
             ) {
                 item {
                     val isSelected = selectedInstitution == null
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -161,18 +150,11 @@ fun CreditsFilterSheet(
                         label = { Text("Todas") },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
                 items(institutions) { inst ->
                     val isSelected = selectedInstitution == inst
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -181,14 +163,7 @@ fun CreditsFilterSheet(
                         label = { Text(inst) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
             }
 
@@ -208,7 +183,7 @@ fun CreditsFilterSheet(
             ) {
                 item {
                     val isSelected = selectedMonth == null
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -217,18 +192,11 @@ fun CreditsFilterSheet(
                         label = { Text("Todos") },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
                 items(months) { month ->
                     val isSelected = selectedMonth == month
-                    FilterChip(
+                    MinicashFilterChip(
                         selected = isSelected,
                         onClick = {
                             haptics.tick()
@@ -237,14 +205,7 @@ fun CreditsFilterSheet(
                         label = { Text(monthKeyLabel(month)) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                        } else null,
-                        shape = CircleShape,
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = isSelected,
-                            borderColor = MaterialTheme.colorScheme.outlineVariant
-                        )
-                    )
+                        } else null)
                 }
             }
             Spacer(modifier = Modifier.height(spacing.small))

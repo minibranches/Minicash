@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.utils
 
+import com.uramos.minicash.ui.theme.cardSurface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -15,7 +16,7 @@ import kotlin.math.pow
  */
 @Composable
 fun Color.asIconTint(containerAlpha: Float = 0.2f): Color {
-    val surface = MaterialTheme.colorScheme.surfaceContainerLow
+    val surface = MaterialTheme.colorScheme.cardSurface
     return remember(this, surface, containerAlpha) {
         Color(AccessibleColor.iconTint(this.toArgb(), surface.toArgb(), containerAlpha))
     }

@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.account
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
 import com.uramos.minicash.ui.components.withoutTop
 import com.uramos.minicash.ui.components.underHeaderBlur
@@ -116,7 +120,7 @@ fun AccountDetailScreen(
     val listState = rememberLazyListState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = account?.name ?: "Cuenta",
@@ -137,8 +141,8 @@ fun AccountDetailScreen(
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
             contentPadding = PaddingValues(
                 top = spacing.small,
-                start = spacing.standard,
-                end = spacing.standard,
+                start = spacing.screen,
+                end = spacing.screen,
                 bottom = 120.dp
             ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
@@ -200,13 +204,13 @@ private fun AccountHeroCard(account: AccountEntity) {
     val accountColor = MinicashColorUtils.parseHexColor(account.colorHex, MaterialTheme.colorScheme.primary)
     val containerColor = MinicashColorUtils.tintedContainerColor(
         baseColor = accountColor,
-        surfaceColor = MaterialTheme.colorScheme.surfaceContainer,
+        surfaceColor = MaterialTheme.colorScheme.cardSurface,
         ratio = 0.18f
     )
     MinicashCard(
         level = CardTonalLevel.LOW,
         containerColor = containerColor,
-        shape = RoundedCornerShape(28.dp),
+        shape = MinicashShapes.Card,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(

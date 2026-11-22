@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +28,9 @@ fun MoneyTextView(
     modifier: Modifier = Modifier,
     style: TextStyle = MaterialTheme.typography.titleMedium,
     /** Cuenta hacia la cifra en lugar de saltar; para totales destacados, no para filas de una lista. */
-    animate: Boolean = false
+    animate: Boolean = false,
+    /** Los centavos se dibujan más pequeños que el resto de la cifra. */
+    smallCents: Boolean = true
 ) {
     val financialColors = MinicashThemeExtensions.financialColors
     val amountCents = rememberAnimatedCents(amountCents, enabled = animate)
@@ -69,10 +76,27 @@ fun MoneyTextView(
         else -> Pair("", color)
     }
 
+    val split = if (smallCents && style.fontSize.isSp) splitCurrencyCents(formattedAmount) else null
+    val shown = if (split != null) {
+        buildAnnotatedString {
+            append(prefix + split.first)
+            withStyle(SpanStyle(fontSize = (style.fontSize.value * 0.62f).sp)) { append(split.second) }
+        }
+    } else {
+        AnnotatedString("$prefix$formattedAmount")
+    }
+
     Text(
-        text = "$prefix$formattedAmount",
+        text = shown,
         color = effectiveColor,
         style = style,
         modifier = modifier
     )
+}
+
+/** Separa un monto formateado ("$1,234.50") en la parte entera y los centavos (".50"); nulo si no hay dos decimales. */
+fun splitCurrencyCents(formatted: String): Pair<String, String>? {
+    val dot = formatted.lastIndexOf('.')
+    if (dot < 0 || formatted.length - dot != 3 || !formatted.substring(dot + 1).all { it.isDigit() }) return null
+    return formatted.substring(0, dot) to formatted.substring(dot)
 }

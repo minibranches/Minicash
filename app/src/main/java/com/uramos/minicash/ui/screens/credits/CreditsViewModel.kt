@@ -23,11 +23,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-enum class CreditTab {
-    ACTIVE,
-    SETTLED
-}
-
 @Immutable
 data class CreditsSummary(
     val totalPendingDebt: Long = 0L,
@@ -37,8 +32,9 @@ data class CreditsSummary(
 
 @Immutable
 data class CreditsUiState(
-    val credits: List<CreditEntity> = emptyList(),
-    val selectedTab: CreditTab = CreditTab.ACTIVE,
+    /** Compras con mensualidades pendientes y compras ya liquidadas, ambas con los filtros aplicados. */
+    val activeCredits: List<CreditEntity> = emptyList(),
+    val settledCredits: List<CreditEntity> = emptyList(),
     val activeCount: Int = 0,
     val settledCount: Int = 0,
     val summary: CreditsSummary = CreditsSummary(),
@@ -68,7 +64,6 @@ class CreditsViewModel(
     val institutions: StateFlow<List<CreditInstitutionEntity>> = creditInstitutionDao.getAllInstitutions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val selectedTab = MutableStateFlow(CreditTab.ACTIVE)
     private val selectedResponsible = MutableStateFlow<String?>(null)
     private val selectedInstitution = MutableStateFlow<String?>(null)
     private val selectedMonth = MutableStateFlow<String?>(null)
@@ -80,9 +75,8 @@ class CreditsViewModel(
     val uiState: StateFlow<CreditsUiState> = combine(
         creditDao.getAllCredits(),
         institutions,
-        selectedTab,
         filters
-    ) { list, instList, currentTab, activeFilters ->
+    ) { list, instList, activeFilters ->
         val (respFilter, instFilter, monthFilter) = activeFilters
         val availableResponsibles = list.map { it.responsible.trim() }
             .filter { it.isNotBlank() }
@@ -113,14 +107,9 @@ class CreditsViewModel(
         }
         val monthlyCommitment = activeCredits.sumOf { it.monthlyAmount }
 
-        val displayedCredits = when (currentTab) {
-            CreditTab.ACTIVE -> activeCredits
-            CreditTab.SETTLED -> settledCredits
-        }
-
         CreditsUiState(
-            credits = displayedCredits,
-            selectedTab = currentTab,
+            activeCredits = activeCredits,
+            settledCredits = settledCredits,
             activeCount = activeCredits.size,
             settledCount = settledCredits.size,
             summary = CreditsSummary(
@@ -138,10 +127,6 @@ class CreditsViewModel(
             isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CreditsUiState(isLoading = true))
-
-    fun onSelectTab(tab: CreditTab) {
-        selectedTab.value = tab
-    }
 
     fun onSelectResponsibleFilter(responsible: String?) {
         selectedResponsible.value = responsible

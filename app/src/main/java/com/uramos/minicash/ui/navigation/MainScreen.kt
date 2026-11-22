@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.navigation
 
+import com.uramos.minicash.ui.components.LocalBottomBlurBand
+import androidx.compose.runtime.CompositionLocalProvider
+import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.minicashFastEffectsSpec
 import com.uramos.minicash.ui.theme.minicashFastSpatialSpec
 import androidx.compose.ui.platform.LocalConfiguration
@@ -31,7 +34,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import com.uramos.minicash.ui.components.bottomEdgeBlur
 import com.uramos.minicash.ui.components.WithoutMinTouchTarget
 import androidx.compose.foundation.layout.height
 import androidx.activity.compose.BackHandler
@@ -59,7 +61,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
 import com.uramos.minicash.data.preferences.NavBarStyle
-import com.uramos.minicash.ui.theme.minicashFrameColor
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -358,21 +359,22 @@ fun MainScreen(
     )
     val tabFabMenu = if (currentScreen is Screen.Home || currentScreen is Screen.Transactions) fabMenu else null
 
+    val bottomBlurBand = if (navBarStyle == NavBarStyle.FLOATING) FLOATING_BAR_BLUR_HEIGHT else 0.dp
+    CompositionLocalProvider(LocalBottomBlurBand provides bottomBlurBand) {
     Scaffold(
-        containerColor = minicashFrameColor()
+        containerColor = MaterialTheme.colorScheme.screenBackground
     ) { innerPadding ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Panel de contenido: esquinas superiores redondeadas sobre el marco oscuro
+                // Panel de contenido: fondo plano de borde a borde, sin marco ni esquinas redondeadas arriba
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                         .padding(top = innerPadding.calculateTopPadding())
-                        .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                        .background(MaterialTheme.colorScheme.screenBackground)
                         .nestedScroll(navBarScrollConnection)
                 ) {
                     HorizontalPager(
@@ -380,7 +382,6 @@ fun MainScreen(
                         beyondViewportPageCount = 1,
                         modifier = Modifier
                             .fillMaxSize()
-                            .bottomEdgeBlur(FLOATING_BAR_BLUR_HEIGHT, enabled = navBarStyle == NavBarStyle.FLOATING)
                             .graphicsLayer {
                                 val fade = tabFade.value
                                 alpha = fade
@@ -459,7 +460,7 @@ fun MainScreen(
                     routeTransition.AnimatedContent(
                         modifier = Modifier
                             .fillMaxSize()
-                            .then(if (betweenRoutes) Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest) else Modifier),
+                            .then(if (betweenRoutes) Modifier.background(MaterialTheme.colorScheme.screenBackground) else Modifier),
                         transitionSpec = {
                             if (animationsRestricted) {
                                 fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
@@ -554,7 +555,7 @@ fun MainScreen(
                                 val capsuleWidth = fixedWidth + collapsedWidth * collapsedCount
 
                                 Surface(
-                                    shape = RoundedCornerShape(28.dp),
+                                    shape = MinicashShapes.Card,
                                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     tonalElevation = 4.dp,
                                     shadowElevation = 0.dp,
@@ -689,6 +690,7 @@ fun MainScreen(
             }
         }
     }
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -699,10 +701,10 @@ private fun IntegratedNavBar(
     onItemClick: (Int, Screen) -> Unit
 ) {
     // El marco oscuro queda solo arriba: la barra es una hoja con esquinas superiores curvas sobre el fondo de la página
-    Box(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest)) {
+    Box(modifier = Modifier.background(MaterialTheme.colorScheme.screenBackground)) {
     ShortNavigationBar(
-        modifier = Modifier.clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.clip(MinicashShapes.SheetTop),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
     ) {
         screens.forEachIndexed { index, screen ->
@@ -819,7 +821,7 @@ private fun ContextualFab(
 
             FloatingActionButton(
                 onClick = { if (menu != null) onExpandedChange(!expanded) else onClick() },
-                shape = CircleShape,
+                shape = MinicashShapes.FABShape,
                 interactionSource = fabInteractionSource,
                 containerColor = containerColor,
                 contentColor = contentColor,

@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.runtime.compositionLocalOf
+import com.uramos.minicash.ui.theme.screenBackground
 import android.os.Build
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,6 +22,13 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+/**
+ * Alto de la franja inferior que desenfocan las listas de las pestañas (la cápsula flotante pasa por encima).
+ * Es 0 con la barra integrada. Como el desenfoque va en la lista y no en la página, los avisos («Deshacer») y la
+ * barra de selección múltiple quedan por encima, sin desenfocar.
+ */
+val LocalBottomBlurBand = compositionLocalOf { 0.dp }
 
 /** Aire entre el borde superior del panel y la barra superior de cada pantalla. */
 val TopBarBreathing = 24.dp
@@ -46,7 +55,7 @@ fun BlurHeaderScaffold(
     SubcomposeLayout(modifier = modifier) { constraints ->
         val loose = Constraints(maxWidth = constraints.maxWidth, maxHeight = constraints.maxHeight)
         val headerPlaceables = subcompose("header") {
-            Box(Modifier.padding(top = TopBarBreathing, bottom = HEADER_BOTTOM_AIR)) { header() }
+            Box(Modifier.padding(start = 4.dp, end = 4.dp, top = TopBarBreathing, bottom = HEADER_BOTTOM_AIR)) { header() }
         }.map { it.measure(loose) }
         val headerHeightPx = headerPlaceables.maxOfOrNull { it.height } ?: 0
         val contentPlaceables = subcompose("content") { content(headerHeightPx.toDp()) }
@@ -70,7 +79,7 @@ fun Modifier.underHeaderBlur(headerHeight: Dp, bottomBand: Dp = 0.dp): Modifier 
     val native = nativeProgressiveBlur
     val band = headerHeight + HEADER_FADE
     if (!native) {
-        val tint = MaterialTheme.colorScheme.surfaceContainerLowest
+        val tint = MaterialTheme.colorScheme.screenBackground
         return this.drawWithContent {
             drawContent()
             drawRect(
@@ -103,23 +112,6 @@ fun Modifier.underHeaderBlur(headerHeight: Dp, bottomBand: Dp = 0.dp): Modifier 
             listOf(BlurStop(0f, 0.dp), BlurStop(1f, 0.dp))
         }
         blurRadiusSpec = BlurRadiusSpec.verticalGradient(stops)
-        edgeTreatment = BlurredEdgeTreatment.Rectangle
-    }
-}
-
-/**
- * Desenfoque progresivo fijo al pie del contenido, detrás de la cápsula flotante: nulo hasta [band] del borde
- * inferior y máximo en el borde. Sin efecto antes de Android 13 o si [enabled] es falso.
- */
-@Composable
-fun Modifier.bottomEdgeBlur(band: Dp, enabled: Boolean = true, radius: Dp = 14.dp): Modifier {
-    if (!enabled || !nativeProgressiveBlur) return this
-    return blur {
-        val height = size.height
-        val fraction = if (height > 0.dp) (1f - band / height).coerceIn(0.01f, 0.98f) else 0.98f
-        blurRadiusSpec = BlurRadiusSpec.verticalGradient(
-            listOf(BlurStop(0f, 0.dp), BlurStop(fraction, 0.dp), BlurStop(1f, radius))
-        )
         edgeTreatment = BlurredEdgeTreatment.Rectangle
     }
 }

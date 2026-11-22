@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.components.LocalBottomBlurBand
+import com.uramos.minicash.ui.components.CollapsibleSectionHeader
+import com.uramos.minicash.ui.components.StatPillMoney
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.cardSurface
+import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.underHeaderBlur
 import com.uramos.minicash.ui.components.BlurHeaderScaffold
 import androidx.compose.ui.graphics.Color
@@ -108,6 +114,7 @@ fun CreditsScreen(
 
     var showAddDialog by remember { mutableStateOf(false) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var settledExpanded by rememberSaveable { mutableStateOf(false) }
     var creditToPay by remember { mutableStateOf<CreditEntity?>(null) }
     var creditToEdit by remember { mutableStateOf<CreditEntity?>(null) }
     var creditToDelete by remember { mutableStateOf<CreditEntity?>(null) }
@@ -161,7 +168,7 @@ fun CreditsScreen(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         contentWindowInsets = WindowInsets(0.dp),
     ) { paddingValues ->
         BlurHeaderScaffold(
@@ -177,66 +184,26 @@ fun CreditsScreen(
                                     title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                                     actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
                                 )
-            // Resumen compacto de deuda
-                    Surface(
-                        shape = MinicashShapes.ContainerLarge,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = spacing.standard, vertical = spacing.small)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = spacing.standard, vertical = spacing.medium),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Deuda pendiente",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                MoneyTextView(
-                                    amountCents = state.summary.totalPendingDebt,
-                                    type = MoneyDisplayType.NEUTRAL,
-                                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold)
-                                )
-                            }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(
-                                    text = "Mensual · ${state.summary.activeCreditsCount} activos",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                MoneyTextView(
-                                    amountCents = state.summary.monthlyPaymentCommitment,
-                                    type = MoneyDisplayType.NEUTRAL,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                )
-                            }
-                        }
-                    }
-        
-                    // Selector de Pestañas con Botón de Filtro
+            // Resumen en estadios y botón de filtros, en la misma fila
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = spacing.standard, vertical = spacing.extraSmall),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                            .padding(horizontal = spacing.screen, vertical = spacing.small),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.small),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        MinicashPillTabs(
-                            labels = listOf("Activos (${state.activeCount})", "Liquidados (${state.settledCount})"),
-                            selectedIndex = if (state.selectedTab == CreditTab.ACTIVE) 0 else 1,
-                            onSelect = { index ->
-                                haptics.tick()
-                                viewModel.onSelectTab(if (index == 0) CreditTab.ACTIVE else CreditTab.SETTLED)
-                            },
+                        StatPillMoney(
+                            label = "Deuda pendiente",
+                            amountCents = state.summary.totalPendingDebt,
+                            type = MoneyDisplayType.NEUTRAL,
                             modifier = Modifier.weight(1f)
                         )
-        
+                        StatPillMoney(
+                            label = "Mensual · ${state.summary.activeCreditsCount} activos",
+                            amountCents = state.summary.monthlyPaymentCommitment,
+                            type = MoneyDisplayType.NEUTRAL,
+                            modifier = Modifier.weight(1f)
+                        )
                         Box {
                             MinicashTonalIconButton(
                                 onClick = {
@@ -250,7 +217,7 @@ fun CreditsScreen(
                                     contentDescription = "Filtros de créditos"
                                 )
                             }
-        
+
                             if (state.hasActiveFilters) {
                                 Box(
                                     modifier = Modifier
@@ -261,36 +228,59 @@ fun CreditsScreen(
                             }
                         }
                     }
-        
                 }
             }
         ) { headerHeight ->
-            // Lista de Créditos
-            if (state.credits.isEmpty()) {
-                val emptyTitle = if (state.selectedTab == CreditTab.ACTIVE) "Sin créditos activos" else "Sin compras liquidadas"
-                val emptySubtitle = if (state.selectedTab == CreditTab.ACTIVE) {
-                    "No tienes compras a meses pendientes de pago."
-                } else {
-                    "Las compras a meses que vayas completando aparecerán aquí."
+            // Una sola lista: activos arriba y, plegados al final, los liquidados
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
+                contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp),
+                verticalArrangement = Arrangement.spacedBy(0.dp)
+            ) {
+                if (state.activeCredits.isEmpty()) {
+                    item(key = "credits_empty") {
+                        MinicashEmptyState(
+                            icon = Icons.Default.CreditCard,
+                            title = "Sin créditos activos",
+                            subtitle = "No tienes compras a meses pendientes de pago.",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = spacing.large)
+                        )
+                    }
                 }
-                MinicashEmptyState(
-                    icon = Icons.Default.CreditCard,
-                    title = emptyTitle,
-                    subtitle = emptySubtitle,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = headerHeight + spacing.hero)
-                )
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight),
-                    contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 16.dp, end = 16.dp, bottom = 120.dp),
-                    verticalArrangement = Arrangement.spacedBy(0.dp)
-                ) {
-                    itemsIndexed(state.credits, key = { _, item -> item.id }) { index, credit ->
-                        val itemShape = rememberSegmentedShape(index = index, count = state.credits.size)
-                        Box(modifier = Modifier.animateItem().listEntrance(entranceTracker, credit.id, index)) {
+                itemsIndexed(state.activeCredits, key = { _, item -> item.id }) { index, credit ->
+                    val itemShape = rememberSegmentedShape(index = index, count = state.activeCredits.size)
+                    Box(modifier = Modifier.animateItem().listEntrance(entranceTracker, credit.id, index)) {
+                        CreditItemCard(
+                            credit = credit,
+                            institutions = institutions,
+                            shape = itemShape,
+                            onPayClick = { creditToPay = credit },
+                            onEdit = { creditToEdit = credit },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp)
+                        )
+                    }
+                }
+                if (state.settledCredits.isNotEmpty()) {
+                    item(key = "credits_settled_header") {
+                        CollapsibleSectionHeader(
+                            title = "Liquidados",
+                            count = state.settledCredits.size,
+                            expanded = settledExpanded,
+                            onToggle = {
+                                haptics.tick()
+                                settledExpanded = !settledExpanded
+                            },
+                            modifier = Modifier.padding(top = spacing.large, bottom = spacing.small)
+                        )
+                    }
+                    if (settledExpanded) {
+                        itemsIndexed(state.settledCredits, key = { _, item -> item.id }) { index, credit ->
+                            val itemShape = rememberSegmentedShape(index = index, count = state.settledCredits.size)
                             CreditItemCard(
                                 credit = credit,
                                 institutions = institutions,
@@ -300,6 +290,7 @@ fun CreditsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
+                                    .animateItem()
                             )
                         }
                     }
@@ -513,7 +504,7 @@ fun CreditItemCard(
 
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = shape ?: RoundedCornerShape(20.dp),
+        shape = shape ?: MinicashShapes.Card,
         onClick = onEdit,
         modifier = modifier.fillMaxWidth()
     ) {
@@ -696,9 +687,9 @@ fun InstitutionSelectionSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.sheetBackground,
         dragHandle = { BottomSheetDefaults.DragHandle() },
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+        shape = MinicashShapes.SheetTop
     ) {
         Column(
             modifier = Modifier
@@ -816,7 +807,7 @@ fun InstitutionSelectionSheet(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Color distintivo:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     MinicashColorPicker(
                         selectedColorHex = selectedColorHex,
                         onColorSelected = { selectedColorHex = it }

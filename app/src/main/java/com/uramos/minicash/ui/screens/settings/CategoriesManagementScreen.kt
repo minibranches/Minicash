@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.screenBackground
+import com.uramos.minicash.ui.theme.MinicashShapes
+import com.uramos.minicash.ui.theme.sheetBackground
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
@@ -79,7 +82,7 @@ fun CategoriesManagementScreen(
     val fadeListState = rememberLazyListState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
                 title = "Categorías",
@@ -169,8 +172,8 @@ fun CategoriesManagementScreen(
                     modifier = Modifier.fillMaxSize().fadingTopEdge(fadeListState),
                     contentPadding = PaddingValues(
                         top = spacing.small,
-                        start = spacing.standard,
-                        end = spacing.standard,
+                        start = spacing.screen,
+                        end = spacing.screen,
                         bottom = 120.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -347,7 +350,7 @@ fun CategoriesManagementScreen(
                     Text("Cancelar")
                 }
             },
-            shape = RoundedCornerShape(28.dp)
+            shape = MinicashShapes.Card
         )
     }
 }

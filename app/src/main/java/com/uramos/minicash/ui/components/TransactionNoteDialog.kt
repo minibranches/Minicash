@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.dialogSurface
+import com.uramos.minicash.ui.theme.MinicashShapes
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -40,7 +42,7 @@ fun TransactionNoteDialog(
                 Text("Cerrar", fontWeight = FontWeight.Bold)
             }
         },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        shape = MinicashShapes.Card,
+        containerColor = MaterialTheme.colorScheme.dialogSurface
     )
 }
