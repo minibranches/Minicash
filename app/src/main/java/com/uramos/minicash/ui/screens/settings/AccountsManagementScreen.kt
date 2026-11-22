@@ -140,7 +140,7 @@ fun AccountsManagementScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = lazyListState),
                 contentPadding = PaddingValues(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp).plusTop(paddingValues.calculateTopPadding()),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {

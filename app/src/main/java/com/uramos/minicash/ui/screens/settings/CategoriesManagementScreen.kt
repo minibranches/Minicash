@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -198,7 +199,7 @@ fun CategoriesManagementScreen(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateItem()
+                                .then(minicashAnimateItem())
                         ) {
                             Row(
                                 modifier = Modifier

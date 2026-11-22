@@ -96,7 +96,13 @@ Todas las animaciones de estado y transición se rigen por el esquema de movimie
 - **Expresivo (resortes):** selección y cambio de destino en la barra flotante, morphing al pulsar botones principales, aparición del FAB contextual y asentamiento del odómetro numérico.
 - **Estándar (sin rebote):** flujos utilitarios de entrada de texto, teclado numérico, scroll continuo y validaciones de formulario.
 - **Seguimiento del dedo:** las transformaciones reactivas al arrastre directo (como el deslizamiento del `HorizontalPager` con `graphicsLayer`) siguen el movimiento del dedo; la física de resorte solo interviene al soltar, para el asentamiento final.
-- **Prohibición:** no se usan curvas `tween` ni interpoladores lineales arbitrarios salvo justificación técnica documentada.
+- **Prohibición:** no se usan curvas `tween` ni interpoladores lineales arbitrarios salvo justificación técnica documentada. Las únicas excepciones son las animaciones infinitas (onda del progreso y rotación del onboarding).
+- **Un solo juego de entradas y salidas (`theme/MotionSpecs.kt`):** todo `AnimatedVisibility` o `AnimatedContent` nuevo usa `MinicashTransitions` (`enterVisible`/`exitVisible`, `enterFloat`/`exitFloat`, `contentSwap`) y toda lista usa `minicashAnimateItem()` en lugar de `animateItem()`. Salen del `motionScheme` (espacial para tamaño y desplazamiento, efectos para opacidad) y respetan `LocalAnimationRestriction`. Los conteos usan `minicashSlowEffectsSpec` (amortiguamiento 1.0: no rebasan el valor final).
+- **Encabezado plegable (`BlurHeaderScaffold`):** la barra con el título se esconde al bajar por la lista y reaparece de inmediato al subir (comportamiento *enterAlways*); al soltar se acomoda con resorte al extremo más cercano. La fila fija (`pinned`: periodo, búsqueda y filtros, resumen) sube a ocupar su lugar. El alto completo sigue entrando al relleno de la lista, así que no hay saltos. El velo de `underHeaderBlur` sigue al alto visible (`LocalHeaderVisiblePx`).
+- **Estadios en una fila:** Balance, Ingresos y Gastos de Movimientos van en una sola fila con `StatPillMoney(compact = true)` (menos relleno, `titleMedium` y `autoSizeMin` de 11 sp en `MoneyTextView`). Los centavos usan tamaño relativo (`0.62.em`) para escalar junto con la cifra.
+- **Modo de rendimiento (Apariencia):** límite de frecuencia de la app (Automático, 30, 60, 120 Hz) guardado en `UserPreferences.refreshRateLimit` y aplicado a la ventana con `preferredRefreshRate` (`ui/utils/RefreshRate.kt`). 120 Hz solo se ofrece si la pantalla llega a ~120 Hz. Verificado en un Nothing Phone: 30/60/120 Hz producen 490/978/1902 cuadros en la misma prueba. No entra en las copias de seguridad (depende de la pantalla del dispositivo).
+- **Campo que crece sin desbordar:** un contenedor que recorta a un hijo más ancho (p. ej. `animateContentSize` sobre un campo de texto) hace que Compose intente traer el campo a la vista y desplace el `HorizontalPager`. Los campos que crecen se miden al ancho animado (`layout {}`), nunca recortados.
+- **Búsqueda desde el ícono y filtros en píldora:** en Movimientos la lupa se expande con resorte hacia la izquierda y se vuelve el campo de búsqueda (← cierra y limpia). `ExpandingFilterButton` es un ícono de 48 dp que, con filtros aplicados, crece a una píldora «N filtros ×» (Movimientos y Créditos).
 
 ### Reducción de movimiento y accesibilidad
 
@@ -132,12 +138,12 @@ La barra de navegación inferior opera como un overlay desacoplado, flotante y c
 - **Destino activo:** icono relleno (`selectedIcon`) + etiqueta en `labelLarge` con `FontWeight.Bold`, dentro de una píldora tonal (`secondaryContainer`). La etiqueta entra y sale con expansión horizontal y desvanecimiento.
 - **Destinos inactivos:** únicamente el icono de contorno (`unselectedIcon`), centrado en un área táctil compacta, sin etiqueta.
 - **FAB contextual:** botón cuadrado de esquinas redondeadas (`FABShape`, `56.dp × 56.dp`) a la derecha de la cápsula. Se reposiciona con resortes cuando cambia el ancho de la barra y se oculta con animación elástica en la pestaña de Ajustes. Todo el conjunto (cápsula + FAB) se mantiene centrado.
-- **Desenfoque progresivo (API nativa de Compose 1.13, Android 13 o más):** el contenido pasa por debajo de zonas fijas y se desenfoca ahí con `Modifier.blur` y `BlurRadiusSpec.verticalGradient` (`components/BlurHeaderScaffold.kt`).
-  - **Arriba:** las cuatro pestañas usan `BlurHeaderScaffold`: la barra superior y lo que deba quedar fijo (resumen, pestañas, selector de periodo) forman un encabezado que se mide primero; su alto entra al relleno de la lista, que lleva `underHeaderBlur`. Desenfoque máximo en el borde y nulo 12 dp después del encabezado, con un velo del color de fondo. Sin franja aparte: la barra es transparente.
-  - **Abajo:** `bottomEdgeBlur` en el pager, fijo detrás de la cápsula flotante (140 dp). Solo en el estilo flotante.
-  - **Aire:** `TopBarBreathing` (12 dp) sobre las barras superiores.
-  - **Antes de Android 13** no hay desenfoque progresivo: arriba queda un velo casi opaco y abajo nada. Las subpantallas (Ajustes, Reportes…) conservan el velo de color de `fadingTopEdge`.
-  - Exige `compileSdk` 37.1 (Compose UI 1.13).
+- **Zonas fijas sobre la lista (velo de color):** el contenido pasa por debajo del encabezado y de la cápsula flotante y se atenúa con un velo del color de fondo (`underHeaderBlur` en `components/BlurHeaderScaffold.kt`).
+  - **Arriba:** las cuatro pestañas usan `BlurHeaderScaffold`: la barra superior y la fila fija forman un encabezado que se mide primero; su alto entra al relleno de la lista. Velo casi opaco dentro del encabezado que se desvanece 12 dp después. Sin franja aparte: la barra es transparente.
+  - **Abajo:** velo que sube desde el borde inferior de la lista (140 dp con la cápsula flotante, 64 dp en subpantallas).
+  - **Aire:** `TopBarBreathing` sobre las barras superiores.
+  - **Desenfoque progresivo nativo apagado (1.3):** el código de `Modifier.blur` con `BlurRadiusSpec` (Compose 1.13, Android 13+) sigue en el archivo tras `PROGRESSIVE_BLUR_ENABLED = false`. Medido en un Nothing Phone a 120 Hz con el build `perf` (Movimientos, desplazamiento continuo, mediana de dos pasadas): con desenfoque, 16 ms por cuadro (≈ 60 fps), con radio de 18 dp y con 10 dp por igual; sin desenfoque, 9 ms. El costo es desenfocar una capa a pantalla completa, no el radio. Con el velo y el encabezado plegable queda en 11-12 ms. Se puede volver a probar en hardware más rápido.
+  - Compilar con `compileSdk` 37.1 sigue siendo necesario para esa API.
 - **Margen de seguridad:** toda lista con scroll aplica `contentPadding = PaddingValues(bottom = 120.dp)` para que ningún elemento quede tapado por la cápsula o el FAB.
 - **Restricción para el dev:** no envolver con `TooltipBox` ni usar `weight` dentro del `RowScope` de la barra (rompe el layout).
 
@@ -264,5 +270,5 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 ## 11. Decisiones del PO
 
 1. **Hero de Inicio:** hoy es simétrico de 3 tarjetas. Queda abierta la opción de evolucionarlo a un diseño asimétrico (una pieza grande de patrimonio y dos piezas pequeñas apiladas).
-2. **Lenguaje visual (1.2):** se toma como referencia el estilo de las apps Pixel (fondo gris, tarjetas claras, radios de 28 a 32 dp, estadios para las cifras, íconos festoneados, chips tonales). No se incorpora nada de Liquid Glass ni efectos similares: la cápsula flotante es sólida y los diálogos solo atenúan el fondo. El desenfoque progresivo nativo del contenido (sección 6) se conserva.
+2. **Lenguaje visual (1.2):** se toma como referencia el estilo de las apps Pixel (fondo gris, tarjetas claras, radios de 28 a 32 dp, estadios para las cifras, íconos festoneados, chips tonales). No se incorpora nada de Liquid Glass ni efectos similares: la cápsula flotante es sólida y los diálogos solo atenúan el fondo. El desenfoque progresivo nativo se probó y se apagó en la 1.3 por rendimiento (sección 6); queda el velo de color.
 3. **FAB:** `FABShape` queda en 18.dp (cuadrado suavizado).

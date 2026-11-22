@@ -107,11 +107,12 @@ private fun SingleDonutPage(
 ) {
     val animationProgress = remember { Animatable(0f) }
 
+    val progressSpec = com.uramos.minicash.ui.theme.minicashSlowEffectsSpec<Float>()
     LaunchedEffect(stats) {
         animationProgress.snapTo(0f)
         animationProgress.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+            animationSpec = progressSpec
         )
     }
 

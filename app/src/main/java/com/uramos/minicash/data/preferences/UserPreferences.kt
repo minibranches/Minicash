@@ -84,6 +84,7 @@ class UserPreferences(private val context: Context) {
         val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
         val APP_LOCK_TIMEOUT_MINUTES = androidx.datastore.preferences.core.intPreferencesKey("app_lock_timeout_minutes")
+        val REFRESH_RATE_LIMIT = androidx.datastore.preferences.core.intPreferencesKey("refresh_rate_limit")
     }
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { prefs ->
@@ -189,6 +190,18 @@ class UserPreferences(private val context: Context) {
     /** Minutos en segundo plano tras los cuales se vuelve a pedir el desbloqueo; 0 = cada vez. */
     val appLockTimeoutMinutes: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[APP_LOCK_TIMEOUT_MINUTES] ?: 1
+    }
+
+    /**
+     * Límite de frecuencia de actualización de la app en Hz (30, 60 o 120); 0 = automático, lo decide el sistema.
+     * Es una preferencia del dispositivo (depende de su pantalla), por eso no viaja en las copias de seguridad.
+     */
+    val refreshRateLimit: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[REFRESH_RATE_LIMIT] ?: 0
+    }
+
+    suspend fun setRefreshRateLimit(hz: Int) {
+        context.dataStore.edit { prefs -> prefs[REFRESH_RATE_LIMIT] = hz }
     }
 
     suspend fun setAppLockEnabled(enabled: Boolean) {

@@ -146,7 +146,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = listState),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.screen,

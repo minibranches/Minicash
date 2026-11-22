@@ -1,5 +1,18 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import kotlinx.coroutines.flow.first
+import kotlin.math.roundToInt
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.layout.layout
+import com.uramos.minicash.ui.theme.minicashAnimateItem
+import com.uramos.minicash.ui.theme.minicashSpatialSpec
+import com.uramos.minicash.ui.theme.minicashFastEffectsSpec
+import com.uramos.minicash.ui.components.ExpandingFilterButton
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.layout.size
+import androidx.compose.animation.animateContentSize
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import com.uramos.minicash.data.local.entities.TransactionType
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -125,6 +138,8 @@ fun TransactionsScreen(
 
     var transactionToEdit by remember { mutableStateOf<TransactionEntity?>(null) }
     var showFilterSheet by remember { mutableStateOf(false) }
+    var searchExpanded by rememberSaveable { mutableStateOf(state.searchQuery.isNotEmpty()) }
+    val filterCount = activeFilterCount(state.selectedTypeFilter, state.selectedAccountId, state.selectedCategoryIds)
 
     if (selectedIds.isNotEmpty()) {
         BackHandler {
@@ -159,6 +174,7 @@ fun TransactionsScreen(
     ) { paddingValues ->
         BlurHeaderScaffold(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
+            listState = listState,
             header = {
                 TopAppBar(
                                 windowInsets = WindowInsets(0.dp),
@@ -168,6 +184,53 @@ fun TransactionsScreen(
                                 title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                                 actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
                             )
+            },
+            pinned = {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = spacing.screen),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.small)
+                ) {
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = !searchExpanded,
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            enter = androidx.compose.animation.fadeIn(minicashEffectsSpec()),
+                            exit = androidx.compose.animation.fadeOut(minicashFastEffectsSpec())
+                        ) {
+                            Text(
+                                text = periodLabel(state.selectedMonthIndex, state.selectedYear),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(start = spacing.small)
+                            )
+                        }
+                        RecentSearchBar(
+                            query = state.searchQuery,
+                            recents = recentSearches,
+                            onQueryChange = { viewModel.onSearchQueryChange(it) },
+                            onCommit = { viewModel.commitSearch(it) },
+                            onClearRecents = { viewModel.clearRecentSearches() },
+                            isActive = isActive,
+                            isListScrolling = listState.isScrollInProgress,
+                            expanded = searchExpanded,
+                            onExpandedChange = { searchExpanded = it }
+                        )
+                    }
+                    ExpandingFilterButton(
+                        activeCount = filterCount,
+                        onClick = {
+                            haptics.tick()
+                            showFilterSheet = true
+                        },
+                        onClear = {
+                            haptics.tick()
+                            viewModel.clearFilters()
+                        },
+                        contentDescription = "Filtros de movimientos"
+                    )
+                }
             }
         ) { headerHeight ->
         Box(modifier = Modifier.fillMaxSize()) {
@@ -180,7 +243,7 @@ fun TransactionsScreen(
 
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(
                     top = headerHeight + spacing.small,
                     start = spacing.screen,
@@ -210,83 +273,40 @@ fun TransactionsScreen(
                     val income = state.summary.totalIncome
                     val expense = state.summary.totalExpense
                     val total = income + expense
-                    Column(verticalArrangement = Arrangement.spacedBy(spacing.small)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
                         StatPillMoney(
                             label = "Balance",
                             amountCents = state.summary.netBalance,
                             type = if (state.summary.netBalance >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
-                            StatPillMoney(
-                                label = "Ingresos",
-                                amountCents = income,
-                                type = MoneyDisplayType.INCOME,
-                                progress = if (total > 0) income.toFloat() / total else null,
-                                selected = state.selectedTypeFilter == TransactionType.INCOME,
-                                onClick = {
-                                    haptics.tick()
-                                    viewModel.onTypeFilterSelect(TransactionType.INCOME)
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                            StatPillMoney(
-                                label = "Gastos",
-                                amountCents = expense,
-                                type = MoneyDisplayType.EXPENSE,
-                                progress = if (total > 0) expense.toFloat() / total else null,
-                                selected = state.selectedTypeFilter == TransactionType.EXPENSE,
-                                onClick = {
-                                    haptics.tick()
-                                    viewModel.onTypeFilterSelect(TransactionType.EXPENSE)
-                                },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                // 3. Barra de Búsqueda con Botón de Filtro
-                item(key = "header_filters") {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                    ) {
-                        RecentSearchBar(
-                            query = state.searchQuery,
-                            recents = recentSearches,
-                            onQueryChange = { viewModel.onSearchQueryChange(it) },
-                            onCommit = { viewModel.commitSearch(it) },
-                            onClearRecents = { viewModel.clearRecentSearches() },
-                            isActive = isActive,
-                            isListScrolling = listState.isScrollInProgress,
+                            compact = true,
                             modifier = Modifier.weight(1f)
                         )
-
-                        Box {
-                            MinicashTonalIconButton(
-                                onClick = {
-                                    haptics.tick()
-                                    showFilterSheet = true
-                                },
-                                modifier = Modifier.size(48.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.FilterList,
-                                    contentDescription = "Filtros de movimientos"
-                                )
-                            }
-
-                            if (hasActiveFilters) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .align(Alignment.TopEnd)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                )
-                            }
-                        }
+                        StatPillMoney(
+                            label = "Ingresos",
+                            amountCents = income,
+                            type = MoneyDisplayType.INCOME,
+                            progress = if (total > 0) income.toFloat() / total else null,
+                            selected = state.selectedTypeFilter == TransactionType.INCOME,
+                            onClick = {
+                                haptics.tick()
+                                viewModel.onTypeFilterSelect(TransactionType.INCOME)
+                            },
+                            compact = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatPillMoney(
+                            label = "Gastos",
+                            amountCents = expense,
+                            type = MoneyDisplayType.EXPENSE,
+                            progress = if (total > 0) expense.toFloat() / total else null,
+                            selected = state.selectedTypeFilter == TransactionType.EXPENSE,
+                            onClick = {
+                                haptics.tick()
+                                viewModel.onTypeFilterSelect(TransactionType.EXPENSE)
+                            },
+                            compact = true,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
 
@@ -309,7 +329,7 @@ fun TransactionsScreen(
                 } else {
                     groupedTransactions.forEachIndexed { groupIndex, group ->
                         item(key = "group_${group.dateKey}") {
-                            Box(modifier = Modifier.animateItem().listEntrance(entranceTracker, group.dateKey, groupIndex)) {
+                            Box(modifier = minicashAnimateItem().listEntrance(entranceTracker, group.dateKey, groupIndex)) {
                                 GroupedTransactionCard(
                                     group = group,
                                     categoryMap = categoryMap,
@@ -422,9 +442,21 @@ private fun RecentSearchBar(
     onClearRecents: () -> Unit,
     isActive: Boolean,
     isListScrolling: Boolean,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var focused by remember { mutableStateOf(false) }
+    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+    val expandFraction by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = if (expanded) 1f else 0f,
+        animationSpec = minicashSpatialSpec(),
+        label = "search_expand"
+    )
+    val closeSearch = {
+        onQueryChange("")
+        onExpandedChange(false)
+    }
     val showRecents = isActive && focused && query.isEmpty() && recents.isNotEmpty()
     val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     // Las pestañas contiguas siguen compuestas: al irse de esta pestaña el panel (otra ventana) debe cerrarse
@@ -436,6 +468,20 @@ private fun RecentSearchBar(
         }
     }
     val haptics = rememberMinicashHaptics()
+    androidx.compose.runtime.LaunchedEffect(expanded) {
+        if (expanded) {
+            // El campo aparece cuando el contenedor ya tiene ancho; hasta entonces no hay a quién darle el foco
+            androidx.compose.runtime.snapshotFlow { expandFraction }.first { it > SEARCH_FIELD_VISIBLE_FRACTION }
+            kotlinx.coroutines.delay(30)
+            runCatching { focusRequester.requestFocus() }
+        } else {
+            focused = false
+        }
+    }
+    androidx.activity.compose.BackHandler(enabled = expanded) {
+        focusManager.clearFocus()
+        closeSearch()
+    }
     val density = androidx.compose.ui.platform.LocalDensity.current
     var fieldWidthPx by remember { mutableStateOf(0) }
     val gapPx = with(density) { 6.dp.roundToPx() }
@@ -444,32 +490,66 @@ private fun RecentSearchBar(
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SearchBarDefaults.InputField(
-                query = query,
-                onQueryChange = onQueryChange,
-                onSearch = {
-                    onCommit(it)
-                    focusManager.clearFocus()
-                },
-                expanded = false,
-                onExpandedChange = {},
-                modifier = Modifier.fillMaxWidth().onFocusChanged { focused = it.isFocused },
-                placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        MinicashIconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
-                        }
-                    }
-                },
-                colors = SearchBarDefaults.inputFieldColors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
+            modifier = Modifier.layout { measurable, constraints ->
+                // El campo se mide siempre al ancho actual de la animación: si se midiera a todo el ancho y el
+                // contenedor lo recortara, Compose intentaría traerlo a la vista y desplazaría el pager de pestañas.
+                val minWidth = 48.dp.roundToPx()
+                val maxWidth = if (constraints.hasBoundedWidth) constraints.maxWidth else minWidth
+                val width = (minWidth + (maxWidth - minWidth) * expandFraction.coerceIn(0f, 1f)).roundToInt()
+                val placeable = measurable.measure(
+                    Constraints(minWidth = width, maxWidth = width, minHeight = 48.dp.roundToPx(), maxHeight = constraints.maxHeight)
                 )
-            )
+                layout(placeable.width, placeable.height) { placeable.place(0, 0) }
+            }
+        ) {
+            if (expandFraction > SEARCH_FIELD_VISIBLE_FRACTION) {
+                SearchBarDefaults.InputField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = {
+                        onCommit(it)
+                        focusManager.clearFocus()
+                    },
+                    expanded = false,
+                    onExpandedChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusChanged { focused = it.isFocused },
+                    placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
+                    leadingIcon = {
+                        MinicashIconButton(onClick = {
+                            focusManager.clearFocus()
+                            closeSearch()
+                        }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cerrar búsqueda")
+                        }
+                    },
+                    trailingIcon = {
+                        if (query.isNotEmpty()) {
+                            MinicashIconButton(onClick = { onQueryChange("") }) {
+                                Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
+                            }
+                        }
+                    },
+                    colors = SearchBarDefaults.inputFieldColors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
+                    )
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                            haptics.tick()
+                            onExpandedChange(true)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Search, contentDescription = "Buscar movimientos")
+                }
+            }
         }
 
         if (showRecents) {
@@ -516,3 +596,14 @@ private fun RecentSearchBar(
         }
     }
 }
+
+/** Desde qué avance de la animación se muestra el campo de búsqueda; antes es solo el ícono (el campo no cabe). */
+private const val SEARCH_FIELD_VISIBLE_FRACTION = 0.4f
+
+private val FULL_MONTHS = listOf(
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+)
+
+/** Periodo que se está viendo, para la fila fija del encabezado («Noviembre 2026»). */
+private fun periodLabel(monthIndex: Int, year: Int): String = "${FULL_MONTHS[monthIndex.coerceIn(0, 11)]} $year"

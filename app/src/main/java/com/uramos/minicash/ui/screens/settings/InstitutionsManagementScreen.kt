@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
@@ -182,7 +183,7 @@ fun InstitutionsManagementScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
                 contentPadding = PaddingValues(
                     top = spacing.small,
                     start = spacing.screen,
@@ -215,7 +216,7 @@ fun InstitutionsManagementScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp)
-                            .animateItem()
+                            .then(minicashAnimateItem())
                     ) {
                         Row(
                             modifier = Modifier

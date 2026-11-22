@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.account
 
+import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.cardSurface
@@ -138,7 +139,7 @@ fun AccountDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = listState),
             contentPadding = PaddingValues(
                 top = spacing.small,
                 start = spacing.screen,
@@ -190,7 +191,7 @@ fun AccountDetailScreen(
                         categoryMap = categoryMap,
                         accountMap = accountMap,
                         onTransactionClick = { transactionToEdit = it },
-                        modifier = Modifier.animateItem()
+                        modifier = minicashAnimateItem()
                     )
                 }
             }

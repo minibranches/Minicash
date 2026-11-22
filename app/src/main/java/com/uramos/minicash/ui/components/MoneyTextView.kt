@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -30,7 +33,9 @@ fun MoneyTextView(
     /** Cuenta hacia la cifra en lugar de saltar; para totales destacados, no para filas de una lista. */
     animate: Boolean = false,
     /** Los centavos se dibujan más pequeños que el resto de la cifra. */
-    smallCents: Boolean = true
+    smallCents: Boolean = true,
+    /** Si se indica, la cifra se encoge hasta este tamaño para caber en una línea (estadios angostos). */
+    autoSizeMin: TextUnit? = null
 ) {
     val financialColors = MinicashThemeExtensions.financialColors
     val amountCents = rememberAnimatedCents(amountCents, enabled = animate)
@@ -80,18 +85,29 @@ fun MoneyTextView(
     val shown = if (split != null) {
         buildAnnotatedString {
             append(prefix + split.first)
-            withStyle(SpanStyle(fontSize = (style.fontSize.value * 0.62f).sp)) { append(split.second) }
+            withStyle(SpanStyle(fontSize = 0.62.em)) { append(split.second) }
         }
     } else {
         AnnotatedString("$prefix$formattedAmount")
     }
 
-    Text(
-        text = shown,
-        color = effectiveColor,
-        style = style,
-        modifier = modifier
-    )
+    if (autoSizeMin != null && style.fontSize.isSp) {
+        Text(
+            text = shown,
+            color = effectiveColor,
+            style = style,
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = autoSizeMin, maxFontSize = style.fontSize),
+            modifier = modifier
+        )
+    } else {
+        Text(
+            text = shown,
+            color = effectiveColor,
+            style = style,
+            modifier = modifier
+        )
+    }
 }
 
 /** Separa un monto formateado ("$1,234.50") en la parte entera y los centavos (".50"); nulo si no hay dos decimales. */

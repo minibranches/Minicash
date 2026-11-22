@@ -924,18 +924,20 @@ private fun FabMenuItem(action: FabMenuAction) {
 }
 
 private const val TAB_FADE_MIN_SCALE = 0.96f
-private const val SHARED_AXIS_MS = 300
-private const val SHARED_AXIS_FADE_OUT_MS = 90
 private const val SHARED_AXIS_OFFSET = 0.3f
 
-/** Eje X compartido de Material: la pantalla nueva entra desde el lado con fundido y la anterior sale al lado opuesto. */
+/**
+ * Eje X compartido de Material: la pantalla nueva entra desde el lado con fundido y la anterior sale al lado opuesto.
+ * Resortes críticamente amortiguados (sin rebote) con la rigidez del esquema de movimiento: espacial para el
+ * desplazamiento y de efectos para el fundido, más rápido al salir para que no se encimen las dos pantallas.
+ */
 private fun sharedAxisX(forward: Boolean): ContentTransform {
     val direction = if (forward) 1 else -1
-    val slide = tween<IntOffset>(SHARED_AXIS_MS, easing = FastOutSlowInEasing)
+    val slide = spring<IntOffset>(dampingRatio = 1f, stiffness = 500f, visibilityThreshold = androidx.compose.ui.unit.IntOffset(1, 1))
     return (slideInHorizontally(slide) { (it * SHARED_AXIS_OFFSET).toInt() * direction } +
-        fadeIn(tween(SHARED_AXIS_MS - SHARED_AXIS_FADE_OUT_MS, delayMillis = SHARED_AXIS_FADE_OUT_MS, easing = LinearOutSlowInEasing))) togetherWith
+        fadeIn(spring(dampingRatio = 1f, stiffness = 800f))) togetherWith
         (slideOutHorizontally(slide) { -(it * SHARED_AXIS_OFFSET).toInt() * direction } +
-            fadeOut(tween(SHARED_AXIS_FADE_OUT_MS, easing = FastOutLinearInEasing)))
+            fadeOut(spring(dampingRatio = 1f, stiffness = 1600f)))
 }
 
 private const val ROUTE_SETTINGS = "settings"

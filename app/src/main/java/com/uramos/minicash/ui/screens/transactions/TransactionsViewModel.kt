@@ -233,6 +233,13 @@ class TransactionsViewModel(
         selectedCategoryIds.value = emptySet()
     }
 
+    /** Quita todos los filtros de la hoja (tipo, cuenta y categorías); la búsqueda y el periodo no se tocan. */
+    fun clearFilters() {
+        selectedTypeFilter.value = null
+        selectedAccountId.value = null
+        selectedCategoryIds.value = emptySet()
+    }
+
     /** Años que se pueden elegir: desde el del primer movimiento hasta el próximo año. */
     val availableYears: StateFlow<List<Int>> = transactionDao.getEarliestTransactionDate()
         .map { earliest ->
@@ -327,3 +334,7 @@ class TransactionsViewModel(
         viewModelScope.launch { com.uramos.minicash.data.util.restoreTransactions(accountDao, transactionDao, transactions) }
     }
 }
+
+/** Cuántos filtros de la hoja hay aplicados: tipo, cuenta y categorías (todas las categorías cuentan como uno). */
+internal fun activeFilterCount(type: TransactionType?, accountId: Long?, categoryIds: Set<Long>): Int =
+    (if (type != null) 1 else 0) + (if (accountId != null) 1 else 0) + (if (categoryIds.isNotEmpty()) 1 else 0)

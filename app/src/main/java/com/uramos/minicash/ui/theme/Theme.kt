@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.theme
 
+import androidx.compose.animation.core.spring
 import android.os.Build
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.AnimationSpec
@@ -152,7 +153,7 @@ private fun tintDynamicDarkSurfaces(scheme: ColorScheme): ColorScheme {
 
 @Composable
 fun ColorScheme.animateColors(
-    animationSpec: AnimationSpec<Color> = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+    animationSpec: AnimationSpec<Color> = spring(dampingRatio = 1f, stiffness = 800f)
 ): ColorScheme {
     val isRestricted = LocalAnimationRestriction.current
     val effectiveSpec = if (isRestricted) snap() else animationSpec

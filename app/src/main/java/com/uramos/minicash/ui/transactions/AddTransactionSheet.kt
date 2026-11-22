@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.theme.MinicashTransitions
 import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.role
@@ -70,6 +71,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -149,6 +151,15 @@ fun AddTransactionSheet(
     val conceptFocusRequester = remember { FocusRequester() }
     val noteFocusRequester = remember { FocusRequester() }
     var isSuppressingKeyboard by remember { mutableStateOf(false) }
+
+    // Al abrir un movimiento nuevo el foco va al concepto, con el teclado del sistema (mayúscula inicial y ✓)
+    LaunchedEffect(Unit) {
+        delay(120)
+        if (state.type != TransactionType.TRANSFER && state.concept.isBlank()) {
+            runCatching { conceptFocusRequester.requestFocus() }
+            keyboardController?.show()
+        }
+    }
 
     LaunchedEffect(isSuppressingKeyboard) {
         if (isSuppressingKeyboard) {
@@ -360,10 +371,14 @@ fun AddTransactionSheet(
                                 ),
                                 keyboardActions = KeyboardActions(
                                     // Cierra el teclado con el mismo mecanismo que las sugerencias: evita que la hoja le devuelva el foco
-                                    onDone = { isSuppressingKeyboard = true }
+                                    onDone = {
+                                        isSuppressingKeyboard = true
+                                        showNumpad = true
+                                    }
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .onFocusChanged { if (it.isFocused) showNumpad = false }
                                     .focusProperties { canFocus = !isSuppressingKeyboard }
                                     .focusRequester(conceptFocusRequester)
                             )
@@ -427,6 +442,7 @@ fun AddTransactionSheet(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .imePadding()
+                                    .onFocusChanged { if (it.isFocused) showNumpad = false }
                                     .focusProperties { canFocus = !isSuppressingKeyboard }
                                     .focusRequester(noteFocusRequester)
                             )
@@ -681,16 +697,8 @@ fun AddTransactionSheet(
                     // TECLADO NUMÉRICO HOMOLOGADO PBT (3x4 + 4ª Columna de Operadores Deslizable)
                     AnimatedVisibility(
                         visible = showNumpad,
-                        enter = if (isRestricted) {
-                            fadeIn(animationSpec = snap()) + expandVertically(animationSpec = snap())
-                        } else {
-                            fadeIn(animationSpec = motionScheme.defaultEffectsSpec()) + expandVertically(animationSpec = motionScheme.defaultSpatialSpec())
-                        },
-                        exit = if (isRestricted) {
-                            fadeOut(animationSpec = snap()) + shrinkVertically(animationSpec = snap())
-                        } else {
-                            fadeOut(animationSpec = motionScheme.defaultEffectsSpec()) + shrinkVertically(animationSpec = motionScheme.defaultSpatialSpec())
-                        }
+                        enter = MinicashTransitions.enterVisible(),
+                        exit = MinicashTransitions.exitVisible()
                     ) {
                         var showOperators by remember { mutableStateOf(false) }
 
@@ -909,6 +917,7 @@ fun KeypadButton(
     pressedCornerRadius: androidx.compose.ui.unit.Dp = 28.dp
 ) {
     val scale = remember { Animatable(1f) }
+    val pressSpec = com.uramos.minicash.ui.theme.minicashFastEffectsSpec<Float>()
     val isRestricted = LocalAnimationRestriction.current
     var isPressed by remember { mutableStateOf(false) }
     val animatedRadius by androidx.compose.animation.core.animateDpAsState(
@@ -955,7 +964,7 @@ fun KeypadButton(
                         isPressed = true
                         if (!isRestricted) {
                             coroutineScope.launch {
-                                scale.animateTo(0.90f, tween(durationMillis = 80))
+                                scale.animateTo(0.90f, pressSpec)
                             }
                         }
                         tryAwaitRelease()

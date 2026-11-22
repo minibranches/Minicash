@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.cardSurface
@@ -184,6 +185,7 @@ fun HomeScreen(
     ) { paddingValues ->
         BlurHeaderScaffold(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
+            listState = listState,
             header = {
                 TopAppBar(
                                 windowInsets = WindowInsets(0.dp),
@@ -228,7 +230,7 @@ fun HomeScreen(
 
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
+                    modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                     contentPadding = PaddingValues(
                         top = headerHeight + spacing.standard,
                         start = spacing.screen,
@@ -312,7 +314,7 @@ fun HomeScreen(
                     } else {
                         groupedRecent.forEach { group ->
                             item(key = "group_${group.dateKey}") {
-                                Box(modifier = Modifier.animateItem()) {
+                                Box(modifier = minicashAnimateItem()) {
                                     GroupedTransactionCard(
                                         group = group,
                                         categoryMap = categoryMap,

@@ -148,7 +148,7 @@ fun BackupSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
             contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
         ) {

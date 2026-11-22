@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.Role
@@ -39,6 +40,8 @@ fun StatPill(
     /** Si se indica, el estadio es un botón (p. ej. filtro rápido). */
     onClick: (() -> Unit)? = null,
     selected: Boolean = false,
+    /** Versión angosta para tres estadios en una fila: menos relleno y cifra más pequeña. */
+    compact: Boolean = false,
     value: @Composable (style: TextStyle, color: Color) -> Unit
 ) {
     val ring = MaterialTheme.colorScheme.primary
@@ -60,12 +63,13 @@ fun StatPill(
                 }
             }
             .then(if (selected) Modifier.border(2.dp, ring, CircleShape) else Modifier)
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = if (compact) 8.dp else 12.dp, vertical = if (compact) 10.dp else 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             value(
-                MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"),
+                (if (compact) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge)
+                    .copy(fontWeight = FontWeight.Bold, fontFeatureSettings = "tnum"),
                 valueColor
             )
             Text(
@@ -89,9 +93,10 @@ fun StatPillMoney(
     modifier: Modifier = Modifier,
     progress: Float? = null,
     onClick: (() -> Unit)? = null,
-    selected: Boolean = false
+    selected: Boolean = false,
+    compact: Boolean = false
 ) {
-    StatPill(label = label, modifier = modifier, progress = progress, onClick = onClick, selected = selected) { style, _ ->
-        MoneyTextView(amountCents = amountCents, type = type, style = style)
+    StatPill(label = label, modifier = modifier, progress = progress, onClick = onClick, selected = selected, compact = compact) { style, _ ->
+        MoneyTextView(amountCents = amountCents, type = type, style = style, autoSizeMin = if (compact) 11.sp else null)
     }
 }

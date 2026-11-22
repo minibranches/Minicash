@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.theme.minicashAnimateItem
+import com.uramos.minicash.ui.components.ExpandingFilterButton
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import com.uramos.minicash.ui.components.CollapsibleSectionHeader
 import com.uramos.minicash.ui.components.StatPillMoney
@@ -173,9 +175,9 @@ fun CreditsScreen(
     ) { paddingValues ->
         BlurHeaderScaffold(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
+            listState = listState,
             header = {
-                Column {
-                    TopAppBar(
+                TopAppBar(
                                     windowInsets = WindowInsets(0.dp),
                                     colors = TopAppBarDefaults.topAppBarColors(
                                         containerColor = Color.Transparent
@@ -184,6 +186,9 @@ fun CreditsScreen(
                                     title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                                     actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
                                 )
+            },
+            pinned = {
+                Column {
             // Resumen en estadios y botón de filtros, en la misma fila
                     Row(
                         modifier = Modifier
@@ -204,29 +209,22 @@ fun CreditsScreen(
                             type = MoneyDisplayType.NEUTRAL,
                             modifier = Modifier.weight(1f)
                         )
-                        Box {
-                            MinicashTonalIconButton(
-                                onClick = {
-                                    haptics.tick()
-                                    showFilterSheet = true
-                                },
-                                modifier = Modifier.size(48.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.FilterList,
-                                    contentDescription = "Filtros de créditos"
-                                )
-                            }
-
-                            if (state.hasActiveFilters) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .align(Alignment.TopEnd)
-                                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                                )
-                            }
-                        }
+                        ExpandingFilterButton(
+                            activeCount = listOfNotNull(
+                                state.selectedResponsible,
+                                state.selectedInstitution,
+                                state.selectedMonth
+                            ).size,
+                            onClick = {
+                                haptics.tick()
+                                showFilterSheet = true
+                            },
+                            onClear = {
+                                haptics.tick()
+                                viewModel.clearFilters()
+                            },
+                            contentDescription = "Filtros de créditos"
+                        )
                     }
                 }
             }
@@ -234,7 +232,7 @@ fun CreditsScreen(
             // Una sola lista: activos arriba y, plegados al final, los liquidados
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
@@ -252,7 +250,7 @@ fun CreditsScreen(
                 }
                 itemsIndexed(state.activeCredits, key = { _, item -> item.id }) { index, credit ->
                     val itemShape = rememberSegmentedShape(index = index, count = state.activeCredits.size)
-                    Box(modifier = Modifier.animateItem().listEntrance(entranceTracker, credit.id, index)) {
+                    Box(modifier = minicashAnimateItem().listEntrance(entranceTracker, credit.id, index)) {
                         CreditItemCard(
                             credit = credit,
                             institutions = institutions,
@@ -290,7 +288,7 @@ fun CreditsScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 2.dp)
-                                    .animateItem()
+                                    .then(minicashAnimateItem())
                             )
                         }
                     }

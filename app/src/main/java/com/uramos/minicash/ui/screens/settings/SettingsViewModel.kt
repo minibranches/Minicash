@@ -275,6 +275,13 @@ class SettingsViewModel(
         viewModelScope.launch { userPreferences.setAppLockTimeoutMinutes(minutes) }
     }
 
+    val refreshRateLimit: StateFlow<Int> = userPreferences.refreshRateLimit
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
+    fun setRefreshRateLimit(hz: Int) {
+        viewModelScope.launch { userPreferences.setRefreshRateLimit(hz) }
+    }
+
     fun setHideInRecents(enabled: Boolean) {
         viewModelScope.launch { userPreferences.setHideInRecents(enabled) }
     }

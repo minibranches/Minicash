@@ -190,9 +190,9 @@ fun BudgetScreen(
     ) { paddingValues ->
         BlurHeaderScaffold(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
+            listState = listState,
             header = {
-                Column {
-                    TopAppBar(
+                TopAppBar(
                                     windowInsets = WindowInsets(0.dp),
                                     colors = TopAppBarDefaults.topAppBarColors(
                                         containerColor = Color.Transparent
@@ -214,6 +214,9 @@ fun BudgetScreen(
                                         TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings)
                                     }
                                 )
+            },
+            pinned = {
+                Column {
                     BudgetPeriodBar(
                                     monthLabel = state.currentMonthLabel,
                                     fortnight = state.selectedFortnight,
@@ -241,7 +244,7 @@ fun BudgetScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 state = listState,
-                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current),
+                modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(
                     top = headerHeight + spacing.small,
                     start = spacing.screen,

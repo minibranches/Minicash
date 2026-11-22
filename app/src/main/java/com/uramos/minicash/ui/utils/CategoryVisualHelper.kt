@@ -153,11 +153,12 @@ fun AnimatedCounterText(
 ) {
     val animatable = remember { Animatable(0f) }
 
+    val progressSpec = com.uramos.minicash.ui.theme.minicashSlowEffectsSpec<Float>()
     LaunchedEffect(targetValue) {
         animatable.snapTo(0f)
         animatable.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+            animationSpec = progressSpec
         )
     }
 

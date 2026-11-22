@@ -1,5 +1,6 @@
 package com.uramos.minicash
 
+import com.uramos.minicash.ui.utils.applyRefreshRateLimit
 import com.uramos.minicash.widget.updateMinicashWidgets
 import androidx.compose.runtime.LaunchedEffect
 import android.view.WindowManager
@@ -153,6 +154,8 @@ class MainActivity : FragmentActivity() {
                 if (hideInRecents) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
+            val refreshRateLimit by userPreferences.refreshRateLimit.collectAsState(initial = 0)
+            LaunchedEffect(refreshRateLimit) { applyRefreshRateLimit(window, refreshRateLimit) }
             val accentColorHex by userPreferences.accentColorHex.collectAsState(initial = themeSnapshot.accentColorHex)
 
             MinicashTheme(

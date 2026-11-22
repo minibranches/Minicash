@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.theme.minicashSpatialSpec
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -33,12 +34,13 @@ fun Modifier.listEntrance(tracker: EntranceTracker, key: Any, index: Int): Modif
     val restricted = LocalAnimationRestriction.current
     val animate = remember { tracker.seen.add(key) && !restricted && index < MAX_STAGGERED_ITEMS }
     val progress = remember { Animatable(if (animate) 0f else 1f) }
+    val spec = minicashSpatialSpec<Float>()
     if (animate) {
         LaunchedEffect(Unit) {
             delay(index * STAGGER_MILLIS)
             progress.animateTo(
                 targetValue = 1f,
-                animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMediumLow)
+                animationSpec = spec
             )
         }
     }

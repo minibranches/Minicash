@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.utils.refreshLimitLabel
+import com.uramos.minicash.ui.utils.deviceMaxRefreshRate
+import com.uramos.minicash.ui.utils.coerceRefreshLimit
+import com.uramos.minicash.ui.utils.availableRefreshLimits
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -71,7 +75,7 @@ fun AppearanceSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
-                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp),
+                .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
             contentPadding = PaddingValues(
                 horizontal = spacing.standard,
                 vertical = spacing.small
@@ -283,6 +287,50 @@ fun AppearanceSettingsScreen(
                                 }
                             }
                         }
+                    }
+                }
+            }
+            item {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val refreshLimit by viewModel.refreshRateLimit.collectAsState()
+                val options = remember { availableRefreshLimits(deviceMaxRefreshRate(context)) }
+                MinicashCard(
+                    level = CardTonalLevel.LOW,
+                    shape = MinicashShapes.Card,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(spacing.standard),
+                        verticalArrangement = Arrangement.spacedBy(spacing.medium)
+                    ) {
+                        Text(
+                            text = "Rendimiento",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Frecuencia de actualización",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        MinicashSegmentedChoice(
+                            options = options,
+                            isSelected = { coerceRefreshLimit(refreshLimit, options) == it },
+                            onSelect = {
+                                haptics.click()
+                                viewModel.setRefreshRateLimit(it)
+                            },
+                            label = { refreshLimitLabel(it) }
+                        )
+                        Text(
+                            text = "Limita los cuadros por segundo de la app: menos Hz gastan menos batería y más Hz se ven más fluidos. " +
+                                "Automático deja que decida el sistema. La pantalla del teléfono puede no admitir todos los valores.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
