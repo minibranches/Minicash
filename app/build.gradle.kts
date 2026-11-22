@@ -24,8 +24,8 @@ android {
         applicationId = "com.uramos.minicash"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,6 +42,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Convive con la app instalada de verdad: otro paquete y otros datos. Así se puede probar en el teléfono
+            // sin desinstalar la release (la firma debug no actualiza sobre la release y borraría sus datos).
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
