@@ -24,8 +24,8 @@ android {
         applicationId = "com.uramos.minicash"
         minSdk = 26
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -47,6 +47,16 @@ android {
             // sin desinstalar la release (la firma debug no actualiza sobre la release y borraría sus datos).
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
+        }
+        // Para medir rendimiento: igual que release (R8) pero con firma debug, otro paquete y perfilable.
+        // No se publica; se instala junto a la app real sin tocar sus datos.
+        create("perf") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".perf"
+            versionNameSuffix = "-perf"
+            isProfileable = true
+            matchingFallbacks += listOf("release")
         }
         release {
             isMinifyEnabled = true

@@ -2,6 +2,28 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.3.0
+
+### Novedades
+- **Encabezado que se pliega.** En Inicio, Movimientos, Gastos fijos y Créditos la barra con el título se esconde al bajar por la lista y reaparece al subir; lo que debe quedar a la vista (periodo, búsqueda y filtros, resumen) se queda fijo arriba.
+- **Búsqueda que sale del ícono.** En Movimientos la lupa se expande hacia la izquierda y se vuelve el campo de búsqueda, con el teclado listo. La flecha cierra y limpia la búsqueda. Arriba, a la izquierda, se muestra el periodo que estás viendo.
+- **Filtros en píldora.** El botón de filtros crece a «N filtros ×» cuando hay filtros aplicados (Movimientos y Créditos); la × los quita todos de un toque.
+- **Modo de rendimiento.** En Ajustes → Apariencia → Rendimiento se elige la frecuencia de actualización de la app: Automático (lo decide el sistema), 30, 60 o 120 Hz (120 solo si la pantalla lo admite). Menos Hz gastan menos batería; más Hz se ven más fluidos. Es una preferencia del teléfono y no viaja en las copias de seguridad.
+- **Balance, Ingresos y Gastos en una sola fila** en Movimientos, para dejar más espacio a la lista. Las cifras se ajustan de tamaño si no caben.
+- **Animaciones homologadas.** Las entradas, salidas, cambios de lugar de las listas, transiciones entre pantallas y conteos usan el mismo esquema de resortes de Material, sin duraciones fijas.
+
+### Correcciones
+- **Parpadeo al abrir la búsqueda.** El campo de búsqueda movía por un instante la pantalla hacia la pestaña de al lado (Compose intentaba traerlo a la vista mientras crecía). Ahora el campo se mide al ancho de la animación y aparece cuando ya cabe.
+- **Nuevo movimiento vuelve a abrir en el concepto.** El foco, el teclado con mayúscula inicial y el botón ✓ regresan. Mientras el teclado del sistema está abierto, el teclado numérico se pliega y reaparece al pulsar ✓ o tocar el monto, sin empujar el botón «Guardar».
+
+### Rendimiento
+- Se apagó el desenfoque progresivo del encabezado y de la barra flotante: en pruebas llevaba el desplazamiento a ≈ 60 fps (16 ms por cuadro) frente a 9 ms sin él, y reducir el radio no cambiaba nada. Ahora el contenido se atenúa con un velo del color de fondo y el desplazamiento queda en 11-12 ms por cuadro.
+
+### Interno
+- `ExpandingFilterButton`, `MinicashTransitions`, `minicashAnimateItem()` y `HeaderCollapse`.
+- Tipo de compilación `perf` (R8, firma debug, paquete `.perf`) para medir rendimiento sin tocar la app real.
+- No cambia el formato de datos.
+
 ## 1.2.0
 
 ### Novedades

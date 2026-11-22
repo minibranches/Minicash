@@ -46,6 +46,8 @@ Necesitas Android Studio reciente o el JDK y el SDK de Android configurados, con
 
 La compilación Debug se instala como `com.uramos.minicash.debug` («Minicash pruebas»): convive con la app instalada de verdad, con otros datos, y no obliga a desinstalarla.
 
+Para medir rendimiento hay una compilación `perf` (`./gradlew :app:assemblePerf`, paquete `com.uramos.minicash.perf`, «Minicash rendimiento»): usa R8 como la release pero con firma debug, y se mide con `adb shell dumpsys gfxinfo`.
+
 En Windows usa `gradlew.bat`. El APK release queda en `app/build/outputs/apk/release/`.
 
 La firma de release se configura con un archivo `keystore.properties` en la raíz (fuera del repositorio, ver `.gitignore`) que apunta a tu propio `.jks` con las claves `storeFile`, `storePassword`, `keyAlias` y `keyPassword`. Sin ese archivo, el build de release se firma con la llave debug y no se podrá instalar como actualización de los APK publicados.
@@ -88,7 +90,7 @@ Las pruebas unitarias cubren el cálculo de fechas de pago y la herencia entre i
 
 ## Estado
 
-Proyecto personal en uso diario. Está en versión 1.2.0. Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md). Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
+Proyecto personal en uso diario. Está en versión 1.3.0. Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md). Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
 
 ## Licencia
 
