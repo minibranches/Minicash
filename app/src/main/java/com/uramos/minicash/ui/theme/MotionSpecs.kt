@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.theme
 
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -51,11 +52,15 @@ fun <T> minicashSlowEffectsSpec(): FiniteAnimationSpec<T> =
  * armar su propio fundido y deslizamiento: así todas las pantallas se mueven igual. Salen del esquema de movimiento
  * de Material (espacial para tamaño y desplazamiento, efectos para opacidad) y respetan el modo sin animaciones.
  */
+/** Tamaño desde el que «saltan» las entradas: el resorte espacial lo pasa de largo y lo asienta (rebote). */
+private const val POP_IN_SCALE = 0.9f
+
 object MinicashTransitions {
     /** Aparece: fundido y despliegue vertical. */
     @Composable
     fun enterVisible(): EnterTransition =
-        fadeIn(minicashEffectsSpec()) + expandVertically(minicashSpatialSpec())
+        fadeIn(minicashEffectsSpec()) + expandVertically(minicashSpatialSpec()) +
+            scaleIn(minicashSpatialSpec(), initialScale = POP_IN_SCALE)
 
     /** Desaparece: fundido y pliegue vertical. */
     @Composable
@@ -65,7 +70,8 @@ object MinicashTransitions {
     /** Aparece sin cambiar de tamaño: fundido y un leve ascenso (para elementos que entran sobre otros). */
     @Composable
     fun enterFloat(): EnterTransition =
-        fadeIn(minicashEffectsSpec()) + slideInVertically(minicashSpatialSpec()) { it / 8 }
+        fadeIn(minicashEffectsSpec()) + slideInVertically(minicashSpatialSpec()) { it / 8 } +
+            scaleIn(minicashSpatialSpec(), initialScale = POP_IN_SCALE)
 
     @Composable
     fun exitFloat(): ExitTransition =

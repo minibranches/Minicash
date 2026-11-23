@@ -104,15 +104,25 @@ class HomeViewModel(
     val chartMonth: StateFlow<YearMonth?> = _chartMonth.asStateFlow()
 
     fun shiftChartMonth(delta: Int) {
-        _chartMonth.update { current ->
-            val target = (current ?: YearMonth.now()).plusMonths(delta.toLong())
-            // Sin meses futuros; llegar al mes en curso vuelve al modo automático
-            if (!target.isBefore(YearMonth.now())) null else target
-        }
+        _chartMonth.update { current -> shiftedChartMonth(current, delta, YearMonth.now()) }
     }
 
     fun resetChartMonth() {
         _chartMonth.value = null
+    }
+
+    /** Años que se pueden elegir en la distribución: del primer movimiento al año en curso (sin años futuros). */
+    val chartYears: StateFlow<List<Int>> = transactionDao.getEarliestTransactionDate()
+        .map { earliest ->
+            val current = YearMonth.now().year
+            val first = earliest?.let { java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).year } ?: current
+            (current downTo minOf(first, current)).toList()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), listOf(YearMonth.now().year))
+
+    /** Cambia de año conservando el mes; si el resultado cae en el futuro vuelve al mes en curso. */
+    fun selectChartYear(year: Int) {
+        _chartMonth.update { current -> chartMonthForYear(current, year, YearMonth.now()) }
     }
 
     private fun rangeOf(month: YearMonth): Pair<Long, Long> {
@@ -290,4 +300,16 @@ class HomeViewModel(
     fun restoreTransactions(transactions: List<TransactionEntity>) {
         viewModelScope.launch { com.uramos.minicash.data.util.restoreTransactions(accountDao, transactionDao, transactions) }
     }
+}
+
+/** Mes de la distribución tras moverse [delta] meses: sin meses futuros; llegar al mes en curso vuelve a «automático» (null). */
+internal fun shiftedChartMonth(current: YearMonth?, delta: Int, now: YearMonth): YearMonth? {
+    val target = (current ?: now).plusMonths(delta.toLong())
+    return if (!target.isBefore(now)) null else target
+}
+
+/** Mes de la distribución al elegir [year]: conserva el mes; si cae en el futuro vuelve a «automático» (null). */
+internal fun chartMonthForYear(current: YearMonth?, year: Int, now: YearMonth): YearMonth? {
+    val target = YearMonth.of(year, (current ?: now).month)
+    return if (!target.isBefore(now)) null else target
 }

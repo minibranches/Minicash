@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -20,11 +22,13 @@ fun MinicashFilterChip(
     trailingIcon: (@Composable () -> Unit)? = null
 ) {
     val scheme = MaterialTheme.colorScheme
+    val interactionSource = remember { MutableInteractionSource() }
     FilterChip(
         selected = selected,
         onClick = onClick,
         label = label,
-        modifier = modifier,
+        modifier = modifier.bounceOnPress(interactionSource),
+        interactionSource = interactionSource,
         enabled = enabled,
         leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,

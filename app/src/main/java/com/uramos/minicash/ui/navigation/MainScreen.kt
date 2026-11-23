@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.navigation
 
+import com.uramos.minicash.ui.components.bounceOnPress
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import androidx.compose.runtime.CompositionLocalProvider
 import com.uramos.minicash.ui.theme.screenBackground
@@ -380,6 +381,9 @@ fun MainScreen(
                     HorizontalPager(
                         state = pagerState,
                         beyondViewportPageCount = 1,
+                        // Las pestañas se cambian solo desde la barra: así el deslizamiento horizontal queda libre
+                        // para deslizar-y-eliminar en las filas de movimientos.
+                        userScrollEnabled = false,
                         modifier = Modifier
                             .fillMaxSize()
                             .graphicsLayer {
@@ -604,11 +608,13 @@ fun MainScreen(
                                                     label = "label_alpha"
                                                 )
 
+                                                val navInteraction = remember { MutableInteractionSource() }
                                                 Surface(
                                                     onClick = { onNavClick(index, screen) },
                                                     shape = MinicashShapes.Pill,
                                                     color = pillColor,
-                                                    modifier = Modifier.width(pillWidth)
+                                                    interactionSource = navInteraction,
+                                                    modifier = Modifier.width(pillWidth).bounceOnPress(navInteraction)
                                                 ) {
                                                     Row(
                                                         modifier = Modifier.height(40.dp),
@@ -900,8 +906,11 @@ private fun FabScrim(visible: Boolean, onDismiss: () -> Unit) {
 /** Acción del menú del botón de agregar: píldora de 56 dp con ícono y texto, en el color del botón. */
 @Composable
 private fun FabMenuItem(action: FabMenuAction) {
+    val interactionSource = remember { MutableInteractionSource() }
     Surface(
         onClick = action.onClick,
+        interactionSource = interactionSource,
+        modifier = Modifier.bounceOnPress(interactionSource),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,

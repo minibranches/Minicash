@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.animation.scaleIn
 import com.uramos.minicash.ui.theme.dialogSurface
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.animation.AnimatedVisibility
@@ -51,11 +52,13 @@ fun MinicashAlertDialog(
     val visibleState = remember { MutableTransitionState(false).apply { targetState = true } }
     val fadeSpec = minicashEffectsSpec<Float>()
     val slideSpec = minicashSpatialSpec<IntOffset>()
+    val scaleSpec = minicashSpatialSpec<Float>()
 
     BasicAlertDialog(onDismissRequest = onDismissRequest, modifier = modifier) {
         AnimatedVisibility(
             visibleState = visibleState,
-            enter = fadeIn(animationSpec = fadeSpec) + slideInVertically(animationSpec = slideSpec) { it / 12 }
+            enter = fadeIn(animationSpec = fadeSpec) + slideInVertically(animationSpec = slideSpec) { it / 12 } +
+                scaleIn(animationSpec = scaleSpec, initialScale = 0.88f)
         ) {
             Surface(
                 shape = shape,

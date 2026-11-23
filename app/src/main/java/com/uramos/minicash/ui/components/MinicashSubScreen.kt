@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.cardSurface
 import com.uramos.minicash.ui.theme.screenBackground
@@ -151,7 +152,14 @@ fun MinicashOptionRow(
         }
     }
     if (onClick != null) {
-        Surface(onClick = onClick, enabled = enabled, color = Color.Transparent) { row() }
+        val interactionSource = remember { MutableInteractionSource() }
+        Surface(
+            onClick = onClick,
+            enabled = enabled,
+            color = Color.Transparent,
+            interactionSource = interactionSource,
+            modifier = Modifier.bounceOnPress(interactionSource, pressedScale = 0.97f)
+        ) { row() }
     } else {
         row()
     }

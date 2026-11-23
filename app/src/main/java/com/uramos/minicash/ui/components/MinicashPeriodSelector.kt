@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.uramos.minicash.ui.theme.trackSurface
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -101,12 +102,14 @@ fun MinicashPeriodSelector(
 @Composable
 private fun YearSelect(year: Int, years: List<Int>, onYearSelect: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val interactionSource = remember { MutableInteractionSource() }
     Box {
         Surface(
             onClick = { expanded = true },
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.height(40.dp)
+            interactionSource = interactionSource,
+            modifier = Modifier.height(40.dp).bounceOnPress(interactionSource)
         ) {
             Row(
                 modifier = Modifier.padding(start = 14.dp, end = 6.dp),
@@ -158,11 +161,13 @@ private fun MonthPill(label: String, selected: Boolean, onClick: () -> Unit, mod
         animationSpec = minicashEffectsSpec(),
         label = "period_month_color"
     )
+    val interactionSource = remember { MutableInteractionSource() }
     Surface(
         onClick = onClick,
         shape = CircleShape,
         color = color,
-        modifier = modifier.height(40.dp)
+        interactionSource = interactionSource,
+        modifier = modifier.height(40.dp).bounceOnPress(interactionSource)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(

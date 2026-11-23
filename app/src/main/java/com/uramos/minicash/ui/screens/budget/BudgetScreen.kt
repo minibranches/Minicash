@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import androidx.compose.material.icons.outlined.ContentCopy
@@ -172,8 +173,12 @@ fun BudgetScreen(
     var itemToPay by remember { mutableStateOf<BudgetItemEntity?>(null) }
     var itemToEdit by remember { mutableStateOf<BudgetItemEntity?>(null) }
 
+    // Filtro rápido por tipo con las píldoras del resumen: un toque filtra y otro lo quita
+    var typeFilter by rememberSaveable { mutableStateOf<BudgetItemType?>(null) }
+
     // Orden local mientras se arrastra; se guarda en la base al soltar
     var orderedItems by remember(state.items) { mutableStateOf(state.items) }
+    val visibleItems = remember(orderedItems, typeFilter) { filterBudgetItems(orderedItems, typeFilter) }
     val reorderState = rememberReorderableLazyGridState(listState) { from, to ->
         val list = orderedItems.toMutableList()
         val fromIdx = list.indexOfFirst { it.id == from.key }
@@ -257,22 +262,33 @@ fun BudgetScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 item(key = "budget_summary", span = { GridItemSpan(maxLineSpan) }) {
-                    BudgetSummaryCard(summary = state.summary)
+                    BudgetSummaryCard(
+                        summary = state.summary,
+                        typeFilter = typeFilter,
+                        onTypeFilterSelect = { type ->
+                            haptics.tick()
+                            typeFilter = if (typeFilter == type) null else type
+                        }
+                    )
                 }
 
-                if (orderedItems.isEmpty()) {
+                if (visibleItems.isEmpty()) {
                     item(key = "budget_empty", span = { GridItemSpan(maxLineSpan) }) {
                         MinicashEmptyState(
                             icon = Icons.Default.Savings,
-                            title = "Sin partidas presupuestadas",
-                            subtitle = "No has agregado ingresos ni gastos para esta quincena.",
+                            title = if (typeFilter != null) "Sin partidas de este tipo" else "Sin partidas presupuestadas",
+                            subtitle = if (typeFilter != null) {
+                                "Toca de nuevo el filtro para ver todas las partidas de la quincena."
+                            } else {
+                                "No has agregado ingresos ni gastos para esta quincena."
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = spacing.large)
                         )
                     }
                 } else {
-                    itemsIndexed(orderedItems, key = { _, item -> item.id }) { index, item ->
+                    itemsIndexed(visibleItems, key = { _, item -> item.id }) { index, item ->
                         ReorderableItem(reorderState, key = item.id) { isDragging ->
                             BudgetItemCard(
                                 item = item,
@@ -280,7 +296,9 @@ fun BudgetScreen(
                                 onClick = { itemToEdit = item },
                                 onToggleExecuted = { itemToPay = item },
                                 modifier = Modifier
+                                    // Con un filtro activo no se reordena: el orden guardado se calcula con la lista completa
                                     .longPressDraggableHandle(
+                                        enabled = typeFilter == null,
                                         onDragStarted = { haptics.click() },
                                         onDragStopped = { viewModel.saveItemOrder(orderedItems.map { it.id }) }
                                     )
@@ -471,7 +489,11 @@ internal fun BudgetPeriodBar(
 
 /** Resumen de la quincena en estadios: disponible con el avance de pago como relleno y las tres cifras ejecutadas. */
 @Composable
-private fun BudgetSummaryCard(summary: BudgetSummary) {
+private fun BudgetSummaryCard(
+    summary: BudgetSummary,
+    typeFilter: BudgetItemType?,
+    onTypeFilterSelect: (BudgetItemType) -> Unit
+) {
     val financialColors = MinicashThemeExtensions.financialColors
     val progress = if (summary.expectedExpense > 0) {
         (summary.paidExpense.toFloat() / summary.expectedExpense.toFloat()).coerceIn(0f, 1f)
@@ -493,16 +515,38 @@ private fun BudgetSummaryCard(summary: BudgetSummary) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            SummaryFigure("Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income, Modifier.weight(1f))
-            SummaryFigure("Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income, Modifier.weight(1f))
-            SummaryFigure("Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense, Modifier.weight(1f))
+            SummaryFigure(
+                "Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income,
+                selected = typeFilter == BudgetItemType.INCOME,
+                onClick = { onTypeFilterSelect(BudgetItemType.INCOME) },
+                modifier = Modifier.weight(1f)
+            )
+            SummaryFigure(
+                "Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income,
+                selected = typeFilter == BudgetItemType.REIMBURSEMENT,
+                onClick = { onTypeFilterSelect(BudgetItemType.REIMBURSEMENT) },
+                modifier = Modifier.weight(1f)
+            )
+            SummaryFigure(
+                "Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense,
+                selected = typeFilter == BudgetItemType.EXPENSE,
+                onClick = { onTypeFilterSelect(BudgetItemType.EXPENSE) },
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-private fun SummaryFigure(label: String, value: String, color: Color, modifier: Modifier = Modifier) {
-    StatPill(label = label, valueColor = color, modifier = modifier) { style, tint ->
+private fun SummaryFigure(
+    label: String,
+    value: String,
+    color: Color,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    StatPill(label = label, valueColor = color, selected = selected, onClick = onClick, modifier = modifier) { style, tint ->
         Text(
             text = value,
             style = style.copy(fontSize = 16.sp),
@@ -554,7 +598,7 @@ fun BudgetItemCard(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(116.dp)
+            .height(BUDGET_CARD_HEIGHT)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -563,7 +607,7 @@ fun BudgetItemCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(start = 14.dp, top = 10.dp, end = 10.dp, bottom = 10.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
@@ -577,7 +621,7 @@ fun BudgetItemCard(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = if (item.isPaid) colorScheme.onSurfaceVariant else colorScheme.onSurface,
-                        maxLines = 2,
+                        maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
@@ -1397,3 +1441,6 @@ fun CopyFortnightSheet(
         }
     }
 }
+
+/** Alto de la tarjeta de partida en la cuadrícula de Gastos fijos. */
+private val BUDGET_CARD_HEIGHT = 92.dp

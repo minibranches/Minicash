@@ -1,5 +1,20 @@
 package com.uramos.minicash.ui.screens.home
 
+import androidx.compose.runtime.rememberUpdatedState
+import com.uramos.minicash.ui.components.bounceOnPress
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import com.uramos.minicash.ui.components.MinicashPeriodSelector
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clip
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.runtime.key
+import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.SwipeToDismissBox
 import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
@@ -278,12 +293,20 @@ fun HomeScreen(
                             MinicashSectionTitle("Distribución del mes")
                             Spacer(modifier = Modifier.height(spacing.small))
                             val chartMonthOverride by viewModel.chartMonth.collectAsState()
-                            ChartMonthSelector(
-                                month = chartMonthOverride ?: YearMonth.now(),
-                                isCurrent = chartMonthOverride == null,
-                                onPrevious = { viewModel.shiftChartMonth(-1) },
-                                onNext = { viewModel.shiftChartMonth(1) },
-                                onReset = viewModel::resetChartMonth
+                            val chartYears by viewModel.chartYears.collectAsState()
+                            val chartMonth = chartMonthOverride ?: YearMonth.now()
+                            MinicashPeriodSelector(
+                                year = chartMonth.year,
+                                monthIndex = chartMonth.monthValue - 1,
+                                years = chartYears,
+                                onYearSelect = {
+                                    haptics.tick()
+                                    viewModel.selectChartYear(it)
+                                },
+                                onShiftMonths = {
+                                    haptics.tick()
+                                    viewModel.shiftChartMonth(it)
+                                }
                             )
                             Spacer(modifier = Modifier.height(spacing.small))
                             TwoFacedStatsChartWidget(
@@ -472,51 +495,105 @@ fun GroupedTransactionCard(
         Spacer(modifier = Modifier.height(spacing.extraSmall))
 
         group.transactions.forEachIndexed { index, tx ->
-            val itemShape = rememberSegmentedShape(
-                index = index,
-                count = group.transactions.size
-            )
-            val accountName = accountMap[tx.sourceAccountId] ?: "Cuenta"
-            val categoryName = tx.categoryId?.let { categoryMap[it] }
-            val isSelectionMode = selectedIds.isNotEmpty()
-
-            val rowColor by animateColorAsState(
-                targetValue = if (tx.id in selectedIds) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.cardSurface,
-                animationSpec = minicashEffectsSpec(),
-                label = "transaction_row_color"
-            )
-            MinicashCard(
-                shape = itemShape,
-                containerColor = rowColor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 2.dp)
-                    .combinedClickable(
-                        onClick = {
-                            if (isSelectionMode) {
-                                haptics.tick()
-                                onToggleSelection?.invoke(tx.id)
-                            } else {
-                                onTransactionClick(tx)
-                            }
-                        },
-                        onLongClick = {
-                            haptics.heavyOrDelete()
-                            onToggleSelection?.invoke(tx.id)
-                        }
-                    )
-            ) {
-                CompactTransactionRow(
+            // Todo el estado de la fila (forma, color, deslizamiento) vive dentro de la llave del movimiento:
+            // al insertar o quitar filas cada una conserva el suyo y no hereda el de la que ocupaba su lugar.
+            key(tx.id) {
+                TransactionListRow(
                     transaction = tx,
-                    accountName = accountName,
-                    categoryName = categoryName,
-                    isSelected = tx.id in selectedIds,
-                    isSelectionActive = isSelectionMode,
-                    onClick = null,
-                    onDeleteClick = if (onTransactionDelete != null) { { onTransactionDelete(tx) } } else null
+                    index = index,
+                    count = group.transactions.size,
+                    accountName = accountMap[tx.sourceAccountId] ?: "Cuenta",
+                    categoryName = tx.categoryId?.let { categoryMap[it] },
+                    selectedIds = selectedIds,
+                    onToggleSelection = onToggleSelection,
+                    onTransactionClick = onTransactionClick,
+                    onTransactionDelete = onTransactionDelete
                 )
             }
         }
+    }
+}
+
+/** Fila de un movimiento dentro de su grupo de día: tarjeta segmentada, selección y, si se puede, deslizar para eliminar. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TransactionListRow(
+    transaction: TransactionEntity,
+    index: Int,
+    count: Int,
+    accountName: String,
+    categoryName: String?,
+    selectedIds: Set<Long>,
+    onToggleSelection: ((Long) -> Unit)?,
+    onTransactionClick: (TransactionEntity) -> Unit,
+    onTransactionDelete: ((TransactionEntity) -> Unit)?
+) {
+    val haptics = rememberMinicashHaptics()
+    val itemShape = rememberSegmentedShape(index = index, count = count)
+    val isSelectionMode = selectedIds.isNotEmpty()
+    val isSelected = transaction.id in selectedIds
+    val rowColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.cardSurface,
+        animationSpec = minicashEffectsSpec(),
+        label = "transaction_row_color"
+    )
+    val interactionSource = remember { MutableInteractionSource() }
+
+    @Composable
+    fun Card() {
+        MinicashCard(
+            shape = itemShape,
+            containerColor = rowColor,
+            modifier = Modifier
+                .fillMaxWidth()
+                .bounceOnPress(interactionSource, pressedScale = 0.97f)
+                .semantics {
+                    // Quien no pueda deslizar (TalkBack) elimina desde las acciones del elemento
+                    if (onTransactionDelete != null) {
+                        customActions = listOf(
+                            CustomAccessibilityAction("Eliminar movimiento") {
+                                onTransactionDelete(transaction)
+                                true
+                            }
+                        )
+                    }
+                }
+                .combinedClickable(
+                    interactionSource = interactionSource,
+                    indication = LocalIndication.current,
+                    onClick = {
+                        if (isSelectionMode) {
+                            haptics.tick()
+                            onToggleSelection?.invoke(transaction.id)
+                        } else {
+                            onTransactionClick(transaction)
+                        }
+                    },
+                    onLongClick = {
+                        haptics.heavyOrDelete()
+                        onToggleSelection?.invoke(transaction.id)
+                    }
+                )
+        ) {
+            CompactTransactionRow(
+                transaction = transaction,
+                accountName = accountName,
+                categoryName = categoryName,
+                isSelected = isSelected,
+                isSelectionActive = isSelectionMode,
+                onClick = null
+            )
+        }
+    }
+
+    if (onTransactionDelete != null && !isSelectionMode) {
+        SwipeToDeleteRow(
+            shape = itemShape,
+            onDelete = { onTransactionDelete(transaction) },
+            modifier = Modifier.padding(vertical = 2.dp)
+        ) { Card() }
+    } else {
+        Box(modifier = Modifier.padding(vertical = 2.dp)) { Card() }
     }
 }
 
@@ -527,8 +604,7 @@ fun CompactTransactionRow(
     categoryName: String? = null,
     isSelected: Boolean = false,
     isSelectionActive: Boolean = false,
-    onClick: (() -> Unit)? = null,
-    onDeleteClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val isIncome = transaction.type == TransactionType.INCOME
@@ -684,18 +760,73 @@ fun CompactTransactionRow(
             type = displayType,
             style = MaterialTheme.typography.titleMedium
         )
+    }
+}
 
-        if (onDeleteClick != null && !isSelectionActive) {
-            MinicashIconButton(
-                onClick = onDeleteClick,
+/**
+ * Fila que se elimina deslizándola de derecha a izquierda: el fondo rojo con el bote de basura aparece mientras se
+ * arrastra y el ícono hace un pequeño rebote al pasar el umbral (~40 %). Al soltar pasado el umbral se llama a
+ * [onDelete], que borra con el aviso «Deshacer» de la pantalla. Solo se desliza en ese sentido.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SwipeToDeleteRow(
+    shape: androidx.compose.ui.graphics.Shape,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val haptics = rememberMinicashHaptics()
+    // El estado del deslizamiento se crea una sola vez: siempre debe llamar al borrado vigente, no al de la primera composición
+    val currentOnDelete by rememberUpdatedState(onDelete)
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                haptics.heavyOrDelete()
+                currentOnDelete()
+                true
+            } else {
+                false
+            }
+        },
+        positionalThreshold = { totalDistance -> totalDistance * 0.4f }
+    )
+    val passedThreshold = dismissState.targetValue == SwipeToDismissBoxValue.EndToStart
+    LaunchedEffect(passedThreshold) { if (passedThreshold) haptics.tick() }
+    val iconScale by animateFloatAsState(
+        targetValue = if (passedThreshold) 1.3f else 0.9f,
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+            stiffness = androidx.compose.animation.core.Spring.StiffnessMedium
+        ),
+        label = "swipe_delete_icon"
+    )
+    SwipeToDismissBox(
+        state = dismissState,
+        modifier = modifier,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            val showing = dismissState.dismissDirection == SwipeToDismissBoxValue.EndToStart
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(shape)
+                    .background(if (showing) MaterialTheme.colorScheme.errorContainer else Color.Transparent)
+                    .padding(end = 24.dp),
+                contentAlignment = Alignment.CenterEnd
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar movimiento",
-                    tint = colorScheme.error,
-                    modifier = Modifier.size(16.dp)
-                )
+                if (showing) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.size(24.dp).graphicsLayer {
+                            scaleX = iconScale
+                            scaleY = iconScale
+                        }
+                    )
+                }
             }
         }
-    }
+    ) { content() }
 }

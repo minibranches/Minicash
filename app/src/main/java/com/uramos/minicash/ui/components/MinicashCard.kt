@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.uramos.minicash.ui.theme.cardSurface
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.ColumnScope
@@ -43,9 +45,11 @@ fun MinicashCard(
     val colors = CardDefaults.cardColors(containerColor = resolvedColor)
 
     if (onClick != null) {
+        val interactionSource = remember { MutableInteractionSource() }
         Card(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.bounceOnPress(interactionSource),
+            interactionSource = interactionSource,
             shape = resolvedShape,
             colors = colors,
             border = border,

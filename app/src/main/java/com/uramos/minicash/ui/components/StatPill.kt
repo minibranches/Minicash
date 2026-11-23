@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
@@ -47,13 +50,20 @@ fun StatPill(
     val ring = MaterialTheme.colorScheme.primary
     val track = MaterialTheme.colorScheme.trackSurface
     val fill = MaterialTheme.colorScheme.primary.copy(alpha = 0.24f)
+    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
+            .then(if (onClick != null) Modifier.bounceOnPress(interactionSource) else Modifier)
             .clip(CircleShape)
             .then(
                 if (onClick != null) Modifier
                     .semantics { stateDescription = if (selected) "Filtro activo" else "Filtro inactivo" }
-                    .clickable(role = Role.Button, onClick = onClick)
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = LocalIndication.current,
+                        role = Role.Button,
+                        onClick = onClick
+                    )
                 else Modifier
             )
             .background(track)

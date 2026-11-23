@@ -302,3 +302,6 @@ class BudgetViewModel(
         }
     }
 }
+/** Partidas del tipo elegido con las píldoras del resumen; sin filtro (null) se devuelven todas, en el mismo orden. */
+internal fun filterBudgetItems(items: List<BudgetItemEntity>, filter: BudgetItemType?): List<BudgetItemEntity> =
+    if (filter == null) items else items.filter { it.type == filter }
