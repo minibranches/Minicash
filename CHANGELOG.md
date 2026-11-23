@@ -2,6 +2,20 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.5.0
+
+### Novedades
+- **Créditos en tarjetas.** La lista pasa a una cuadrícula de dos columnas, como Gastos fijos: ícono con el color de la institución, porcentaje, barra de progreso ondulada expresiva, «n de total», monto y botón «Pagar mes». Los liquidados quedan en su sección plegable.
+- **Patrimonio en una franja** de una línea (cifra a la derecha) en lugar de la tarjeta alta; la tarjeta sigue disponible como opción.
+- **Cuentas de Inicio con acabado por tipo.** Todas del mismo tamaño y con el color de cada cuenta: débito con chip, crédito con borde y etiqueta «A pagar», efectivo con borde punteado y «$» de fondo, ahorro con monedas. El catálogo de cuentas de Ajustes no cambia.
+- **«Distribución del mes» con cuatro estilos:** dona, barras, barra apilada (nueva predeterminada) y Top 5 con la variación contra el mes anterior.
+- **Ajustes → Inicio.** Muestra u oculta y reordena (arrastrando) Patrimonio, Mis cuentas, Distribución del mes y Movimientos recientes; elige el estilo de la distribución y del patrimonio.
+- **Ajustes reordenados.** Cuatro grupos con etiqueta pequeña (Tu dinero, Preferencias, Privacidad y datos, Acerca de) y filas de una línea con su valor actual. Las filas llevan solo la flecha a la derecha. Nueva subpantalla **Notificaciones** con el aviso rojo, la hora de los avisos de pago y el recordatorio diario.
+
+### Interno
+- Preferencias de Inicio en DataStore (no entran en la copia de seguridad). `HomeLayout`, `DistributionMath` y las rutas nuevas, con pruebas.
+- No cambia el formato de datos ni la base de datos.
+
 ## 1.4.0
 
 ### Novedades
