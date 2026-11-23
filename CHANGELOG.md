@@ -2,6 +2,23 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.4.0
+
+### Novedades
+- **Deslizar para eliminar.** En Movimientos cada fila se elimina deslizándola de derecha a izquierda: aparece un fondo rojo con el bote de basura, que da un pequeño rebote al pasar el umbral. Se borra con el aviso «Deshacer» de siempre. Se quitó el botón de basura de cada fila. Con la selección múltiple activa no se desliza.
+- **Sin gesto entre pestañas.** Las pestañas se cambian solo desde la barra inferior, para que el deslizamiento horizontal quede libre para eliminar.
+- **Filtros rápidos en Gastos fijos.** Ingresos, Reembolsos y Gastos del resumen filtran las partidas con un toque (otro toque quita el filtro). Con un filtro activo no se reordena por arrastre.
+- **Tarjetas de Gastos fijos más bajas**, para ver más partidas sin desplazar.
+- **Selector de mes de «Distribución del mes»** igual al de Movimientos (año, flechas y mes). No se puede ir a meses futuros.
+- **Rebote en toda la app.** Tarjetas, píldoras, chips, filas de opciones, selector de periodo, barra de pestañas y menú del botón de agregar se encogen un poco al tocarlos y vuelven con un rebote; las entradas de teclado numérico, avisos y diálogos «saltan» al aparecer.
+
+### Correcciones
+- Los grupos de movimientos ya no muestran filas repetidas o equivocadas tras eliminar y deshacer, ni al restaurar una copia: cada fila lleva su propio estado ligado al movimiento.
+
+### Interno
+- `bounceOnPress`, `SwipeToDeleteRow`, `filterBudgetItems` y la lógica pura del selector de mes de Inicio, con pruebas.
+- No cambia el formato de datos.
+
 ## 1.3.1
 
 Versión de correcciones.

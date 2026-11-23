@@ -90,7 +90,7 @@ Las pruebas unitarias cubren el cálculo de fechas de pago y la herencia entre i
 
 ## Estado
 
-Proyecto personal en uso diario. Está en versión 1.3.1. Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md). Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
+Proyecto personal en uso diario. Está en versión 1.4.0. Los cambios de cada versión están en el [CHANGELOG](CHANGELOG.md). Las versiones siguen [SemVer](https://semver.org/lang/es/): correcciones `1.0.x`, funciones nuevas `1.x.0`; cada release sube también `versionCode` en `app/build.gradle.kts` y lleva un tag `vX.Y.Z`.
 
 ## Licencia
 
