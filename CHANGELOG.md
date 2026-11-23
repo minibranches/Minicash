@@ -2,6 +2,22 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.3.1
+
+Versión de correcciones.
+
+### Correcciones
+- **Búsqueda de movimientos.** Ya se llega al último resultado, con o sin teclado abierto: las listas de las cuatro pestañas dejan el espacio justo para la barra flotante y el teclado, y el velo inferior solo se dibuja cuando hay algo más abajo. Además, el título ya no se esconde ni reaparece si la lista no se está moviendo (pocos resultados).
+- **Teclados del movimiento nuevo y de la edición.** El teclado del sistema y el numérico ocupan el mismo lugar: se ve uno u otro según el teclado del sistema esté abierto, sin importar cómo se cierre (✓, atrás, tocar fuera, elegir una sugerencia, categoría o cuenta). «Guardar» (y «Guardar cambios») queda siempre fijo al pie, con el motivo cuando está deshabilitado, y ya no desaparece ni mueve la hoja. Los dos modales comparten el mismo teclado numérico.
+- **Notificaciones.** Si hay un recordatorio diario o avisos de pago activos (por ejemplo, tras restaurar una copia), la app pide el permiso de notificaciones una vez al abrirse, y los interruptores reflejan el estado real del sistema. Si está desactivado, Ajustes muestra un aviso rojo con acceso directo a la configuración del sistema. El recordatorio diario ya no intenta notificar sin permiso.
+- **Gastos fijos y Movimientos.** El velo del encabezado ya no roza la cifra «Disponible» ni el resumen sin haber bajado la lista.
+- **Copiar quincena.** Las partidas siguen la regla de listas segmentadas: el primero y el último con esquinas redondeadas hacia afuera y los intermedios con un redondeo leve.
+- **Ajustes.** Los subtítulos con un solo elemento van en singular («1 institución registrada»).
+
+### Interno
+- `tabListBottomPadding`, `NotificationNeeds` y `RequestNotificationPermissionOnce`.
+- No cambia el formato de datos.
+
 ## 1.3.0
 
 ### Novedades
