@@ -297,6 +297,25 @@ class SettingsViewModel(
         viewModelScope.launch { userPreferences.setNotificationPermissionAsked(true) }
     }
 
+    val homeLayout: StateFlow<com.uramos.minicash.data.preferences.HomeLayout> = userPreferences.homeLayout
+        .stateIn(viewModelScope, SharingStarted.Eagerly, com.uramos.minicash.data.preferences.HomeLayout())
+
+    fun setHomeOrder(order: List<com.uramos.minicash.data.preferences.HomeWidget>) {
+        viewModelScope.launch { userPreferences.setHomeOrder(order) }
+    }
+
+    fun setHomeWidgetHidden(widget: com.uramos.minicash.data.preferences.HomeWidget, hidden: Boolean) {
+        viewModelScope.launch { userPreferences.setHomeWidgetHidden(widget, hidden) }
+    }
+
+    fun setDistributionStyle(style: com.uramos.minicash.data.preferences.DistributionStyle) {
+        viewModelScope.launch { userPreferences.setDistributionStyle(style) }
+    }
+
+    fun setPatrimonyStyle(style: com.uramos.minicash.data.preferences.PatrimonyStyle) {
+        viewModelScope.launch { userPreferences.setPatrimonyStyle(style) }
+    }
+
     val refreshRateLimit: StateFlow<Int> = userPreferences.refreshRateLimit
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 

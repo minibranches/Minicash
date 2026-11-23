@@ -269,6 +269,13 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 - **Compra a meses:** al editar, «Guardar» está disponible desde cualquier paso.
 - **Etiquetas:** sentence case, sin dos puntos al final, «Transferencia» sin abreviar y plural correcto («Copiar 1 partida»).
 
+## 10c. Inicio configurable y Ajustes
+
+- **Inicio** se dibuja a partir de `HomeLayout` (DataStore): orden y secciones visibles (Patrimonio, Mis cuentas, Distribución del mes, Movimientos recientes), estilo de la distribución (dona, barras, barra apilada, Top 5) y del patrimonio (franja o tarjeta). Se edita en Ajustes → Inicio; no entra en la copia de seguridad.
+- **Cuentas:** `AccountTypeCard` mide siempre lo mismo y usa el color de la cuenta; el tipo se distingue por el acabado dibujado (chip, borde, billete, monedas), no por el tamaño.
+- **Créditos:** cuadrícula de 2 columnas; el avance usa `WavyProgressIndicator`.
+- **Ajustes:** grupos con `MinicashSectionLabel` y filas segmentadas de una línea (`SettingsRowItem` con valor y flecha, `SettingsSwitchItem`); lo que necesita más espacio vive en subpantallas (`settings/home`, `settings/notifications`).
+
 ## 11. Decisiones del PO
 
 1. **Hero de Inicio:** hoy es simétrico de 3 tarjetas. Queda abierta la opción de evolucionarlo a un diseño asimétrico (una pieza grande de patrimonio y dos piezas pequeñas apiladas).

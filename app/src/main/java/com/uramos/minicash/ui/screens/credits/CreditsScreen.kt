@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.components.ExpandingFilterButton
@@ -92,7 +97,7 @@ import java.util.Locale
 @Composable
 fun CreditsScreen(
     viewModel: CreditsViewModel,
-    listState: androidx.compose.foundation.lazy.LazyListState = androidx.compose.foundation.lazy.rememberLazyListState(),
+    listState: androidx.compose.foundation.lazy.grid.LazyGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState(),
     showAddDialogExternal: Boolean = false,
     onAddDialogExternalHandled: () -> Unit = {},
     onOpenAddTransactionForCredit: (amountCents: Long, conceptStr: String, notesStr: String) -> Unit = { _, _, _ -> },
@@ -230,15 +235,17 @@ fun CreditsScreen(
                 }
             }
         ) { headerHeight ->
-            // Una sola lista: activos arriba y, plegados al final, los liquidados
-            LazyColumn(
+            // Una sola cuadrícula de 2 columnas: activos arriba y, plegados al final, los liquidados
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
                 state = listState,
                 modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 20.dp, end = 20.dp, bottom = rememberTabListBottomPadding()),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (state.activeCredits.isEmpty()) {
-                    item(key = "credits_empty") {
+                    item(key = "credits_empty", span = { GridItemSpan(maxLineSpan) }) {
                         MinicashEmptyState(
                             icon = Icons.Default.CreditCard,
                             title = "Sin créditos activos",
@@ -250,22 +257,16 @@ fun CreditsScreen(
                     }
                 }
                 itemsIndexed(state.activeCredits, key = { _, item -> item.id }) { index, credit ->
-                    val itemShape = rememberSegmentedShape(index = index, count = state.activeCredits.size)
-                    Box(modifier = minicashAnimateItem().listEntrance(entranceTracker, credit.id, index)) {
-                        CreditItemCard(
-                            credit = credit,
-                            institutions = institutions,
-                            shape = itemShape,
-                            onPayClick = { creditToPay = credit },
-                            onEdit = { creditToEdit = credit },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 2.dp)
-                        )
-                    }
+                    CreditItemCard(
+                        credit = credit,
+                        institutions = institutions,
+                        onPayClick = { creditToPay = credit },
+                        onEdit = { creditToEdit = credit },
+                        modifier = minicashAnimateItem().listEntrance(entranceTracker, credit.id, index)
+                    )
                 }
                 if (state.settledCredits.isNotEmpty()) {
-                    item(key = "credits_settled_header") {
+                    item(key = "credits_settled_header", span = { GridItemSpan(maxLineSpan) }) {
                         CollapsibleSectionHeader(
                             title = "Liquidados",
                             count = state.settledCredits.size,
@@ -274,22 +275,17 @@ fun CreditsScreen(
                                 haptics.tick()
                                 settledExpanded = !settledExpanded
                             },
-                            modifier = Modifier.padding(top = spacing.large, bottom = spacing.small)
+                            modifier = Modifier.padding(top = spacing.medium)
                         )
                     }
                     if (settledExpanded) {
-                        itemsIndexed(state.settledCredits, key = { _, item -> item.id }) { index, credit ->
-                            val itemShape = rememberSegmentedShape(index = index, count = state.settledCredits.size)
+                        itemsIndexed(state.settledCredits, key = { _, item -> item.id }) { _, credit ->
                             CreditItemCard(
                                 credit = credit,
                                 institutions = institutions,
-                                shape = itemShape,
                                 onPayClick = { creditToPay = credit },
                                 onEdit = { creditToEdit = credit },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp)
-                                    .then(minicashAnimateItem())
+                                modifier = minicashAnimateItem()
                             )
                         }
                     }
@@ -452,14 +448,17 @@ fun ConfirmCreditPaymentDialog(
     )
 }
 
+/**
+ * Crédito como tarjeta de la cuadrícula de 2 columnas: ícono con el color de su institución, avance (con la barra
+ * ondulada expresiva), mensualidad y «Pagar mes». Los liquidados muestran el total pagado y una insignia.
+ */
 @Composable
 fun CreditItemCard(
     credit: CreditEntity,
     institutions: List<CreditInstitutionEntity> = emptyList(),
     onPayClick: () -> Unit,
     onEdit: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    shape: Shape? = null
+    modifier: Modifier = Modifier
 ) {
     val spacing = MinicashThemeExtensions.spacing
     val progress = if (credit.totalInstallments > 0) {
@@ -471,13 +470,7 @@ fun CreditItemCard(
     val instColor = remember(institutions, credit.institution, credit.institutionId, defaultPrimary) {
         val match = institutions.firstOrNull { it.id == credit.institutionId }
             ?: institutions.firstOrNull { it.name.equals(credit.institution, ignoreCase = true) }
-        match?.colorHex?.let {
-            MinicashColorUtils.parseHexColor(it, defaultPrimary)
-        } ?: defaultPrimary
-    }
-
-    val purchaseLabel = remember(credit.purchaseDate) {
-        SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(credit.purchaseDate)
+        match?.colorHex?.let { MinicashColorUtils.parseHexColor(it, defaultPrimary) } ?: defaultPrimary
     }
 
     val institution = institutions.firstOrNull { it.id == credit.institutionId }
@@ -486,183 +479,142 @@ fun CreditItemCard(
         paymentDay?.takeIf { !isCompleted }?.let { day ->
             val next = com.uramos.minicash.data.util.PaymentSchedule.nextPayment(day, java.time.LocalDate.now())
             SimpleDateFormat("d MMM", Locale.forLanguageTag("es-MX"))
-                .format(java.util.Date.from(next.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()))
+                .format(Date.from(next.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()))
         }
     }
-
-    val remainingMonths = (credit.totalInstallments - credit.paidInstallments).coerceAtLeast(0)
-    val estimatedTermLabel = remember(credit.totalInstallments, credit.paidInstallments, isCompleted, remainingMonths) {
-        if (!isCompleted && remainingMonths > 0) {
-            val termCal = Calendar.getInstance().apply {
-                add(Calendar.MONTH, remainingMonths)
-            }
-            val format = SimpleDateFormat("MMM yyyy", Locale.forLanguageTag("es-MX"))
-            format.format(termCal.time).replaceFirstChar { it.uppercase() }
-        } else null
+    val purchaseLabel = remember(credit.purchaseDate) {
+        SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(credit.purchaseDate)
+    }
+    val subtitle = if (isCompleted) {
+        "${credit.institution} • $purchaseLabel"
+    } else {
+        buildString {
+            append(credit.institution)
+            nextPaymentLabel?.let { append(" • próximo pago ").append(it) }
+        }
     }
 
     MinicashCard(
         level = CardTonalLevel.LOW,
-        shape = shape ?: MinicashShapes.Card,
+        shape = MinicashShapes.Card,
         onClick = onEdit,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(spacing.standard),
-            verticalArrangement = Arrangement.spacedBy(spacing.small)
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = CircleShape,
-                        color = instColor.copy(alpha = 0.2f),
-                        modifier = Modifier.size(36.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.Default.CreditCard,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = instColor.asIconTint()
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(spacing.small))
-                    Column {
-                        Text(
-                            text = credit.article,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                Surface(
+                    shape = CircleShape,
+                    color = instColor.copy(alpha = 0.2f),
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Default.CreditCard,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = instColor.asIconTint()
                         )
-                        Text(
-                            text = "${credit.institution} • ${credit.responsible} • ${purchaseLabel}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (nextPaymentLabel != null) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                if (reminderDays != null) {
-                                    Icon(
-                                        imageVector = Icons.Default.Notifications,
-                                        contentDescription = "Con aviso de pago",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                                Text(
-                                    text = "Próximo pago: $nextPaymentLabel",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
                     }
                 }
-            }
-
-            if (!isCompleted) {
-                // Barra de progreso de amortización
-                Column(verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
-                    WavyProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier.fillMaxWidth().height(20.dp)
+                if (!isCompleted) {
+                    Text(
+                        text = "${(progress * 100).toInt()}%",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Mensualidad ${credit.paidInstallments} de ${credit.totalInstallments}",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Medium
-                        )
-                        if (estimatedTermLabel != null) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.surfaceContainerHighest
-                            ) {
-                                Text(
-                                    text = "Término est.: $estimatedTermLabel",
-                                    modifier = Modifier.padding(horizontal = spacing.small, vertical = spacing.none),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                        Text(
-                            text = "${(progress * 100).toInt()}%",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                // Detalle económico y botón de registrar mensualidad
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("Mensualidad:", style = MaterialTheme.typography.labelSmall)
-                        MoneyTextView(
-                            amountCents = credit.monthlyAmount,
-                            type = MoneyDisplayType.NEUTRAL,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-
-                    MinicashFilledButton(
-                        onClick = onPayClick,
-                        contentPadding = PaddingValues(horizontal = spacing.medium, vertical = spacing.extraSmall)
-                    ) {
-                        Text("Pagar mes")
-                    }
-                }
-            } else {
-                // Tarjeta Liquidada Refinada
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Total pagado",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        MoneyTextView(
-                            amountCents = credit.totalAmount,
-                            type = MoneyDisplayType.NEUTRAL,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest
-                    ) {
+                } else {
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHighest) {
                         Text(
                             text = "✓ Liquidado",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = spacing.medium, vertical = spacing.extraSmall)
+                            modifier = Modifier.padding(horizontal = spacing.small, vertical = 2.dp)
                         )
                     }
+                }
+            }
+            Text(
+                text = credit.article,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                if (reminderDays != null && nextPaymentLabel != null) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Con aviso de pago",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (!isCompleted) {
+                WavyProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.fillMaxWidth().height(20.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "${credit.paidInstallments} de ${credit.totalInstallments}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    MoneyTextView(
+                        amountCents = credit.monthlyAmount,
+                        type = MoneyDisplayType.NEUTRAL,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        autoSizeMin = 11.sp
+                    )
+                }
+                MinicashFilledButton(
+                    onClick = onPayClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = spacing.medium, vertical = spacing.extraSmall)
+                ) {
+                    Text("Pagar mes")
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Total pagado",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    MoneyTextView(
+                        amountCents = credit.totalAmount,
+                        type = MoneyDisplayType.NEUTRAL,
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        autoSizeMin = 11.sp
+                    )
                 }
             }
         }

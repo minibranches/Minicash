@@ -57,11 +57,25 @@ data class HomeUiState(
     val isLoading: Boolean = true
 )
 
+/** Gastos del mes anterior al que se muestra, por nombre de categoría, para comparar en el estilo «Top 5». */
+@Immutable
+data class PreviousMonthExpense(
+    val totalByCategory: Map<String, Long> = emptyMap(),
+    val total: Long = 0L,
+    val monthLabel: String = ""
+)
+
 class HomeViewModel(
     private val accountDao: AccountDao,
     private val transactionDao: TransactionDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    userPreferences: com.uramos.minicash.data.preferences.UserPreferences? = null
 ) : ViewModel() {
+
+    /** Qué secciones de Inicio se ven, en qué orden y con qué estilo (se cambia en Ajustes → Inicio). */
+    val homeLayout: StateFlow<com.uramos.minicash.data.preferences.HomeLayout> =
+        (userPreferences?.homeLayout ?: flowOf(com.uramos.minicash.data.preferences.HomeLayout()))
+            .stateIn(viewModelScope, SharingStarted.Eagerly, com.uramos.minicash.data.preferences.HomeLayout())
 
     /** Alta rápida desde el selector de categorías de la edición; entrega el id para dejarla seleccionada. */
     fun createCategory(name: String, type: TransactionType, onCreated: (Long) -> Unit) {
@@ -224,6 +238,27 @@ class HomeViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState()
     )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val previousMonthExpense: StateFlow<PreviousMonthExpense> = monthRange.flatMapLatest { (monthStart, _) ->
+        val shown = java.time.Instant.ofEpochMilli(monthStart).atZone(ZoneId.systemDefault()).toLocalDate()
+        val previous = YearMonth.from(shown).minusMonths(1)
+        val (previousStart, previousEnd) = rangeOf(previous)
+        combine(
+            transactionDao.getTransactionsBetween(previousStart, previousEnd),
+            categoryDao.getAllActiveCategories()
+        ) { transactions, categories ->
+            val names = categories.associate { it.id to it.name }
+            val expenses = transactions.filter { it.type == TransactionType.EXPENSE }
+            PreviousMonthExpense(
+                totalByCategory = expenses
+                    .groupBy { tx -> tx.categoryId?.let { names[it] } ?: "Otros" }
+                    .mapValues { (_, list) -> list.sumOf { it.amount } },
+                total = expenses.sumOf { it.amount },
+                monthLabel = previous.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.forLanguageTag("es-MX"))
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreviousMonthExpense())
 
     val selectedTotalAmount: StateFlow<Long> = combine(
         _selectedIds,

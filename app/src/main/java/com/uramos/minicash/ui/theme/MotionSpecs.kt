@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.theme
 
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -90,6 +91,15 @@ object MinicashTransitions {
  */
 @Composable
 fun LazyItemScope.minicashAnimateItem(): Modifier =
+    Modifier.animateItem(
+        fadeInSpec = minicashEffectsSpec(),
+        placementSpec = minicashSpatialSpec(),
+        fadeOutSpec = minicashFastEffectsSpec()
+    )
+
+/** [minicashAnimateItem] para los elementos de una `LazyVerticalGrid`. */
+@Composable
+fun LazyGridItemScope.minicashAnimateItem(): Modifier =
     Modifier.animateItem(
         fadeInSpec = minicashEffectsSpec(),
         placementSpec = minicashSpatialSpec(),

@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.data.preferences.PatrimonyStyle
+import com.uramos.minicash.data.preferences.HomeWidget
 import androidx.compose.runtime.rememberUpdatedState
 import com.uramos.minicash.ui.components.bounceOnPress
 import androidx.compose.foundation.LocalIndication
@@ -243,6 +245,8 @@ fun HomeScreen(
                     com.uramos.minicash.ui.utils.groupTransactionsByDate(state.recentTransactions)
                 }
                 val accountMap = remember(state.accounts) { state.accounts.associateBy({ it.id }, { it.name }) }
+                val layout by viewModel.homeLayout.collectAsState()
+                val previousExpense by viewModel.previousMonthExpense.collectAsState()
 
                 LazyColumn(
                     state = listState,
@@ -255,127 +259,150 @@ fun HomeScreen(
                     ),
                     verticalArrangement = Arrangement.spacedBy(spacing.hero)
                 ) {
-                    // Patrimonio: suma de los saldos de todas las cuentas
-                    item {
-                        PatrimonyCard(
-                            totalBalance = state.totalBalance,
-                            accountCount = state.accounts.size,
-                            modifier = Modifier.listEntrance(entranceTracker, "home_hero", 0)
-                        )
-                    }
-
-                    // Sección 1: Cuentas
-                    item {
-                        Column(modifier = Modifier.listEntrance(entranceTracker, "home_accounts", 1)) {
-                            MinicashSectionTitle("Mis cuentas")
-                            Spacer(modifier = Modifier.height(spacing.medium))
-                            // Carrusel: las tarjetas de los bordes se recortan con máscara y se acomodan al desplazar
-                            val accountsCarouselState = rememberCarouselState { state.accounts.size }
-                            HorizontalUncontainedCarousel(
-                                state = accountsCarouselState,
-                                itemWidth = 156.dp,
-                                itemSpacing = spacing.medium,
-                                modifier = Modifier.fillMaxWidth().height(148.dp)
-                            ) { index ->
-                                val account = state.accounts[index]
-                                AccountCard(
-                                    account = account,
-                                    modifier = Modifier.fillMaxSize().maskClip(MinicashShapes.Card),
-                                    onClick = { onOpenAccount(account.id) }
-                                )
-                            }
-                        }
-                    }
-
-                    // Módulo de Análisis Estadístico: Widget de 2 Caras con Swipe (Gastos e Ingresos)
-                    item {
-                        Column(modifier = Modifier.listEntrance(entranceTracker, "home_stats", 2)) {
-                            MinicashSectionTitle("Distribución del mes")
-                            Spacer(modifier = Modifier.height(spacing.small))
-                            val chartMonthOverride by viewModel.chartMonth.collectAsState()
-                            val chartYears by viewModel.chartYears.collectAsState()
-                            val chartMonth = chartMonthOverride ?: YearMonth.now()
-                            MinicashPeriodSelector(
-                                year = chartMonth.year,
-                                monthIndex = chartMonth.monthValue - 1,
-                                years = chartYears,
-                                onYearSelect = {
-                                    haptics.tick()
-                                    viewModel.selectChartYear(it)
-                                },
-                                onShiftMonths = {
-                                    haptics.tick()
-                                    viewModel.shiftChartMonth(it)
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(spacing.small))
-                            TwoFacedStatsChartWidget(
-                                monthlyExpenseStats = state.monthlyExpenseStats,
-                                totalMonthlyExpense = state.totalMonthlyExpense,
-                                monthlyIncomeStats = state.monthlyIncomeStats,
-                                totalMonthlyIncome = state.totalMonthlyIncome
-                            )
-                        }
-                    }
-
-                    // Sección 2: Transacciones recientes (Últimos 10 movimientos)
-                    item {
-                        Column(modifier = Modifier.listEntrance(entranceTracker, "home_recent", 3)) {
-                            MinicashSectionTitle("Movimientos recientes")
-                            Spacer(modifier = Modifier.height(spacing.medium))
-                        }
-                    }
-
-                    if (state.recentTransactions.isEmpty()) {
-                        item {
+                    val widgets = layout.visible
+                    if (widgets.isEmpty()) {
+                        item(key = "home_no_widgets") {
                             MinicashEmptyState(
-                                icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                                title = "Sin movimientos recientes",
-                                subtitle = "Tus movimientos de los últimos días aparecerán aquí.",
+                                icon = Icons.Default.AccountBalanceWallet,
+                                title = "Inicio sin secciones",
+                                subtitle = "Elige qué se muestra en Ajustes → Inicio.",
                                 modifier = Modifier.padding(vertical = spacing.large)
                             )
                         }
-                    } else {
-                        groupedRecent.forEach { group ->
-                            item(key = "group_${group.dateKey}") {
-                                Box(modifier = minicashAnimateItem()) {
-                                    GroupedTransactionCard(
-                                        group = group,
-                                        categoryMap = categoryMap,
-                                        accountMap = accountMap,
-                                        selectedIds = selectedIds,
-                                        onToggleSelection = { id ->
-                                            haptics.click()
-                                            viewModel.toggleSelection(id)
-                                        },
-                                        onTransactionClick = { transactionToEdit = it }
+                    }
+                    widgets.forEachIndexed { widgetIndex, widget ->
+                        when (widget) {
+                            HomeWidget.PATRIMONY -> item(key = "home_patrimony") {
+                                if (layout.patrimonyStyle == PatrimonyStyle.STRIP) {
+                                    PatrimonyStrip(
+                                        totalBalance = state.totalBalance,
+                                        accountCount = state.accounts.size,
+                                        modifier = Modifier.listEntrance(entranceTracker, "home_hero", widgetIndex)
+                                    )
+                                } else {
+                                    PatrimonyCard(
+                                        totalBalance = state.totalBalance,
+                                        accountCount = state.accounts.size,
+                                        modifier = Modifier.listEntrance(entranceTracker, "home_hero", widgetIndex)
                                     )
                                 }
                             }
-                        }
 
-                        // Botón en píldora "Ver más movimientos"
-                        item {
-                            MinicashCard(
-                                onClick = onSeeMoreTransactionsClick,
-                                level = CardTonalLevel.HIGH,
-                                shape = CircleShape,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = spacing.extraSmall)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = spacing.medium),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Ver más movimientos",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
+                            HomeWidget.ACCOUNTS -> item(key = "home_accounts") {
+                                Column(modifier = Modifier.listEntrance(entranceTracker, "home_accounts", widgetIndex)) {
+                                    MinicashSectionTitle("Mis cuentas")
+                                    Spacer(modifier = Modifier.height(spacing.medium))
+                                    // Carrusel: las tarjetas de los bordes se recortan con máscara y se acomodan al desplazar
+                                    val accountsCarouselState = rememberCarouselState { state.accounts.size }
+                                    HorizontalUncontainedCarousel(
+                                        state = accountsCarouselState,
+                                        itemWidth = AccountTypeCardWidth,
+                                        itemSpacing = spacing.medium,
+                                        modifier = Modifier.fillMaxWidth().height(AccountTypeCardHeight)
+                                    ) { index ->
+                                        val account = state.accounts[index]
+                                        AccountTypeCard(
+                                            account = account,
+                                            modifier = Modifier.fillMaxSize().maskClip(MinicashShapes.Card),
+                                            onClick = { onOpenAccount(account.id) }
+                                        )
+                                    }
+                                }
+                            }
+
+                            HomeWidget.DISTRIBUTION -> item(key = "home_distribution") {
+                                Column(modifier = Modifier.listEntrance(entranceTracker, "home_stats", widgetIndex)) {
+                                    MinicashSectionTitle("Distribución del mes")
+                                    Spacer(modifier = Modifier.height(spacing.small))
+                                    val chartMonthOverride by viewModel.chartMonth.collectAsState()
+                                    val chartYears by viewModel.chartYears.collectAsState()
+                                    val chartMonth = chartMonthOverride ?: YearMonth.now()
+                                    MinicashPeriodSelector(
+                                        year = chartMonth.year,
+                                        monthIndex = chartMonth.monthValue - 1,
+                                        years = chartYears,
+                                        onYearSelect = {
+                                            haptics.tick()
+                                            viewModel.selectChartYear(it)
+                                        },
+                                        onShiftMonths = {
+                                            haptics.tick()
+                                            viewModel.shiftChartMonth(it)
+                                        }
                                     )
+                                    Spacer(modifier = Modifier.height(spacing.small))
+                                    DistributionWidget(
+                                        style = layout.distributionStyle,
+                                        expenseStats = state.monthlyExpenseStats,
+                                        totalExpense = state.totalMonthlyExpense,
+                                        incomeStats = state.monthlyIncomeStats,
+                                        totalIncome = state.totalMonthlyIncome,
+                                        previousExpense = previousExpense
+                                    )
+                                }
+                            }
+
+                            HomeWidget.RECENTS -> {
+                                item(key = "home_recents_title") {
+                                    Column(modifier = Modifier.listEntrance(entranceTracker, "home_recent", widgetIndex)) {
+                                        MinicashSectionTitle("Movimientos recientes")
+                                        Spacer(modifier = Modifier.height(spacing.medium))
+                                    }
+                                }
+
+                                if (state.recentTransactions.isEmpty()) {
+                                    item(key = "home_recents_empty") {
+                                        MinicashEmptyState(
+                                            icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                                            title = "Sin movimientos recientes",
+                                            subtitle = "Tus movimientos de los últimos días aparecerán aquí.",
+                                            modifier = Modifier.padding(vertical = spacing.large)
+                                        )
+                                    }
+                                } else {
+                                    groupedRecent.forEach { group ->
+                                        item(key = "group_${group.dateKey}") {
+                                            Box(modifier = minicashAnimateItem()) {
+                                                GroupedTransactionCard(
+                                                    group = group,
+                                                    categoryMap = categoryMap,
+                                                    accountMap = accountMap,
+                                                    selectedIds = selectedIds,
+                                                    onToggleSelection = { id ->
+                                                        haptics.click()
+                                                        viewModel.toggleSelection(id)
+                                                    },
+                                                    onTransactionClick = { transactionToEdit = it }
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Botón en píldora "Ver más movimientos"
+                                    item(key = "home_recents_more") {
+                                        MinicashCard(
+                                            onClick = onSeeMoreTransactionsClick,
+                                            level = CardTonalLevel.HIGH,
+                                            shape = CircleShape,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = spacing.extraSmall)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = spacing.medium),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "Ver más movimientos",
+                                                    style = MaterialTheme.typography.titleMedium,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -102,7 +102,8 @@ class MainActivity : FragmentActivity() {
         val homeViewModel = HomeViewModel(
             accountDao = db.accountDao(),
             transactionDao = db.transactionDao(),
-            categoryDao = db.categoryDao()
+            categoryDao = db.categoryDao(),
+            userPreferences = userPreferences
         )
 
         val addTransactionViewModel = AddTransactionViewModel(

@@ -85,6 +85,10 @@ class UserPreferences(private val context: Context) {
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
         val APP_LOCK_TIMEOUT_MINUTES = androidx.datastore.preferences.core.intPreferencesKey("app_lock_timeout_minutes")
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
+        val HOME_WIDGET_ORDER = stringPreferencesKey("home_widget_order")
+        val HOME_WIDGET_HIDDEN = stringPreferencesKey("home_widget_hidden")
+        val HOME_DISTRIBUTION_STYLE = stringPreferencesKey("home_distribution_style")
+        val HOME_PATRIMONY_STYLE = stringPreferencesKey("home_patrimony_style")
         val REFRESH_RATE_LIMIT = androidx.datastore.preferences.core.intPreferencesKey("refresh_rate_limit")
     }
 
@@ -208,6 +212,35 @@ class UserPreferences(private val context: Context) {
 
     suspend fun setNotificationPermissionAsked(asked: Boolean) {
         context.dataStore.edit { prefs -> prefs[NOTIFICATION_PERMISSION_ASKED] = asked }
+    }
+
+    /** Qué se ve en Inicio, en qué orden y con qué estilo. Preferencia de este dispositivo: no viaja en las copias. */
+    val homeLayout: Flow<HomeLayout> = context.dataStore.data.map { prefs ->
+        HomeLayout(
+            order = parseHomeOrder(prefs[HOME_WIDGET_ORDER]),
+            hidden = parseHomeHidden(prefs[HOME_WIDGET_HIDDEN]),
+            distributionStyle = distributionStyleOf(prefs[HOME_DISTRIBUTION_STYLE]),
+            patrimonyStyle = patrimonyStyleOf(prefs[HOME_PATRIMONY_STYLE])
+        )
+    }
+
+    suspend fun setHomeOrder(order: List<HomeWidget>) {
+        context.dataStore.edit { prefs -> prefs[HOME_WIDGET_ORDER] = encodeHomeOrder(order) }
+    }
+
+    suspend fun setHomeWidgetHidden(widget: HomeWidget, hidden: Boolean) {
+        context.dataStore.edit { prefs ->
+            val current = parseHomeHidden(prefs[HOME_WIDGET_HIDDEN])
+            prefs[HOME_WIDGET_HIDDEN] = encodeHomeHidden(if (hidden) current + widget else current - widget)
+        }
+    }
+
+    suspend fun setDistributionStyle(style: DistributionStyle) {
+        context.dataStore.edit { prefs -> prefs[HOME_DISTRIBUTION_STYLE] = style.name }
+    }
+
+    suspend fun setPatrimonyStyle(style: PatrimonyStyle) {
+        context.dataStore.edit { prefs -> prefs[HOME_PATRIMONY_STYLE] = style.name }
     }
 
     suspend fun setRefreshRateLimit(hz: Int) {

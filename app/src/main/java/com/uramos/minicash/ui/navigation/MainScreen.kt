@@ -137,6 +137,8 @@ import com.uramos.minicash.ui.screens.settings.AppearanceSettingsScreen
 import com.uramos.minicash.ui.screens.settings.BackupSettingsScreen
 import com.uramos.minicash.ui.screens.settings.CategoriesManagementScreen
 import com.uramos.minicash.ui.screens.settings.InstitutionsManagementScreen
+import com.uramos.minicash.ui.screens.settings.HomeSettingsScreen
+import com.uramos.minicash.ui.screens.settings.NotificationsSettingsScreen
 import com.uramos.minicash.ui.screens.settings.ModulesSettingsScreen
 import com.uramos.minicash.ui.screens.settings.SettingsScreen
 import com.uramos.minicash.ui.screens.settings.SettingsViewModel
@@ -216,7 +218,7 @@ fun MainScreen(
     val homeListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val transactionsListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val budgetListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
-    val creditsListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val creditsListState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
     val settingsListState = androidx.compose.foundation.lazy.rememberLazyListState()
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -485,6 +487,8 @@ fun MainScreen(
                                 onNavigateToInstitutions = { routeStack.add(ROUTE_INSTITUTIONS) },
                                 onNavigateToAppearance = { routeStack.add(ROUTE_APPEARANCE) },
                                 onNavigateToModules = { routeStack.add(ROUTE_MODULES) },
+                                onNavigateToHome = { routeStack.add(ROUTE_HOME) },
+                                onNavigateToNotifications = { routeStack.add(ROUTE_NOTIFICATIONS) },
                                 onNavigateToBackups = { routeStack.add(ROUTE_BACKUPS) },
                                 onNavigateToAbout = { routeStack.add(ROUTE_ABOUT) },
                                 onBackClick = back
@@ -494,6 +498,8 @@ fun MainScreen(
                             ROUTE_INSTITUTIONS -> InstitutionsManagementScreen(viewModel = settingsViewModel, onNavigateBack = back)
                             ROUTE_APPEARANCE -> AppearanceSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
                             ROUTE_MODULES -> ModulesSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
+                            ROUTE_HOME -> HomeSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
+                            ROUTE_NOTIFICATIONS -> NotificationsSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
                             ROUTE_BACKUPS -> BackupSettingsScreen(viewModel = settingsViewModel, onBackClick = back)
                             ROUTE_ABOUT -> AboutScreen(onBackClick = back)
                             else -> {
@@ -955,6 +961,8 @@ private const val ROUTE_CATEGORIES = "settings/categories"
 private const val ROUTE_INSTITUTIONS = "settings/institutions"
 private const val ROUTE_APPEARANCE = "settings/appearance"
 private const val ROUTE_MODULES = "settings/modules"
+private const val ROUTE_HOME = "settings/home"
+private const val ROUTE_NOTIFICATIONS = "settings/notifications"
 private const val ROUTE_BACKUPS = "settings/backups"
 private const val ROUTE_ABOUT = "settings/about"
 private const val ROUTE_REPORTS = "reports"
