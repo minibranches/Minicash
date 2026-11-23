@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.budget
 
+import androidx.compose.foundation.lazy.itemsIndexed
+import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import androidx.compose.material.icons.outlined.ContentCopy
 import com.uramos.minicash.ui.components.TabActionButton
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
@@ -246,10 +248,10 @@ fun BudgetScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(
-                    top = headerHeight + spacing.small,
+                    top = headerHeight + spacing.standard,
                     start = spacing.screen,
                     end = spacing.screen,
-                    bottom = 120.dp
+                    bottom = rememberTabListBottomPadding()
                 ),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -1313,15 +1315,16 @@ fun CopyFortnightSheet(
                     modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    items(sourceItems, key = { it.id }) { item ->
+                    itemsIndexed(sourceItems, key = { _, item -> item.id }) { index, item ->
                         val checked = item.id in selectedIds
                         Surface(
                             onClick = {
                                 haptics.tick()
                                 selectedIds = if (checked) selectedIds - item.id else selectedIds + item.id
                             },
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (checked) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                            // Regla 4 de CONTRACTS: primero y último con las esquinas grandes hacia afuera, intermedios con 4 dp
+                            shape = rememberSegmentedShape(index, sourceItems.size),
+                            color = if (checked) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.trackSurface,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(

@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.material.icons.filled.NotificationsOff
+import com.uramos.minicash.ui.utils.openAppNotificationSettings
+import com.uramos.minicash.ui.utils.rememberNotificationsAllowed
 import com.uramos.minicash.ui.components.MinicashTimePickerDialog
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.cardSurface
@@ -123,6 +126,8 @@ fun SettingsScreen(
     var showAutoBackupTimePickerDialog by remember { mutableStateOf(false) }
     var showCreditTimePickerDialog by remember { mutableStateOf(false) }
     val creditReminderTime by viewModel.creditReminderTime.collectAsState()
+    val notificationsNeeded by viewModel.notificationsNeeded.collectAsState()
+    val notificationsAllowed = rememberNotificationsAllowed()
 
     val postNotificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -155,6 +160,13 @@ fun SettingsScreen(
             ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            // Aviso cuando hay algo programado y el sistema no deja notificar
+            if (notificationsNeeded && !notificationsAllowed) {
+                item {
+                    NotificationsDisabledCard(onClick = { openAppNotificationSettings(context) })
+                }
+            }
+
             // BLOQUE 1: Tu dinero
             item {
                 SettingsSection(
@@ -166,21 +178,21 @@ fun SettingsScreen(
                     SettingsRowItem(
                         title = "Cuentas",
                         icon = Icons.Default.AccountBalanceWallet,
-                        subtitle = "${state.accounts.size} activas configuradas",
+                        subtitle = state.accounts.size.let { if (it == 1) "1 activa configurada" else "$it activas configuradas" },
                         onClick = onNavigateToAccounts,
                         index = 0, count = 3
                     )
                     SettingsRowItem(
                         title = "Categorías",
                         icon = Icons.Default.Category,
-                        subtitle = "${state.expenseCategories.size + state.incomeCategories.size} registradas",
+                        subtitle = (state.expenseCategories.size + state.incomeCategories.size).let { if (it == 1) "1 registrada" else "$it registradas" },
                         onClick = onNavigateToCategories,
                         index = 1, count = 3
                     )
                     SettingsRowItem(
                         title = "Tarjetas e instituciones",
                         icon = Icons.Default.CreditCard,
-                        subtitle = "${state.creditInstitutions.size} instituciones registradas",
+                        subtitle = state.creditInstitutions.size.let { if (it == 1) "1 institución registrada" else "$it instituciones registradas" },
                         onClick = onNavigateToInstitutions,
                         index = 2, count = 3
                     )
@@ -259,7 +271,7 @@ fun SettingsScreen(
                         title = "Recordatorio diario",
                         subtitle = if (state.dailyReminderEnabled) "Activo a las $formattedTime hrs" else "Notificar a las 21:00 si no hay gastos",
                         icon = Icons.Default.Notifications,
-                        checked = state.dailyReminderEnabled,
+                        checked = state.dailyReminderEnabled && notificationsAllowed,
                         onCheckedChange = setDailyReminder,
                         index = 4, count = reminderCount
                     )
@@ -882,6 +894,38 @@ private fun SettingsLeadingIcon(icon: ImageVector) {
                 tint = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.size(22.dp)
             )
+        }
+    }
+}
+
+
+/** Tarjeta roja que avisa que las notificaciones están bloqueadas en el sistema y lleva a activarlas. */
+@Composable
+private fun NotificationsDisabledCard(onClick: () -> Unit) {
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        shape = MinicashShapes.Card,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(Icons.Default.NotificationsOff, contentDescription = null)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Notificaciones desactivadas",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Toca para activarlas en la configuración del sistema. Hasta entonces, ningún aviso programado te llegará.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }

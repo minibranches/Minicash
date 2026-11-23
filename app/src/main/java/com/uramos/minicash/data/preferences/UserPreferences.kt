@@ -84,6 +84,7 @@ class UserPreferences(private val context: Context) {
         val RECENT_SEARCHES = stringPreferencesKey("recent_searches")
         val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
         val APP_LOCK_TIMEOUT_MINUTES = androidx.datastore.preferences.core.intPreferencesKey("app_lock_timeout_minutes")
+        val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
         val REFRESH_RATE_LIMIT = androidx.datastore.preferences.core.intPreferencesKey("refresh_rate_limit")
     }
 
@@ -198,6 +199,15 @@ class UserPreferences(private val context: Context) {
      */
     val refreshRateLimit: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[REFRESH_RATE_LIMIT] ?: 0
+    }
+
+    /** Si ya se le pidió al usuario el permiso de notificaciones (se pide una sola vez); es propio del dispositivo. */
+    val notificationPermissionAsked: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[NOTIFICATION_PERMISSION_ASKED] ?: false
+    }
+
+    suspend fun setNotificationPermissionAsked(asked: Boolean) {
+        context.dataStore.edit { prefs -> prefs[NOTIFICATION_PERMISSION_ASKED] = asked }
     }
 
     suspend fun setRefreshRateLimit(hz: Int) {

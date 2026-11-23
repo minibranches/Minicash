@@ -94,9 +94,11 @@ fun BlurHeaderScaffold(
     val spec = minicashSpatialSpec<Float>()
     val connection = remember(state, spec) {
         object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (state.collapsiblePx > 0f && available.y != 0f) {
-                    state.offsetPx = headerOffsetAfterScroll(state.offsetPx, available.y, state.collapsiblePx)
+            // Solo cuenta el desplazamiento que la lista realmente consumió: si todo cabe en pantalla (p. ej. pocos
+            // resultados de búsqueda) la lista no se mueve y el encabezado tampoco debe moverse.
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (state.collapsiblePx > 0f && consumed.y != 0f) {
+                    state.offsetPx = headerOffsetAfterScroll(state.offsetPx, consumed.y, state.collapsiblePx)
                 }
                 return Offset.Zero
             }
@@ -173,9 +175,10 @@ fun Modifier.underHeaderBlur(headerHeight: Dp, bottomBand: Dp = 0.dp, listState:
         val visiblePx = LocalHeaderVisiblePx.current
         return this.drawWithContent {
             drawContent()
+            // Cada velo solo existe si hay contenido bajo ese borde; con todo a la vista no se dibuja ninguno
             val headerPx = visiblePx?.invoke()?.coerceAtLeast(0f) ?: headerHeight.toPx()
             val bandPx = headerPx + HEADER_FADE.toPx()
-            drawRect(
+            if (listState.canScrollBackward) drawRect(
                 brush = Brush.verticalGradient(
                     0f to tint.copy(alpha = 0.98f),
                     (headerPx / bandPx) to tint.copy(alpha = 0.92f),
@@ -184,7 +187,7 @@ fun Modifier.underHeaderBlur(headerHeight: Dp, bottomBand: Dp = 0.dp, listState:
                 ),
                 size = Size(size.width, bandPx)
             )
-            if (bottomBand > 0.dp) {
+            if (bottomBand > 0.dp && listState.canScrollForward) {
                 val bottomPx = bottomBand.toPx().coerceAtMost(size.height)
                 drawRect(
                     brush = Brush.verticalGradient(

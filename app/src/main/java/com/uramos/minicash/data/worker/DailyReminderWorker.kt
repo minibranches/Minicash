@@ -46,6 +46,8 @@ class DailyReminderWorker(
     }
 
     private fun sendReminderNotification() {
+        // Sin permiso (Android 13 o más) el aviso se perdería sin ningún error; no se intenta
+        if (!androidx.core.app.NotificationManagerCompat.from(applicationContext).areNotificationsEnabled()) return
         val channelId = "daily_reminder_channel"
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

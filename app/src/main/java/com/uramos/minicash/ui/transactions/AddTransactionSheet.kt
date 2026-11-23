@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashSwipeNumpad
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.theme.MinicashTransitions
 import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
 import androidx.compose.ui.semantics.semantics
@@ -106,7 +110,7 @@ import com.uramos.minicash.ui.utils.toCurrencyFormat
 import kotlinx.coroutines.delay
 import kotlin.math.roundToLong
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddTransactionSheet(
     viewModel: AddTransactionViewModel,
@@ -131,12 +135,6 @@ fun AddTransactionSheet(
         }
     }
 
-    val isPrefilled = remember {
-        state.concept.isNotBlank() || state.amountExpression.isNotBlank() || state.calculatedAmount > 0.0
-    }
-    // El tipo de movimiento se elige dentro del formulario (selector segmentado), ya no en un paso previo
-    var step by remember(initialType) { mutableIntStateOf(1) }
-
     val handleDismiss = {
         viewModel.resetForm()
         onDismiss()
@@ -146,7 +144,8 @@ fun AddTransactionSheet(
     var showAccountSheet by remember { mutableStateOf(false) }
     var pickingAccountForDestination by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var showNumpad by remember { mutableStateOf(true) }
+    // El teclado numérico y el del sistema ocupan el mismo lugar: se ve uno u otro según el teclado del sistema
+    val imeVisible = WindowInsets.isImeVisible
 
     val conceptFocusRequester = remember { FocusRequester() }
     val noteFocusRequester = remember { FocusRequester() }
@@ -223,28 +222,14 @@ fun AddTransactionSheet(
         contentWindowInsets = { BottomSheetDefaults.windowInsets },
         shape = MinicashShapes.SheetTop
     ) {
-        AnimatedContent(
-            targetState = step,
-            transitionSpec = {
-                if (isRestricted) {
-                    fadeIn(animationSpec = snap()) togetherWith fadeOut(animationSpec = snap())
-                } else {
-                    fadeIn(animationSpec = motionScheme.defaultEffectsSpec()) togetherWith fadeOut(animationSpec = motionScheme.defaultEffectsSpec())
-                }
-            },
-            label = "step_transition"
-        ) { currentStep ->
-            run {
-                // PASO 2: Formulario de Registro
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .navigationBarsPadding()
-                        .padding(horizontal = spacing.standard)
-                        .padding(bottom = spacing.standard),
-                    verticalArrangement = Arrangement.spacedBy(spacing.medium)
-                ) {
+        Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = spacing.standard),
+                verticalArrangement = Arrangement.spacedBy(spacing.medium)
+            ) {
                     // Cabecera: Título contextual y Moneda
                     val contextualTitle = when (state.type) {
                         TransactionType.INCOME -> "Nuevo ingreso"
@@ -328,7 +313,6 @@ fun AddTransactionSheet(
                             .clickable {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
-                                showNumpad = true
                             },
                         shape = MinicashShapes.ContainerLarge,
                         color = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -371,14 +355,10 @@ fun AddTransactionSheet(
                                 ),
                                 keyboardActions = KeyboardActions(
                                     // Cierra el teclado con el mismo mecanismo que las sugerencias: evita que la hoja le devuelva el foco
-                                    onDone = {
-                                        isSuppressingKeyboard = true
-                                        showNumpad = true
-                                    }
+                                    onDone = { isSuppressingKeyboard = true }
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onFocusChanged { if (it.isFocused) showNumpad = false }
                                     .focusProperties { canFocus = !isSuppressingKeyboard }
                                     .focusRequester(conceptFocusRequester)
                             )
@@ -442,7 +422,6 @@ fun AddTransactionSheet(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .imePadding()
-                                    .onFocusChanged { if (it.isFocused) showNumpad = false }
                                     .focusProperties { canFocus = !isSuppressingKeyboard }
                                     .focusRequester(noteFocusRequester)
                             )
@@ -694,144 +673,70 @@ fun AddTransactionSheet(
                         }
                     }
 
-                    // TECLADO NUMÉRICO HOMOLOGADO PBT (3x4 + 4ª Columna de Operadores Deslizable)
+            }
+
+            // Zona inferior fija: el teclado numérico (solo cuando no está el del sistema) y Guardar
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.standard)
+                    .padding(top = spacing.small, bottom = spacing.standard),
+                verticalArrangement = Arrangement.spacedBy(spacing.small)
+            ) {
                     AnimatedVisibility(
-                        visible = showNumpad,
+                        visible = !imeVisible,
                         enter = MinicashTransitions.enterVisible(),
                         exit = MinicashTransitions.exitVisible()
                     ) {
-                        var showOperators by remember { mutableStateOf(false) }
+                    MinicashSwipeNumpad(
+                        amountExpression = state.amountExpression,
+                        onExpressionChange = { _, _ -> },
+                        onKeyPress = { key -> viewModel.onKeypadPress(key) },
+                        modifier = Modifier.padding(top = spacing.extraSmall)
+                    )
+                }
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = spacing.extraSmall, bottom = spacing.standard)
-                                .pointerInput(Unit) {
-                                    detectHorizontalDragGestures { _, dragAmount ->
-                                        if (dragAmount < -20) showOperators = true
-                                        else if (dragAmount > 20) showOperators = false
-                                    }
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(spacing.small)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                            ) {
-                                // Bloque Numérico 3x4 (Siempre visible)
-                                val keypadLayout = listOf(
-                                    listOf("1", "2", "3"),
-                                    listOf("4", "5", "6"),
-                                    listOf("7", "8", "9"),
-                                    listOf(".", "0", "⌫")
-                                )
-
-                                Column(
-                                    modifier = Modifier.weight(3f),
-                                    verticalArrangement = Arrangement.spacedBy(spacing.small)
-                                ) {
-                                    keypadLayout.forEach { row ->
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(spacing.small),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            row.forEach { key ->
-                                                val isBackspace = key == "⌫"
-
-                                                KeypadButton(
-                                                    text = key,
-                                                    onClick = {
-                                                        haptics.click()
-                                                        viewModel.onKeypadPress(key)
-                                                    },
-                                                    shape = RoundedCornerShape(12.dp),
-                                                    containerColor = if (isBackspace) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                                    contentColor = if (isBackspace) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                                                    modifier = Modifier
-                                                        .weight(1f)
-                                                        .height(48.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Bloque de Operadores (4ª Columna Deslizable a la derecha)
-                                AnimatedVisibility(
-                                    visible = showOperators,
-                                    enter = expandHorizontally() + fadeIn(),
-                                    exit = shrinkHorizontally() + fadeOut()
-                                ) {
-                                    Column(
-                                        modifier = Modifier.width(56.dp),
-                                        verticalArrangement = Arrangement.spacedBy(spacing.small)
-                                    ) {
-                                        listOf("+", "-", "×", "÷").forEach { op ->
-                                            KeypadButton(
-                                                text = op,
-                                                onClick = {
-                                                    haptics.click()
-                                                    viewModel.onKeypadPress(op)
-                                                },
-                                                shape = RoundedCornerShape(12.dp),
-                                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(48.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(spacing.extraSmall))
-
-                            // Si no se puede guardar, se dice qué falta
-                            if (!canSave) {
-                                val missing = when {
-                                    rawAmount <= 0L -> "Ingresa un monto"
-                                    isTransfer -> "Elige dos cuentas distintas"
-                                    state.concept.isBlank() -> "Falta el concepto"
-                                    selectedCategory == null -> "Falta elegir la categoría"
-                                    else -> "Falta elegir la cuenta"
-                                }
-                                Text(
-                                    text = missing,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-
-                            // Botón Guardar al pie, ancho completo
-                            MinicashFilledButton(
-                                onClick = {
-                                    haptics.confirm()
-                                    viewModel.saveTransaction(onSuccess = handleDismiss)
-                                },
-                                enabled = canSave,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 48.dp)
-                            ) {
-                                Text(
-                                    text = "Guardar",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                    // Qué falta para guardar, siempre visible sobre el botón
+                    if (!canSave) {
+                        val missing = when {
+                            rawAmount <= 0L -> "Ingresa un monto"
+                            isTransfer -> "Elige dos cuentas distintas"
+                            state.concept.isBlank() -> "Falta el concepto"
+                            selectedCategory == null -> "Falta elegir la categoría"
+                            else -> "Falta elegir la cuenta"
                         }
+                        Text(
+                            text = missing,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    // Botón Guardar fijo al pie, ancho completo: nunca depende del teclado que esté a la vista
+                    MinicashFilledButton(
+                        onClick = {
+                            haptics.confirm()
+                            viewModel.saveTransaction(onSuccess = handleDismiss)
+                        },
+                        enabled = canSave,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                    ) {
+                        Text(
+                            text = "Guardar",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
-        }
     }
 
     if (showCategorySheet) {

@@ -101,7 +101,9 @@ fun evaluateMathExpression(expression: String): Double {
 fun MinicashSwipeNumpad(
     amountExpression: String,
     onExpressionChange: (newExpression: String, calculatedAmount: Double) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Si se indica, cada tecla se entrega tal cual (con su propia lógica de edición) en lugar de usar [onExpressionChange]. */
+    onKeyPress: ((String) -> Unit)? = null
 ) {
     val haptics = rememberMinicashHaptics()
     val spacing = MinicashThemeExtensions.spacing
@@ -146,9 +148,12 @@ fun MinicashSwipeNumpad(
                                 text = key,
                                 onClick = {
                                     haptics.click()
-                                    val newExpr = processKeypadPress(amountExpression, key)
-                                    val calcVal = evaluateMathExpression(newExpr)
-                                    onExpressionChange(newExpr, calcVal)
+                                    if (onKeyPress != null) {
+                                        onKeyPress(key)
+                                    } else {
+                                        val newExpr = processKeypadPress(amountExpression, key)
+                                        onExpressionChange(newExpr, evaluateMathExpression(newExpr))
+                                    }
                                 },
                                 cornerRadius = 12.dp,
                                 containerColor = if (isBackspace) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -177,9 +182,12 @@ fun MinicashSwipeNumpad(
                             text = op,
                             onClick = {
                                 haptics.click()
-                                val newExpr = processKeypadPress(amountExpression, op)
-                                val calcVal = evaluateMathExpression(newExpr)
-                                onExpressionChange(newExpr, calcVal)
+                                if (onKeyPress != null) {
+                                    onKeyPress(op)
+                                } else {
+                                    val newExpr = processKeypadPress(amountExpression, op)
+                                    onExpressionChange(newExpr, evaluateMathExpression(newExpr))
+                                }
                             },
                             cornerRadius = 12.dp,
                             containerColor = MaterialTheme.colorScheme.primaryContainer,

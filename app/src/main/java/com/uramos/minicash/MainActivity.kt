@@ -305,6 +305,13 @@ fun AppNavigation(
             )
         }
         true -> {
+            val notificationsNeeded by settingsViewModel.notificationsNeeded.collectAsState()
+            val notificationPermissionAsked by settingsViewModel.notificationPermissionAsked.collectAsState()
+            com.uramos.minicash.ui.utils.RequestNotificationPermissionOnce(
+                needed = notificationsNeeded,
+                alreadyAsked = notificationPermissionAsked,
+                onAsked = settingsViewModel::markNotificationPermissionAsked
+            )
             MainScreen(
                 userName = userName,
                 shortcutAction = shortcutAction,

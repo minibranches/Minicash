@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.components.MinicashSwipeNumpad
+import com.uramos.minicash.ui.theme.MinicashTransitions
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.WindowInsets
 import com.uramos.minicash.ui.utils.normalizeLocalToUtcMillis
 import com.uramos.minicash.ui.components.evaluateMathExpression
 import com.uramos.minicash.ui.components.processKeypadPress
@@ -121,7 +126,7 @@ private fun onKeypadPressHandler(currentExpr: String, key: String): Pair<String,
     return Pair(newExpr, evaluateMathExpression(newExpr))
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun EditTransactionSheet(
     transaction: TransactionEntity,
@@ -142,7 +147,8 @@ fun EditTransactionSheet(
     var pickingAccountForDestination by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
-    var showNumpad by remember { mutableStateOf(true) }
+    // El teclado numérico y el del sistema ocupan el mismo lugar: se ve uno u otro según el teclado del sistema
+    val imeVisible = WindowInsets.isImeVisible
 
     val conceptFocusRequester = remember { FocusRequester() }
     val noteFocusRequester = remember { FocusRequester() }
@@ -214,15 +220,14 @@ fun EditTransactionSheet(
         containerColor = MaterialTheme.colorScheme.sheetBackground,
         shape = MinicashShapes.SheetTop
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(horizontal = spacing.standard)
-                .padding(bottom = spacing.standard),
-            verticalArrangement = Arrangement.spacedBy(spacing.medium)
-        ) {
+        Column(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = spacing.standard),
+                verticalArrangement = Arrangement.spacedBy(spacing.medium)
+            ) {
             // Cabecera: Título, Selector de Fecha en píldora e Ícono de Eliminar
             val dateText = remember(selectedDateMillis) {
                 com.uramos.minicash.ui.utils.formatTransactionDate(selectedDateMillis)
@@ -312,7 +317,6 @@ fun EditTransactionSheet(
                     .clickable {
                         keyboardController?.hide()
                         focusManager.clearFocus()
-                        showNumpad = true
                     },
                 shape = MinicashShapes.ContainerLarge,
                 color = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -623,116 +627,49 @@ fun EditTransactionSheet(
                     }
                 }
             }
+            }
 
-            // TECLADO NUMÉRICO HOMOLOGADO PBT (3x4 + 4ª Columna de Operadores Deslizable)
-            AnimatedVisibility(
-                visible = showNumpad,
-                enter = if (isRestricted) {
-                    fadeIn(animationSpec = snap()) + expandVertically(animationSpec = snap())
-                } else {
-                    fadeIn(animationSpec = motionScheme.defaultEffectsSpec()) + expandVertically(animationSpec = motionScheme.defaultSpatialSpec())
-                },
-                exit = if (isRestricted) {
-                    fadeOut(animationSpec = snap()) + shrinkVertically(animationSpec = snap())
-                } else {
-                    fadeOut(animationSpec = motionScheme.defaultEffectsSpec()) + shrinkVertically(animationSpec = motionScheme.defaultSpatialSpec())
-                }
+            // Zona inferior fija: el teclado numérico (solo cuando no está el del sistema) y los botones
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.standard)
+                    .padding(top = spacing.small, bottom = spacing.standard),
+                verticalArrangement = Arrangement.spacedBy(spacing.small)
             ) {
-                var showOperators by remember { mutableStateOf(false) }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = spacing.extraSmall, bottom = spacing.standard)
-                        .pointerInput(Unit) {
-                            detectHorizontalDragGestures { _, dragAmount ->
-                                if (dragAmount < -20) showOperators = true
-                                else if (dragAmount > 20) showOperators = false
-                            }
-                        },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(spacing.small)
+                AnimatedVisibility(
+                    visible = !imeVisible,
+                    enter = MinicashTransitions.enterVisible(),
+                    exit = MinicashTransitions.exitVisible()
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(spacing.small)
-                    ) {
-                        val keypadLayout = listOf(
-                            listOf("1", "2", "3"),
-                            listOf("4", "5", "6"),
-                            listOf("7", "8", "9"),
-                            listOf(".", "0", "⌫")
-                        )
+                    MinicashSwipeNumpad(
+                        amountExpression = amountExpression,
+                        onExpressionChange = { newExpr, calc ->
+                            amountExpression = newExpr
+                            calculatedAmount = calc
+                        },
+                        modifier = Modifier.padding(top = spacing.extraSmall)
+                    )
+                }
 
-                        Column(
-                            modifier = Modifier.weight(3f),
-                            verticalArrangement = Arrangement.spacedBy(spacing.small)
-                        ) {
-                            keypadLayout.forEach { row ->
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(spacing.small),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    row.forEach { key ->
-                                        val isBackspace = key == "⌫"
-
-                                        KeypadButton(
-                                            text = key,
-                                            onClick = {
-                                                haptics.click()
-                                                val (newExpr, calc) = onKeypadPressHandler(amountExpression, key)
-                                                amountExpression = newExpr
-                                                calculatedAmount = calc
-                                            },
-                                            shape = RoundedCornerShape(12.dp),
-                                            containerColor = if (isBackspace) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-                                            contentColor = if (isBackspace) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(48.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        AnimatedVisibility(
-                            visible = showOperators,
-                            enter = expandHorizontally() + fadeIn(),
-                            exit = shrinkHorizontally() + fadeOut()
-                        ) {
-                            Column(
-                                modifier = Modifier.width(56.dp),
-                                verticalArrangement = Arrangement.spacedBy(spacing.small)
-                            ) {
-                                listOf("+", "-", "×", "÷").forEach { op ->
-                                    KeypadButton(
-                                        text = op,
-                                        onClick = {
-                                            haptics.click()
-                                            val (newExpr, calc) = onKeypadPressHandler(amountExpression, op)
-                                            amountExpression = newExpr
-                                            calculatedAmount = calc
-                                        },
-                                        shape = RoundedCornerShape(12.dp),
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(48.dp)
-                                    )
-                                }
-                            }
-                        }
+                // Qué falta para guardar, siempre visible sobre el botón
+                if (!canSave) {
+                    val missing = when {
+                        rawAmount <= 0L -> "Ingresa un monto"
+                        isTransfer -> "Elige dos cuentas distintas"
+                        conceptText.isBlank() -> "Falta el concepto"
+                        selectedCategory == null -> "Falta elegir la categoría"
+                        else -> "Falta elegir la cuenta"
                     }
-
-                    Spacer(modifier = Modifier.height(spacing.extraSmall))
-
-                    // Botones Guardar Cambios y Eliminar Movimiento
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    Text(
+                        text = missing,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
+                    )
+                }
+
                         MinicashFilledButton(
                             onClick = {
                                 haptics.confirm()
@@ -773,8 +710,7 @@ fun EditTransactionSheet(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-
-                        if (onDeleteTransaction != null) {
+                        if (onDeleteTransaction != null && !imeVisible) {
                             MinicashOutlinedButton(
                                 onClick = {
                                     haptics.tick()
@@ -799,8 +735,6 @@ fun EditTransactionSheet(
                                 )
                             }
                         }
-                    }
-                }
             }
         }
     }

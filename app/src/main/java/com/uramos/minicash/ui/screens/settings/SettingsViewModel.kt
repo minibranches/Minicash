@@ -275,6 +275,28 @@ class SettingsViewModel(
         viewModelScope.launch { userPreferences.setAppLockTimeoutMinutes(minutes) }
     }
 
+    /** Hay avisos de pago configurados en alguna compra a meses o institución. */
+    val hasPaymentReminders: StateFlow<Boolean> = combine(
+        database.creditDao().getAllCredits(),
+        database.creditInstitutionDao().getAllInstitutions()
+    ) { credits, institutions -> com.uramos.minicash.data.util.NotificationNeeds.hasPaymentReminders(credits, institutions) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** Algo programado necesita el permiso de notificaciones (recordatorio diario o avisos de pago). */
+    val notificationsNeeded: StateFlow<Boolean> = combine(
+        userPreferences.dailyReminderEnabled,
+        hasPaymentReminders
+    ) { daily, payments -> com.uramos.minicash.data.util.NotificationNeeds.needsPermission(daily, payments) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /** Mientras no se lea la preferencia se supone que ya se pidió, para no abrir el diálogo por error. */
+    val notificationPermissionAsked: StateFlow<Boolean> = userPreferences.notificationPermissionAsked
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    fun markNotificationPermissionAsked() {
+        viewModelScope.launch { userPreferences.setNotificationPermissionAsked(true) }
+    }
+
     val refreshRateLimit: StateFlow<Int> = userPreferences.refreshRateLimit
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 

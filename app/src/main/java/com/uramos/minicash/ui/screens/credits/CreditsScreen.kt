@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.components.ExpandingFilterButton
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
@@ -233,7 +234,7 @@ fun CreditsScreen(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
-                contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp),
+                contentPadding = PaddingValues(top = headerHeight + 16.dp, start = 20.dp, end = 20.dp, bottom = rememberTabListBottomPadding()),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 if (state.activeCredits.isEmpty()) {

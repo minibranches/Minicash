@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import kotlinx.coroutines.flow.first
 import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Constraints
@@ -245,10 +246,10 @@ fun TransactionsScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize().underHeaderBlur(headerHeight, bottomBand = LocalBottomBlurBand.current, listState = listState),
                 contentPadding = PaddingValues(
-                    top = headerHeight + spacing.small,
+                    top = headerHeight + spacing.standard,
                     start = spacing.screen,
                     end = spacing.screen,
-                    bottom = 120.dp
+                    bottom = rememberTabListBottomPadding()
                 ),
                 verticalArrangement = Arrangement.spacedBy(spacing.medium)
             ) {

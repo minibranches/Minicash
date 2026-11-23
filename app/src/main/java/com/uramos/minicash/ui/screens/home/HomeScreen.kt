@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import com.uramos.minicash.ui.theme.screenBackground
@@ -235,7 +236,7 @@ fun HomeScreen(
                         top = headerHeight + spacing.standard,
                         start = spacing.screen,
                         end = spacing.screen,
-                        bottom = 120.dp
+                        bottom = rememberTabListBottomPadding()
                     ),
                     verticalArrangement = Arrangement.spacedBy(spacing.hero)
                 ) {
