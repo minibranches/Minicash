@@ -328,9 +328,10 @@ class AddTransactionViewModel(
 
         viewModelScope.launch {
             if (state.type == TransactionType.TRANSFER) {
-                val sourceId = state.selectedAccountId ?: defaultAccountFor(state.type, accounts.value)?.id ?: return@launch
-                val destId = state.selectedDestinationAccountId ?: return@launch
-                if (sourceId == destId) return@launch
+                val (source, destination) = resolveTransferAccounts(state.selectedAccountId, state.selectedDestinationAccountId, accounts.value)
+                    ?: return@launch
+                val sourceId = source.id
+                val destId = destination.id
 
                 val conceptStr = state.concept.ifBlank { "Transferencia" }
                 val finalNote = if (state.note.isNotBlank()) "$conceptStr • ${state.note}" else conceptStr
@@ -408,3 +409,23 @@ class AddTransactionViewModel(
  */
 fun defaultAccountFor(type: TransactionType, accounts: List<AccountEntity>): AccountEntity? =
     if (type == TransactionType.TRANSFER) accounts.maxByOrNull { it.balance } else accounts.firstOrNull()
+
+/**
+ * Origen y destino de una transferencia tal como los muestra la hoja: el origen elegido (o el propuesto por
+ * [defaultAccountFor]) y el destino elegido, siempre distinto del origen; si no hay uno válido, la primera cuenta que no
+ * sea el origen. La hoja y el guardado usan esta misma regla para que el botón «Guardar» nunca esté activo sin poder
+ * guardar. Nulo si no hay dos cuentas distintas.
+ */
+fun resolveTransferAccounts(
+    selectedSourceId: Long?,
+    selectedDestinationId: Long?,
+    accounts: List<AccountEntity>
+): Pair<AccountEntity, AccountEntity>? {
+    val source = accounts.firstOrNull { it.id == selectedSourceId }
+        ?: defaultAccountFor(TransactionType.TRANSFER, accounts)
+        ?: return null
+    val destination = accounts.firstOrNull { it.id == selectedDestinationId && it.id != source.id }
+        ?: accounts.firstOrNull { it.id != source.id }
+        ?: return null
+    return source to destination
+}

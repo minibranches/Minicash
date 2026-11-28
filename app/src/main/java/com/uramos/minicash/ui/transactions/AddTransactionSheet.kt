@@ -183,8 +183,7 @@ fun AddTransactionSheet(
         accounts.firstOrNull { it.id == state.selectedAccountId } ?: defaultAccountFor(state.type, accounts)
     }
     val selectedDestAccount = remember(accounts, state.selectedDestinationAccountId, state.selectedAccountId) {
-        accounts.firstOrNull { it.id == state.selectedDestinationAccountId && it.id != selectedAccount?.id }
-            ?: accounts.firstOrNull { it.id != selectedAccount?.id }
+        resolveTransferAccounts(state.selectedAccountId, state.selectedDestinationAccountId, accounts)?.second
     }
     val selectedCategory = remember(categories, state.selectedCategoryId) {
         categories.firstOrNull { it.id == state.selectedCategoryId }

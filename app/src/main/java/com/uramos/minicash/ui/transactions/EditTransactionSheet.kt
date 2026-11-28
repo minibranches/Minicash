@@ -687,7 +687,7 @@ fun EditTransactionSheet(
                                     amount = rawAmount,
                                     note = finalNote,
                                     sourceAccountId = sourceId,
-                                    destinationAccountId = if (type == TransactionType.TRANSFER) selectedDestinationAccountId else null,
+                                    destinationAccountId = if (type == TransactionType.TRANSFER) selectedDestAccount?.id else null,
                                     categoryId = if (type != TransactionType.TRANSFER) selectedCategoryId else null,
                                     date = selectedDateMillis
                                 )

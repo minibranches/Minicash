@@ -2,6 +2,16 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.5.1
+
+Versión de corrección.
+
+### Correcciones
+- **Transferencias.** Al crear una transferencia con las cuentas que propone la app (sin abrir el selector de «A:»), «Guardar» parecía activo pero no hacía nada. Ahora la hoja y el guardado usan la misma regla para elegir origen y destino. Al editar un movimiento para convertirlo en transferencia ya no se guarda sin cuenta destino.
+
+### Interno
+- `resolveTransferAccounts`, con pruebas. No cambia el formato de datos.
+
 ## 1.5.0
 
 ### Novedades
