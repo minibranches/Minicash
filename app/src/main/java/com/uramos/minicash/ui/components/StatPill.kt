@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import androidx.compose.runtime.remember
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -57,7 +59,7 @@ fun StatPill(
             .clip(CircleShape)
             .then(
                 if (onClick != null) Modifier
-                    .semantics { stateDescription = if (selected) "Filtro activo" else "Filtro inactivo" }
+                    .semantics { stateDescription = if (selected) AppStrings.get(R.string.filter_active) else AppStrings.get(R.string.filter_inactive) }
                     .clickable(
                         interactionSource = interactionSource,
                         indication = LocalIndication.current,

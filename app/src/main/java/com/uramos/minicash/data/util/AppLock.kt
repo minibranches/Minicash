@@ -4,7 +4,9 @@ package com.uramos.minicash.data.util
 val APP_LOCK_TIMEOUT_OPTIONS = listOf(0, 1, 5, 15)
 
 /** Texto de una opción de espera, para mostrarlo en ajustes. */
-fun appLockTimeoutLabel(minutes: Int): String = if (minutes <= 0) "Cada vez que se abre" else "Tras $minutes min fuera de la app"
+fun appLockTimeoutLabel(minutes: Int): String =
+    if (minutes <= 0) com.uramos.minicash.ui.utils.AppStrings.get(com.uramos.minicash.R.string.lock_timeout_always)
+    else com.uramos.minicash.ui.utils.AppStrings.get(com.uramos.minicash.R.string.lock_timeout_after, minutes)
 
 /** Siguiente opción de espera al tocar el renglón de ajustes; da la vuelta al llegar al final. */
 fun nextAppLockTimeout(current: Int): Int {

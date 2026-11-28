@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.account
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
@@ -74,7 +77,6 @@ import java.time.format.TextStyle as JavaTextStyle
 import java.util.Locale
 import kotlin.math.abs
 
-private val esMx: Locale = Locale.forLanguageTag("es-MX")
 private const val CHART_MONTHS = 6
 
 /**
@@ -124,7 +126,7 @@ fun AccountDetailScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = account?.name ?: "Cuenta",
+                title = account?.name ?: stringResource(R.string.tx_account),
                 onBack = onBack,
                 scrollBehavior = scrollBehavior
             )
@@ -157,7 +159,7 @@ fun AccountDetailScreen(
                         verticalArrangement = Arrangement.spacedBy(spacing.small)
                     ) {
                         Text(
-                            text = "Cambio del saldo por mes",
+                            text = stringResource(R.string.account_balance_change),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -168,7 +170,7 @@ fun AccountDetailScreen(
 
             item(key = "title") {
                 Text(
-                    text = "Movimientos",
+                    text = stringResource(R.string.nav_transactions),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 4.dp, top = spacing.small)
@@ -179,8 +181,8 @@ fun AccountDetailScreen(
                 item(key = "empty") {
                     MinicashEmptyState(
                         icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                        title = "Sin movimientos",
-                        subtitle = "Esta cuenta aún no tiene movimientos.",
+                        title = stringResource(R.string.account_empty_title),
+                        subtitle = stringResource(R.string.account_empty_sub),
                         modifier = Modifier.fillMaxWidth().padding(top = spacing.large)
                     )
                 }
@@ -296,7 +298,7 @@ private fun MonthlyNetChart(months: List<MonthlyNet>) {
         Row(modifier = Modifier.fillMaxWidth()) {
             months.forEach { month ->
                 Text(
-                    text = month.month.month.getDisplayName(JavaTextStyle.SHORT, esMx).trimEnd('.'),
+                    text = month.month.month.getDisplayName(JavaTextStyle.SHORT, appLocale()).trimEnd('.'),
                     style = MaterialTheme.typography.labelSmall,
                     color = labelColor,
                     textAlign = TextAlign.Center,
@@ -306,7 +308,7 @@ private fun MonthlyNetChart(months: List<MonthlyNet>) {
         }
         if (!hasData) {
             Text(
-                text = "Sin movimientos en estos meses.",
+                text = stringResource(R.string.account_empty_months),
                 style = MaterialTheme.typography.bodySmall,
                 color = labelColor
             )

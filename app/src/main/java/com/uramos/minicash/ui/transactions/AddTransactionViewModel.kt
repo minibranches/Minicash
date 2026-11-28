@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import com.uramos.minicash.data.local.dao.findOrCreateByName
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -113,7 +115,7 @@ class AddTransactionViewModel(
                         val catName = match.categoryId?.let { catId ->
                             allCategories.firstOrNull { it.id == catId }?.name
                         }
-                        val accName = allAccounts.firstOrNull { it.id == match.sourceAccountId }?.name ?: "Cuenta"
+                        val accName = allAccounts.firstOrNull { it.id == match.sourceAccountId }?.name ?: AppStrings.get(R.string.tx_account)
 
                         AutocompleteSuggestion(
                             concept = conceptStr,
@@ -333,7 +335,7 @@ class AddTransactionViewModel(
                 val sourceId = source.id
                 val destId = destination.id
 
-                val conceptStr = state.concept.ifBlank { "Transferencia" }
+                val conceptStr = state.concept.ifBlank { AppStrings.get(R.string.tx_type_transfer) }
                 val finalNote = if (state.note.isNotBlank()) "$conceptStr • ${state.note}" else conceptStr
 
                 transactionDao.insertTransaction(

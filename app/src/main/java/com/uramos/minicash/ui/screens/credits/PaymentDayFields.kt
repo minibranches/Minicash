@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,12 +41,12 @@ fun PaymentDayFields(
         OutlinedTextField(
             value = paymentDayStr,
             onValueChange = onPaymentDayChange,
-            label = { Text("Día de pago del mes (opcional)") },
-            placeholder = { Text("Por ejemplo, 5") },
+            label = { Text(stringResource(R.string.credit_pay_day_label)) },
+            placeholder = { Text(stringResource(R.string.credit_pay_day_hint)) },
             supportingText = {
                 Text(
-                    if (paymentInvalid) "Escribe un día entre 1 y 31"
-                    else "Si el mes no tiene ese día, se usa el último"
+                    if (paymentInvalid) stringResource(R.string.credit_pay_day_invalid)
+                    else stringResource(R.string.credit_pay_day_note)
                 )
             },
             isError = paymentInvalid,
@@ -56,7 +59,7 @@ fun PaymentDayFields(
         AnimatedVisibility(visible = hasPaymentDay) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "Avisarme",
+                    text = stringResource(R.string.credit_remind_me),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -73,10 +76,9 @@ fun PaymentDayFields(
                         ) {
                             Text(
                                 text = when (option) {
-                                    NO_REMINDER -> "Sin aviso"
-                                    0 -> "El mismo día"
-                                    1 -> "1 día antes"
-                                    else -> "$option días antes"
+                                    NO_REMINDER -> stringResource(R.string.credit_remind_none)
+                                    0 -> stringResource(R.string.credit_remind_same)
+                                    else -> pluralStringResource(R.plurals.credit_remind_before, option, option)
                                 },
                                 maxLines = 1
                             )
@@ -86,10 +88,9 @@ fun PaymentDayFields(
 
                 Text(
                     text = when (reminderDays) {
-                        NO_REMINDER -> "No recibirás aviso de este pago."
-                        0 -> "Recibirás el aviso el mismo día del pago."
-                        1 -> "Recibirás el aviso 1 día antes del pago."
-                        else -> "Recibirás el aviso $reminderDays días antes del pago."
+                        NO_REMINDER -> stringResource(R.string.credit_remind_none_text)
+                        0 -> stringResource(R.string.credit_remind_same_text)
+                        else -> pluralStringResource(R.plurals.credit_remind_before_text, reminderDays, reminderDays)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

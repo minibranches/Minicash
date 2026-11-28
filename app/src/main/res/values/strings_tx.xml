@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tx_new_income">Nuevo ingreso</string>
+    <string name="tx_tap_amount">Toca para ingresar monto</string>
+    <string name="tx_concept">Concepto</string>
+    <string name="tx_concept_hint">Nombre o concepto del movimiento</string>
+    <string name="tx_no_category">Sin categoría</string>
+    <string name="tx_notes">Notas</string>
+    <string name="tx_notes_hint">Escribe una nota</string>
+    <string name="tx_from">De: %1$s</string>
+    <string name="tx_to">A: %1$s</string>
+    <string name="tx_category">Categoría</string>
+    <string name="tx_account">Cuenta</string>
+    <string name="tx_missing_amount">Ingresa un monto</string>
+    <string name="key_backspace">Borrar</string>
+    <string name="tx_no_categories">Sin categorías disponibles</string>
+    <string name="tx_new_category">Nueva categoría</string>
+    <string name="tx_category_name">Nombre de la categoría</string>
+    <string name="tx_no_accounts">Sin cuentas disponibles</string>
+    <string name="tx_origin">Origen</string>
+    <string name="tx_destination">Destino</string>
+    <string name="tx_missing_two_accounts">Elige dos cuentas distintas</string>
+    <string name="tx_missing_concept">Falta el concepto</string>
+    <string name="tx_missing_category">Falta elegir la categoría</string>
+    <string name="tx_missing_account">Falta elegir la cuenta</string>
+    <string name="key_decimal">Punto decimal</string>
+    <string name="key_plus">Más</string>
+    <string name="key_minus">Menos</string>
+    <string name="key_times">Por</string>
+    <string name="key_divide">Entre</string>
+    <string name="tx_new_transfer">Nueva transferencia</string>
+    <string name="tx_new_expense">Nuevo gasto</string>
+    <string name="tx_edit_title">Editar movimiento</string>
+    <string name="tx_transfer_note">Transferencia entre cuentas</string>
+    <string name="tx_save_changes">Guardar cambios</string>
+    <string name="tx_delete">Eliminar movimiento</string>
+    <string name="tx_delete_confirm_title">¿Eliminar movimiento?</string>
+    <string name="tx_delete_confirm_text">Se quitará el movimiento y el saldo de la cuenta se ajusta. Podrás deshacerlo unos segundos.</string>
+</resources>

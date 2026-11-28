@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.utils.monthKey
 import com.uramos.minicash.ui.utils.toCents
 import androidx.compose.runtime.Immutable
@@ -173,14 +175,14 @@ class CreditsViewModel(
         val totalCents = monthlyCents * totalInstallments
 
         viewModelScope.launch {
-            val institutionName = institution.ifBlank { "Tarjeta de Crédito" }.trim()
+            val institutionName = institution.ifBlank { AppStrings.get(R.string.credit_default_institution) }.trim()
             val resolved = resolveInstitution(institutionName)
             creditDao.insertCredit(
                 CreditEntity(
                     article = article,
                     institution = resolved.name,
                     institutionId = resolved.id,
-                    responsible = responsible.ifBlank { "Yo" },
+                    responsible = responsible.ifBlank { AppStrings.get(R.string.credit_default_responsible) },
                     purchaseDate = purchaseDate,
                     totalInstallments = totalInstallments,
                     paidInstallments = paidInstallments.coerceIn(0, totalInstallments),
@@ -221,7 +223,7 @@ class CreditsViewModel(
             // Transacción, saldo y avance del crédito se confirman juntos o no se aplica ninguno.
             database.withTransaction {
                 if (createExpenseTransaction) {
-                    val noteText = "Abono MSI - ${credit.article} ($nextInstallment/${credit.totalInstallments})"
+                    val noteText = AppStrings.get(R.string.credit_payment_note, credit.article, nextInstallment, credit.totalInstallments)
                     transactionDao.insertTransaction(
                         TransactionEntity(
                             sourceAccountId = sourceAccount.id,

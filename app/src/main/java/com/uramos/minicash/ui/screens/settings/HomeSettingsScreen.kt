@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,7 +98,7 @@ fun HomeSettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.screenBackground,
-        topBar = { MinicashSubScreenTopBar(title = "Inicio", onBack = onBackClick, scrollBehavior = scrollBehavior) }
+        topBar = { MinicashSubScreenTopBar(title = stringResource(R.string.nav_home), onBack = onBackClick, scrollBehavior = scrollBehavior) }
     ) { paddingValues ->
         LazyColumn(
             state = listState,
@@ -110,10 +112,10 @@ fun HomeSettingsScreen(
                 end = spacing.screen,
                 bottom = 120.dp
             ).plusTop(paddingValues.calculateTopPadding()),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             item(key = "label_widgets") {
-                MinicashSectionLabel("Qué se muestra")
+                MinicashSectionLabel(stringResource(R.string.set_home_what_shows))
             }
             order.forEachIndexed { index, widget ->
                 item(key = widget.id) {
@@ -122,7 +124,7 @@ fun HomeSettingsScreen(
                             SettingsSegmentedItem(index = index, count = order.size, onClick = null) {
                                 Icon(
                                     imageVector = Icons.Default.DragIndicator,
-                                    contentDescription = "Arrastrar para reordenar",
+                                    contentDescription = stringResource(R.string.set_drag_to_reorder),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier
                                         .size(24.dp)
@@ -149,11 +151,11 @@ fun HomeSettingsScreen(
                 }
             }
             item(key = "note_widgets") {
-                MinicashSectionNote("Mantén pulsados los puntos y arrastra para cambiar el orden.")
+                MinicashSectionNote(stringResource(R.string.set_home_drag_note))
             }
 
             item(key = "label_distribution") {
-                MinicashSectionLabel("Distribución del mes", modifier = Modifier.padding(top = 14.dp))
+                MinicashSectionLabel(stringResource(R.string.home_widget_distribution), modifier = Modifier.padding(top = 14.dp))
             }
             item(key = "distribution_options") {
                 val styles = DistributionStyle.entries
@@ -177,7 +179,7 @@ fun HomeSettingsScreen(
             }
 
             item(key = "label_patrimony") {
-                MinicashSectionLabel("Patrimonio", modifier = Modifier.padding(top = 14.dp))
+                MinicashSectionLabel(stringResource(R.string.home_widget_patrimony), modifier = Modifier.padding(top = 14.dp))
             }
             item(key = "patrimony_choice") {
                 MinicashSegmentedChoice(
@@ -191,7 +193,7 @@ fun HomeSettingsScreen(
                 )
             }
             item(key = "note_patrimony") {
-                MinicashSectionNote("La franja ocupa una línea; la tarjeta muestra el total en grande.")
+                MinicashSectionNote(stringResource(R.string.set_home_patrimony_note))
             }
         }
     }
@@ -235,7 +237,7 @@ private fun DistributionOptionCard(
                 if (selected) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Elegido",
+                        contentDescription = stringResource(R.string.set_chosen),
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(18.dp)
                     )

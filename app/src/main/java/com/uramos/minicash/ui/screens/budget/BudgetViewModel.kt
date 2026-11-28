@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import com.uramos.minicash.ui.utils.toCents
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
@@ -81,7 +85,7 @@ class BudgetViewModel(
         val month = cal.get(Calendar.MONTH) + 1
         val key = String.format(Locale.US, "%04d-%02d-Q%d", year, month, q)
 
-        val monthFormat = SimpleDateFormat("MMMM yyyy", Locale("es", "MX"))
+        val monthFormat = appDateFormat("MMMM yyyy")
         val label = monthFormat.format(cal.time).replaceFirstChar { it.uppercase() }
 
         Triple(key, label, q)
@@ -216,7 +220,7 @@ class BudgetViewModel(
                                 amount = item.amount,
                                 type = TransactionType.EXPENSE,
                                 date = item.dueDate ?: System.currentTimeMillis(),
-                                note = "Presupuesto: ${item.concept}"
+                                note = AppStrings.get(R.string.budget_tx_note, item.concept)
                             )
                         )
                         accountDao.updateBalance(accountId, -item.amount)
@@ -229,7 +233,7 @@ class BudgetViewModel(
                                 amount = item.amount,
                                 type = TransactionType.INCOME,
                                 date = item.dueDate ?: System.currentTimeMillis(),
-                                note = "Presupuesto (${item.type.displayName}): ${item.concept}"
+                                note = AppStrings.get(R.string.budget_tx_note_typed, item.type.displayName, item.concept)
                             )
                         )
                         accountDao.updateBalance(accountId, item.amount)

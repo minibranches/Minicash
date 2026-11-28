@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.data.local.entities.AccountType
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.geometry.Offset
@@ -116,7 +119,7 @@ fun PatrimonyCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "Patrimonio",
+                                text = stringResource(R.string.home_widget_patrimony),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = onContainer
@@ -156,7 +159,7 @@ fun PatrimonyCard(
                 }
 
                 Text(
-                    text = if (accountCount == 1) "Suma de tu cuenta" else "Suma de tus $accountCount cuentas",
+                    text = pluralStringResource(R.plurals.patrimony_sum, accountCount, accountCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = onContainer.copy(alpha = 0.72f)
                 )
@@ -198,13 +201,13 @@ fun PatrimonyStrip(
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Patrimonio",
+                    text = stringResource(R.string.home_widget_patrimony),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = onContainer
                 )
                 Text(
-                    text = if (accountCount == 1) "Suma de tu cuenta" else "Suma de tus $accountCount cuentas",
+                    text = pluralStringResource(R.plurals.patrimony_sum, accountCount, accountCount),
                     style = MaterialTheme.typography.labelSmall,
                     color = onContainer.copy(alpha = 0.78f),
                     maxLines = 1
@@ -350,7 +353,7 @@ fun AccountTypeCard(
                             color = accountColor.copy(alpha = 0.22f)
                         ) {
                             Text(
-                                text = "A pagar",
+                                text = stringResource(R.string.account_to_pay),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = onSurface,

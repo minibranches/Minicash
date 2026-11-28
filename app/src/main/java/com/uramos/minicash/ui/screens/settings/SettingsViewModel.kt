@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.utils.toCents
 import android.content.Context
 import android.net.Uri
@@ -248,7 +250,7 @@ class SettingsViewModel(
         if (trimmed.isBlank()) return
         viewModelScope.launch {
             userPreferences.setUserName(trimmed.take(MAX_USER_NAME_LENGTH))
-            _messageEvent.emit("Nombre actualizado")
+            _messageEvent.emit(AppStrings.get(R.string.set_msg_name_updated))
         }
     }
 
@@ -495,10 +497,10 @@ class SettingsViewModel(
         viewModelScope.launch {
             backupManager.exportBackup(context, uri)
                 .onSuccess {
-                    _messageEvent.emit("Copia de seguridad exportada con éxito")
+                    _messageEvent.emit(AppStrings.get(R.string.set_msg_backup_exported))
                 }
                 .onFailure {
-                    _messageEvent.emit("Error al exportar copia de seguridad: ${it.localizedMessage ?: "Error desconocido"}")
+                    _messageEvent.emit(AppStrings.get(R.string.set_msg_backup_export_error, it.localizedMessage ?: AppStrings.get(R.string.set_msg_unknown_error)))
                 }
         }
     }
@@ -506,16 +508,16 @@ class SettingsViewModel(
     fun exportCsv(context: Context, uri: Uri, range: com.uramos.minicash.data.util.CsvRange) {
         viewModelScope.launch {
             backupManager.exportCsv(context, uri, range)
-                .onSuccess { count -> _messageEvent.emit("Se exportaron $count movimientos") }
-                .onFailure { _messageEvent.emit("Error al exportar el CSV: ${it.localizedMessage ?: "Error desconocido"}") }
+                .onSuccess { count -> _messageEvent.emit(AppStrings.plural(R.plurals.set_msg_csv_exported, count, count)) }
+                .onFailure { _messageEvent.emit(AppStrings.get(R.string.set_msg_csv_error, it.localizedMessage ?: AppStrings.get(R.string.set_msg_unknown_error))) }
         }
     }
 
     fun wipeAllData(context: Context) {
         viewModelScope.launch {
             backupManager.wipeAllData(context)
-                .onSuccess { _messageEvent.emit("Se borraron todos los datos. Antes se guardó una copia interna.") }
-                .onFailure { _messageEvent.emit("Error al borrar los datos: ${it.localizedMessage ?: "Error desconocido"}") }
+                .onSuccess { _messageEvent.emit(AppStrings.get(R.string.set_msg_wiped)) }
+                .onFailure { _messageEvent.emit(AppStrings.get(R.string.set_msg_wipe_error, it.localizedMessage ?: AppStrings.get(R.string.set_msg_unknown_error))) }
         }
     }
 
@@ -523,11 +525,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             backupManager.importBackup(context, uri)
                 .onSuccess {
-                    _messageEvent.emit("Copia de seguridad restaurada correctamente")
+                    _messageEvent.emit(AppStrings.get(R.string.set_msg_restored))
                 }
                 .onFailure { err ->
-                    val errorMsg = err.localizedMessage ?: "El archivo de respaldo no tiene un formato válido para Minicash."
-                    _messageEvent.emit("Error al restaurar respaldo: $errorMsg")
+                    val errorMsg = err.localizedMessage ?: AppStrings.get(R.string.set_msg_invalid_backup)
+                    _messageEvent.emit(AppStrings.get(R.string.set_msg_restore_error, errorMsg))
                 }
         }
     }

@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.trackSurface
 import com.uramos.minicash.ui.theme.cardSurface
@@ -72,17 +75,17 @@ fun TwoFacedStatsChartWidget(
         ) { page ->
             if (page == 0) {
                 SingleDonutPage(
-                    title = "Gastos",
-                    emptyMessage = "Sin gastos registrados este mes",
-                    totalLabel = "Total gastado",
+                    title = stringResource(R.string.common_expenses),
+                    emptyMessage = stringResource(R.string.home_no_expenses),
+                    totalLabel = stringResource(R.string.home_total_expense),
                     stats = monthlyExpenseStats,
                     totalAmount = totalMonthlyExpense
                 )
             } else {
                 SingleDonutPage(
-                    title = "Ingresos",
-                    emptyMessage = "Sin ingresos registrados este mes",
-                    totalLabel = "Total ingresado",
+                    title = stringResource(R.string.common_income),
+                    emptyMessage = stringResource(R.string.home_no_income),
+                    totalLabel = stringResource(R.string.home_total_income),
                     stats = monthlyIncomeStats,
                     totalAmount = totalMonthlyIncome
                 )
@@ -166,7 +169,7 @@ private fun SingleDonutPage(
                     val otherPercentage = rest.fold(0f) { acc, item -> acc + item.percentage }
                     val otherAmount = rest.fold(0L) { acc, item -> acc + item.totalAmount }
                     top4 + CategoryExpenseStat(
-                        categoryName = "Otras",
+                        categoryName = AppStrings.get(R.string.cat_others_f),
                         totalAmount = otherAmount,
                         percentage = otherPercentage,
                         colorHex = null

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_credit_channel">Installment payments</string>
+    <string name="notif_credit_channel_desc">Reminders before the due date of your installment purchases</string>
+    <string name="notif_when_today">today</string>
+    <string name="notif_when_tomorrow">tomorrow</string>
+    <string name="notif_when_days">in %1$d days</string>
+    <plurals name="notif_credit_title">
+        <item quantity="one">Upcoming payment</item>
+        <item quantity="other">%d upcoming payments</item>
+    </plurals>
+    <string name="notif_daily_channel">Daily reminders</string>
+    <string name="notif_daily_channel_desc">Reminder to log your daily transactions</string>
+    <string name="notif_daily_text">Did you log today’s expenses?</string>
+</resources>

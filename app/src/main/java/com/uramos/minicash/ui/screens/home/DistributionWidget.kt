@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -81,11 +84,11 @@ fun DistributionWidget(
                 options = listOf(false, true),
                 isSelected = { it == showIncome },
                 onSelect = { showIncome = it },
-                label = { if (it) "Ingresos" else "Gastos" }
+                label = { if (it) AppStrings.get(R.string.common_income) else AppStrings.get(R.string.common_expenses) }
             )
             if (stats.isEmpty()) {
                 Text(
-                    text = if (showIncome) "Sin ingresos registrados este mes" else "Sin gastos registrados este mes",
+                    text = if (showIncome) stringResource(R.string.home_no_income) else stringResource(R.string.home_no_expenses),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -96,7 +99,7 @@ fun DistributionWidget(
             } else {
                 when (style) {
                     DistributionStyle.BARS -> BarsBody(stats)
-                    DistributionStyle.STACKED -> StackedBody(stats, total, if (showIncome) "Total ingresado" else "Total gastado")
+                    DistributionStyle.STACKED -> StackedBody(stats, total, if (showIncome) stringResource(R.string.home_total_income) else stringResource(R.string.home_total_expense))
                     DistributionStyle.TOP5 -> Top5Body(stats, total, if (showIncome) null else previousExpense, showIncome)
                     DistributionStyle.DONUT -> Unit
                 }
@@ -117,7 +120,7 @@ private fun percentText(fraction: Float): String = "${(fraction * 100).toInt().c
 /** Una barra por categoría, con el monto y el porcentaje; la mayor llena todo el ancho. */
 @Composable
 private fun BarsBody(stats: List<CategoryExpenseStat>) {
-    val visible = remember(stats) { groupTopStats(stats, 6) }
+    val visible = remember(stats) { groupTopStats(stats, 6, AppStrings.get(R.string.cat_others)) }
     val max = visible.maxOfOrNull { it.totalAmount }?.coerceAtLeast(1L) ?: 1L
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         visible.forEachIndexed { index, stat ->
@@ -172,7 +175,7 @@ private fun BarsBody(stats: List<CategoryExpenseStat>) {
 /** El total en grande, una sola barra dividida en segmentos y la leyenda en dos columnas. */
 @Composable
 private fun StackedBody(stats: List<CategoryExpenseStat>, total: Long, label: String) {
-    val visible = remember(stats) { groupTopStats(stats, 5) }
+    val visible = remember(stats) { groupTopStats(stats, 5, AppStrings.get(R.string.cat_others)) }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Column {
             Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -239,7 +242,7 @@ private fun StackedBody(stats: List<CategoryExpenseStat>, total: Long, label: St
 /** Las cinco categorías mayores; en gastos, cada una con su cambio contra el mes anterior. */
 @Composable
 private fun Top5Body(stats: List<CategoryExpenseStat>, total: Long, previous: PreviousMonthExpense?, isIncome: Boolean) {
-    val visible = remember(stats) { groupTopStats(stats, 5) }
+    val visible = remember(stats) { groupTopStats(stats, 5, AppStrings.get(R.string.cat_others)) }
     val totalChange = previous?.let { percentChange(total, it.total) }
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
@@ -249,7 +252,7 @@ private fun Top5Body(stats: List<CategoryExpenseStat>, total: Long, previous: Pr
         ) {
             Column {
                 Text(
-                    text = if (isIncome) "Ingresos del mes" else "Gastos del mes",
+                    text = if (isIncome) stringResource(R.string.home_income_of_month) else stringResource(R.string.home_expenses_of_month),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -260,7 +263,7 @@ private fun Top5Body(stats: List<CategoryExpenseStat>, total: Long, previous: Pr
                 )
             }
             if (totalChange != null && previous.monthLabel.isNotBlank()) {
-                ChangeChip(change = totalChange, suffix = " vs ${previous.monthLabel.take(3).lowercase()}")
+                ChangeChip(change = totalChange, suffix = " " + stringResource(R.string.home_vs_month, previous.monthLabel.take(3).lowercase()))
             }
         }
         visible.forEachIndexed { index, stat ->
@@ -315,7 +318,7 @@ private fun ChangeChip(change: Int, suffix: String) {
     }
     Surface(shape = CircleShape, color = container, contentColor = content) {
         Text(
-            text = changeLabel(change) + suffix,
+            text = changeLabel(change, stringResource(R.string.change_none)) + suffix,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             maxLines = 1,

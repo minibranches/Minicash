@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -92,7 +94,7 @@ fun NotificationsSettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.screenBackground,
-        topBar = { MinicashSubScreenTopBar(title = "Notificaciones", onBack = onBackClick, scrollBehavior = scrollBehavior) }
+        topBar = { MinicashSubScreenTopBar(title = stringResource(R.string.set_notifications), onBack = onBackClick, scrollBehavior = scrollBehavior) }
     ) { paddingValues ->
         LazyColumn(
             state = listState,
@@ -116,28 +118,28 @@ fun NotificationsSettingsScreen(
 
             item(key = "group_payments") {
                 Column {
-                    MinicashSectionLabel("Avisos de pago")
+                    MinicashSectionLabel(stringResource(R.string.set_notif_payments))
                     SettingsGroup {
                         SettingsRowItem(
-                            title = "Hora del aviso",
+                            title = stringResource(R.string.set_notif_payment_time),
                             icon = Icons.Default.Payments,
-                            value = "${formatClock(creditReminderTime.first, creditReminderTime.second)} hrs",
+                            value = stringResource(R.string.set_hours, formatClock(creditReminderTime.first, creditReminderTime.second)),
                             onClick = { showCreditTimePicker = true },
                             showChevron = false
                         )
                     }
-                    MinicashSectionNote("Cada crédito o institución define con cuántos días de anticipación avisa.")
+                    MinicashSectionNote(stringResource(R.string.set_notif_payments_note))
                 }
             }
 
             item(key = "group_daily") {
                 val count = if (state.dailyReminderEnabled) 2 else 1
                 Column {
-                    MinicashSectionLabel("Recordatorios")
+                    MinicashSectionLabel(stringResource(R.string.set_notif_reminders))
                     SettingsGroup {
                         SettingsSwitchItem(
-                            title = "Recordatorio diario",
-                            subtitle = "Avisa si no registraste gastos en el día",
+                            title = stringResource(R.string.set_notif_daily),
+                            subtitle = stringResource(R.string.set_notif_daily_sub),
                             icon = Icons.Default.Notifications,
                             checked = state.dailyReminderEnabled && notificationsAllowed,
                             onCheckedChange = setDailyReminder,
@@ -145,9 +147,9 @@ fun NotificationsSettingsScreen(
                         )
                         if (state.dailyReminderEnabled) {
                             SettingsRowItem(
-                                title = "Hora del recordatorio",
+                                title = stringResource(R.string.set_notif_daily_time),
                                 icon = Icons.Default.Schedule,
-                                value = "$dailyTime hrs",
+                                value = stringResource(R.string.set_hours, dailyTime),
                                 onClick = { showDailyTimePicker = true },
                                 showChevron = false,
                                 index = 1, count = count
@@ -161,7 +163,7 @@ fun NotificationsSettingsScreen(
 
     if (showDailyTimePicker) {
         MinicashTimePickerDialog(
-            title = "Hora del recordatorio",
+            title = stringResource(R.string.set_notif_daily_time),
             initialHour = state.dailyReminderHour,
             initialMinute = state.dailyReminderMinute,
             onConfirm = { hour, minute ->
@@ -174,7 +176,7 @@ fun NotificationsSettingsScreen(
 
     if (showCreditTimePicker) {
         MinicashTimePickerDialog(
-            title = "Hora de los avisos de pago",
+            title = stringResource(R.string.set_notif_payments_time_title),
             initialHour = creditReminderTime.first,
             initialMinute = creditReminderTime.second,
             onConfirm = { hour, minute ->

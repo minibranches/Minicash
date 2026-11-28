@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.bounceOnPress
 import com.uramos.minicash.ui.components.LocalBottomBlurBand
 import androidx.compose.runtime.CompositionLocalProvider
@@ -356,9 +358,9 @@ fun MainScreen(
         showAddSheet = true
     }
     val fabMenu = listOf(
-        FabMenuAction("Gasto", Icons.AutoMirrored.Filled.TrendingDown) { openAddSheetAs(TransactionType.EXPENSE) },
-        FabMenuAction("Ingreso", Icons.AutoMirrored.Filled.TrendingUp) { openAddSheetAs(TransactionType.INCOME) },
-        FabMenuAction("Transferencia", Icons.Default.SwapHoriz) { openAddSheetAs(TransactionType.TRANSFER) }
+        FabMenuAction(stringResource(R.string.tx_type_expense), Icons.AutoMirrored.Filled.TrendingDown) { openAddSheetAs(TransactionType.EXPENSE) },
+        FabMenuAction(stringResource(R.string.tx_type_income), Icons.AutoMirrored.Filled.TrendingUp) { openAddSheetAs(TransactionType.INCOME) },
+        FabMenuAction(stringResource(R.string.tx_type_transfer), Icons.Default.SwapHoriz) { openAddSheetAs(TransactionType.TRANSFER) }
     )
     val tabFabMenu = if (currentScreen is Screen.Home || currentScreen is Screen.Transactions) fabMenu else null
 
@@ -550,7 +552,7 @@ fun MainScreen(
                                 val labelStyle = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
                                 val labelWidths = visibleScreens.map { screen ->
                                     with(density) {
-                                        textMeasurer.measure(screen.title, labelStyle, softWrap = false, maxLines = 1).size.width.toDp()
+                                        textMeasurer.measure(stringResource(screen.titleRes), labelStyle, softWrap = false, maxLines = 1).size.width.toDp()
                                     }
                                 }
                                 val selectedPillWidth = (14 + 22 + 6 + 14).dp + (labelWidths.maxOrNull() ?: 0.dp)
@@ -634,7 +636,7 @@ fun MainScreen(
                                                         ) { selected ->
                                                             Icon(
                                                                 imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                                                                contentDescription = screen.title,
+                                                                contentDescription = stringResource(screen.titleRes),
                                                                 tint = iconTint,
                                                                 modifier = Modifier
                                                                     .size(22.dp)
@@ -649,7 +651,7 @@ fun MainScreen(
                                                             contentAlignment = Alignment.CenterStart
                                                         ) {
                                                             Text(
-                                                                text = screen.title,
+                                                                text = stringResource(screen.titleRes),
                                                                 style = labelStyle,
                                                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                                                                 maxLines = 1,
@@ -727,12 +729,12 @@ private fun IntegratedNavBar(
                 icon = {
                     Icon(
                         imageVector = if (selected) screen.selectedIcon else screen.unselectedIcon,
-                        contentDescription = screen.title
+                        contentDescription = stringResource(screen.titleRes)
                     )
                 },
                 label = {
                     Text(
-                        text = screen.title,
+                        text = stringResource(screen.titleRes),
                         fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                         maxLines = 1
                     )
@@ -850,7 +852,7 @@ private fun ContextualFab(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = if (menu != null && expanded) "Cerrar menú" else "Añadir",
+                    contentDescription = if (menu != null && expanded) stringResource(R.string.nav_close_menu) else stringResource(R.string.nav_add),
                     modifier = Modifier
                         .size(24.dp)
                         .graphicsLayer { rotationZ = iconRotation }

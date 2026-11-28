@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_transactions">Movimientos</string>
+    <string name="nav_budget">Quincenas</string>
+    <string name="nav_credits">Créditos</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_accounts_management">Gestión de cuentas</string>
+    <string name="nav_categories_management">Gestión de categorías</string>
+    <string name="tx_type_expense">Gasto</string>
+    <string name="tx_type_income">Ingreso</string>
+    <string name="tx_type_transfer">Transferencia</string>
+    <string name="nav_close_menu">Cerrar menú</string>
+    <string name="nav_add">Añadir</string>
+</resources>

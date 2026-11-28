@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tx_categories_title">Categorías</string>
+    <string name="tx_search_category">Buscar categoría...</string>
+    <string name="tx_clear_search">Limpiar búsqueda</string>
+    <string name="tx_categories_title_count">Categorías (%1$d)</string>
+    <string name="tx_filters_title">Filtros de movimientos</string>
+    <string name="tx_filters_clear">Limpiar filtros</string>
+    <string name="tx_filter_type">Tipo de movimiento</string>
+    <string name="tx_all_accounts">Todas las cuentas</string>
+    <string name="tx_all_categories">Todas las categorías</string>
+    <string name="tx_filters_apply">Aplicar filtros</string>
+    <string name="tx_empty_title">Sin movimientos registrados</string>
+    <string name="tx_empty_filtered">No se encontraron movimientos con los filtros seleccionados.</string>
+    <string name="tx_empty_month">No hay movimientos registrados en este mes.</string>
+    <string name="tx_search_hint">Buscar...</string>
+    <string name="tx_search_close">Cerrar búsqueda</string>
+    <string name="tx_search_cd">Buscar movimientos</string>
+    <string name="tx_clear_history">Borrar historial</string>
+    <string name="account_balance_change">Cambio del saldo por mes</string>
+    <string name="account_empty_title">Sin movimientos</string>
+    <string name="account_empty_sub">Esta cuenta aún no tiene movimientos.</string>
+    <string name="account_empty_months">Sin movimientos en estos meses.</string>
+    <string name="tx_balance">Balance</string>
+</resources>

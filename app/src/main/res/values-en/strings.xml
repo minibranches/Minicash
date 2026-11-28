@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Minicash</string>
+    <string name="shortcut_expense_short">New expense</string>
+    <string name="shortcut_expense_long">Log a new expense</string>
+    <string name="shortcut_income_short">New income</string>
+    <string name="shortcut_income_long">Log a new income</string>
+    <string name="shortcut_transfer_short">Transfer</string>
+    <string name="shortcut_transfer_long">Log a transfer between accounts</string>
+    <string name="widget_minicash_label">Minicash</string>
+    <string name="widget_minicash_description">Net worth, spending this month and buttons to log</string>
+    <string name="widget_quick_label">Quick log</string>
+    <string name="widget_quick_description">Buttons to log an expense, an income or a transfer</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_credit_channel">Pagos de compras a meses</string>
+    <string name="notif_credit_channel_desc">Avisos antes de la fecha de pago de tus compras a meses</string>
+    <string name="notif_when_today">hoy</string>
+    <string name="notif_when_tomorrow">mañana</string>
+    <string name="notif_when_days">en %1$d días</string>
+    <plurals name="notif_credit_title">
+        <item quantity="one">Pago próximo</item>
+        <item quantity="other">%d pagos próximos</item>
+    </plurals>
+    <string name="notif_daily_channel">Recordatorios diarios</string>
+    <string name="notif_daily_channel_desc">Recordatorio para registrar transacciones diarias</string>
+    <string name="notif_daily_text">¿Registraste tus gastos de hoy?</string>
+</resources>

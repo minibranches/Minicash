@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -68,7 +70,7 @@ fun MinicashTimePickerDialog(
                     TimeWheel(
                         items = hours,
                         state = hourState,
-                        description = "Hora",
+                        description = stringResource(R.string.time_hour),
                         modifier = Modifier.weight(1f)
                     )
                     Text(
@@ -80,7 +82,7 @@ fun MinicashTimePickerDialog(
                     TimeWheel(
                         items = minutes,
                         state = minuteState,
-                        description = "Minutos",
+                        description = stringResource(R.string.time_minutes),
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -95,10 +97,10 @@ fun MinicashTimePickerDialog(
         confirmButton = {
             MinicashFilledButton(
                 onClick = { onConfirm(hour24Of(selectedHour12, isPm), selectedMinute) }
-            ) { Text("Guardar", fontWeight = FontWeight.Bold) }
+            ) { Text(stringResource(R.string.common_save), fontWeight = FontWeight.Bold) }
         },
         dismissButton = {
-            MinicashTextButton(onClick = onDismiss) { Text("Cancelar") }
+            MinicashTextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         }
     )
 }

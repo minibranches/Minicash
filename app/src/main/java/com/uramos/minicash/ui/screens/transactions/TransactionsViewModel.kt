@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import com.uramos.minicash.data.util.removeTransactions
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -132,7 +134,7 @@ class TransactionsViewModel(
             set(Calendar.MILLISECOND, 999)
         }.timeInMillis
 
-        val monthLabelFormat = SimpleDateFormat("MMMM yyyy", Locale("es", "MX"))
+        val monthLabelFormat = appDateFormat("MMMM yyyy")
         val monthLabel = monthLabelFormat.format(cal.time).replaceFirstChar { it.uppercase() }
 
         combine(

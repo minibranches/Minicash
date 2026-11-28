@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="budget_copy_cd">Copy planned items between pay periods</string>
+    <string name="budget_empty_filtered">No planned items of this type</string>
+    <string name="budget_empty_filter_hint">Tap the filter again to see every planned item in the pay period.</string>
+    <string name="budget_empty_sub">You haven’t added income or expenses for this pay period.</string>
+    <string name="budget_item_deleted">Planned item deleted</string>
+    <string name="budget_copy_none">No planned items to copy in the selected pay period</string>
+    <string name="budget_fortnight_cd">Pay period %1$d</string>
+    <string name="budget_reimbursements">Reimbursements</string>
+    <string name="budget_mark_pending">Mark as pending</string>
+    <string name="budget_reactivate_title">Reactivate planned item?</string>
+    <string name="budget_reactivate_text">Do you want to mark this planned item as pending again?</string>
+    <string name="budget_reactivate">Reactivate</string>
+    <string name="budget_confirm_title">Confirm %1$s</string>
+    <string name="budget_confirm_text">Do you want to record \'%1$s\' (%2$s) as done?</string>
+    <string name="budget_create_tx">Create transaction</string>
+    <string name="budget_new_title">New planned item</string>
+    <string name="budget_name_hint">Planned item name</string>
+    <string name="budget_responsible">Responsible</string>
+    <string name="budget_responsible_hint">Name of the person responsible</string>
+    <string name="budget_add">Add planned item</string>
+    <string name="budget_delete_title">Delete planned item?</string>
+    <string name="budget_delete_text">Do you want to delete \'%1$s\' from your planned items?</string>
+    <string name="budget_edit_title">Edit planned item</string>
+    <string name="budget_delete">Delete planned item</string>
+    <string name="budget_copy_title">Copy pay period</string>
+    <string name="budget_copy_same">The source and destination can’t be the same.</string>
+    <string name="budget_copy_items">Planned items (%1$d of %2$d)</string>
+    <string name="budget_copy_empty">There are no planned items in the selected source pay period.</string>
+    <string name="budget_exists">Already exists</string>
+    <plurals name="budget_copied">
+        <item quantity="one">%d planned item copied</item>
+        <item quantity="other">%d planned items copied</item>
+    </plurals>
+    <plurals name="budget_copy_button">
+        <item quantity="one">Copy %d planned item</item>
+        <item quantity="other">Copy %d planned items</item>
+    </plurals>
+    <string name="budget_mark_done">Mark as done</string>
+    <string name="budget_empty">No planned items in this pay period</string>
+    <string name="budget_tx_note">Payday: %1$s</string>
+    <string name="budget_tx_note_typed">Payday (%1$s): %2$s</string>
+    <string name="budget_available">Available · %1$d%% paid</string>
+    <string name="budget_fortnight_chip">#%1$d</string>
+</resources>

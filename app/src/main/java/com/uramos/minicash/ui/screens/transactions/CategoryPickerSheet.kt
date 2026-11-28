@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.MinicashIconButton
@@ -92,13 +94,13 @@ fun CategoryPickerSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (selectedIds.isEmpty()) "Categorías" else "Categorías (${selectedIds.size})",
+                    text = if (selectedIds.isEmpty()) stringResource(R.string.tx_categories_title) else stringResource(R.string.tx_categories_title_count, selectedIds.size),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 if (selectedIds.isNotEmpty()) {
                     MinicashTextButton(onClick = onClear) {
-                        Text("Limpiar", fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.common_clear), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -107,12 +109,12 @@ fun CategoryPickerSheet(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Buscar categoría...") },
+                placeholder = { Text(stringResource(R.string.tx_search_category)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         MinicashIconButton(onClick = { query = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.tx_clear_search))
                         }
                     }
                 },
@@ -129,7 +131,7 @@ fun CategoryPickerSheet(
             if (visible.isEmpty()) {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "Sin coincidencias",
+                        text = stringResource(R.string.common_no_matches),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -150,7 +152,7 @@ fun CategoryPickerSheet(
             }
 
             MinicashButton(
-                text = if (selectedIds.isEmpty()) "Listo" else "Listo (${selectedIds.size})",
+                text = if (selectedIds.isEmpty()) stringResource(R.string.common_done) else stringResource(R.string.common_done_count, selectedIds.size),
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()
             )

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="starter_groceries">Comestibles</string>
+    <string name="starter_transport">Transporte</string>
+    <string name="starter_dining">Comer fuera</string>
+    <string name="starter_rent">Casa/Renta</string>
+    <string name="starter_utilities">Servicios</string>
+    <string name="starter_shopping">Compras</string>
+    <string name="starter_health">Salud</string>
+    <string name="starter_fun">Diversión</string>
+    <string name="starter_salary">Nómina/Sueldo</string>
+    <string name="starter_investments">Rendimientos/Inversiones</string>
+    <string name="starter_refunds">Reembolsos</string>
+    <string name="starter_sales">Venta/Comisiones</string>
+    <string name="default_account_name">Efectivo</string>
+    <string name="default_user_name">Usuario</string>
+    <string name="ob_previous_page">Página anterior</string>
+    <string name="ob_skip">Omitir</string>
+    <string name="ob_step">Paso %1$d de %2$d</string>
+    <string name="ob_hint_last">Todo listo para empezar</string>
+    <string name="ob_start_cd">Comenzar</string>
+    <string name="ob_welcome_title">Te damos la bienvenida a Minicash</string>
+    <string name="ob_welcome_sub">Comencemos por personalizar tu espacio financiero local.</string>
+    <string name="ob_name_hint">Escribe tu nombre</string>
+    <string name="ob_privacy">Todo permanece en este teléfono. Sin cuenta ni registro; nada se envía a ningún lado.</string>
+    <string name="ob_account_title">Dónde vive tu dinero</string>
+    <string name="ob_account_sub">Nombra la cuenta desde la que gastas y di qué hay en ella ahora.</string>
+    <string name="ob_account_name_hint">Nombre de la cuenta</string>
+    <string name="ob_balance_label">Qué hay en ella ahora</string>
+    <string name="ob_balance_hint">Déjalo en cero si prefieres no decirlo.</string>
+    <string name="ob_categories_title">¿En qué gastas e ingresas?</string>
+    <string name="ob_categories_sub">Elige tus categorías iniciales; después podrás cambiarlas en Ajustes.</string>
+    <string name="ob_tab_expenses">Gastos (%1$d)</string>
+    <plurals name="ob_categories_selected">
+        <item quantity="one">%d categoría seleccionada</item>
+        <item quantity="other">%d categorías seleccionadas</item>
+    </plurals>
+    <string name="ob_hint_continue">Toca la flecha para seguir</string>
+    <string name="ob_hint_incomplete">Completa este paso para seguir</string>
+    <string name="ob_continue_cd">Continuar</string>
+    <string name="ob_tab_income">Ingresos (%1$d)</string>
+</resources>

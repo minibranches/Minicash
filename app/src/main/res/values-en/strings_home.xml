@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_no_income">No income recorded this month</string>
+    <string name="home_total_income">Total income</string>
+    <string name="home_income_of_month">Income this month</string>
+    <string name="home_vs_month">vs %1$s</string>
+    <string name="home_no_expenses">No expenses recorded this month</string>
+    <string name="home_total_expense">Total spent</string>
+    <string name="home_expenses_of_month">Expenses this month</string>
+    <string name="account_to_pay">To pay</string>
+    <string name="greeting_1">Hi, %s</string>
+    <string name="home_empty_title">Home has no sections</string>
+    <string name="home_empty_sub">Choose what to show in Settings → Home.</string>
+    <string name="home_recent_empty_title">No recent transactions</string>
+    <string name="home_recent_empty_sub">Your transactions from the last few days will show up here.</string>
+    <string name="home_see_more">See more transactions</string>
+    <string name="home_delete_selected">Delete selected</string>
+    <string name="home_view_notes">View notes</string>
+    <string name="greeting_2">How’s it going, %s</string>
+    <string name="greeting_3">Good day, %s</string>
+    <string name="greeting_4">All set, %s</string>
+    <string name="greeting_5">What’s new, %s</string>
+    <plurals name="home_tx_deleted">
+        <item quantity="one">Transaction deleted</item>
+        <item quantity="other">%d transactions deleted</item>
+    </plurals>
+    <plurals name="home_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="patrimony_sum">
+        <item quantity="one">Sum of your account</item>
+        <item quantity="other">Sum of your %d accounts</item>
+    </plurals>
+</resources>

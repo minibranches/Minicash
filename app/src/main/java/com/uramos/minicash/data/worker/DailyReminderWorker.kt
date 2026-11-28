@@ -1,5 +1,6 @@
 package com.uramos.minicash.data.worker
 
+import com.uramos.minicash.ui.utils.localized
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -54,10 +55,10 @@ class DailyReminderWorker(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Recordatorios diarios",
+                applicationContext.localized().getString(R.string.notif_daily_channel),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Recordatorio para registrar transacciones diarias"
+                description = applicationContext.localized().getString(R.string.notif_daily_channel_desc)
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -91,7 +92,7 @@ class DailyReminderWorker(
             .setSmallIcon(R.drawable.ic_notification_coin)
             .setColor(0xFF1A73E8.toInt())
             .setContentTitle("Minicash")
-            .setContentText("¿Registraste tus gastos de hoy?")
+            .setContentText(applicationContext.localized().getString(R.string.notif_daily_text))
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

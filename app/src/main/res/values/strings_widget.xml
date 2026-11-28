@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_net_worth">Patrimonio</string>
+    <string name="widget_spent">Gastado este mes: %1$s</string>
+    <string name="widget_transfer_short">Transfer.</string>
+</resources>

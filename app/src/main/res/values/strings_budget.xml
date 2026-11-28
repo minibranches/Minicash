@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="budget_copy_cd">Copiar planeados de quincena</string>
+    <string name="budget_empty_filtered">Sin planeados de este tipo</string>
+    <string name="budget_empty_filter_hint">Toca de nuevo el filtro para ver todos los planeados de la quincena.</string>
+    <string name="budget_empty_sub">No has agregado ingresos ni gastos para esta quincena.</string>
+    <string name="budget_item_deleted">Planeado eliminado</string>
+    <string name="budget_copy_none">No se encontraron planeados para copiar en la quincena seleccionada</string>
+    <string name="budget_fortnight_cd">Quincena %1$d</string>
+    <string name="budget_reimbursements">Reembolsos</string>
+    <string name="budget_mark_pending">Marcar pendiente</string>
+    <string name="budget_reactivate_title">¿Reactivar planeado?</string>
+    <string name="budget_reactivate_text">¿Deseas marcar este planeado como pendiente nuevamente?</string>
+    <string name="budget_reactivate">Reactivar</string>
+    <string name="budget_confirm_title">Confirmar %1$s</string>
+    <string name="budget_confirm_text">¿Deseas registrar \'%1$s\' (%2$s) como ejecutado?</string>
+    <string name="budget_create_tx">Crear movimiento</string>
+    <string name="budget_new_title">Nuevo planeado</string>
+    <string name="budget_name_hint">Nombre del planeado</string>
+    <string name="budget_responsible">Responsable</string>
+    <string name="budget_responsible_hint">Nombre del responsable</string>
+    <string name="budget_add">Agregar planeado</string>
+    <string name="budget_delete_title">¿Eliminar planeado?</string>
+    <string name="budget_delete_text">¿Deseas eliminar \'%1$s\' de tus planeados?</string>
+    <string name="budget_edit_title">Editar planeado</string>
+    <string name="budget_delete">Eliminar planeado</string>
+    <string name="budget_copy_title">Copiar quincena</string>
+    <string name="budget_copy_same">El origen y el destino no pueden ser el mismo.</string>
+    <string name="budget_copy_items">Planeados (%1$d de %2$d)</string>
+    <string name="budget_copy_empty">No hay planeados registrados en la quincena origen seleccionada.</string>
+    <string name="budget_exists">Ya existe</string>
+    <plurals name="budget_copied">
+        <item quantity="one">Se copió %d planeado con éxito</item>
+        <item quantity="other">Se copiaron %d planeados con éxito</item>
+    </plurals>
+    <plurals name="budget_copy_button">
+        <item quantity="one">Copiar %d planeado</item>
+        <item quantity="other">Copiar %d planeados</item>
+    </plurals>
+    <string name="budget_mark_done">Marcar ejecutado</string>
+    <string name="budget_empty">Sin planeados en esta quincena</string>
+    <string name="budget_tx_note">Quincena: %1$s</string>
+    <string name="budget_tx_note_typed">Quincena (%1$s): %2$s</string>
+    <string name="budget_available">Disponible · %1$d%% pagado</string>
+    <string name="budget_fortnight_chip">%1$dª</string>
+</resources>

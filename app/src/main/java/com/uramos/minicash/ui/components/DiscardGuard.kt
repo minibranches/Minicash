@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.dialogSurface
 import com.uramos.minicash.ui.theme.MinicashShapes
 import androidx.compose.ui.graphics.Shape
@@ -91,15 +93,15 @@ fun DiscardChangesDialog(guard: DiscardGuard) {
     if (!guard.showConfirm) return
     MinicashAlertDialog(
         onDismissRequest = { guard.showConfirm = false },
-        title = { Text("¿Descartar cambios?", fontWeight = FontWeight.Bold) },
-        text = { Text("Tienes cambios sin guardar. Si sales ahora se perderán.") },
+        title = { Text(stringResource(R.string.discard_title), fontWeight = FontWeight.Bold) },
+        text = { Text(stringResource(R.string.discard_text)) },
         confirmButton = {
             MinicashTextButton(onClick = { guard.discard() }) {
-                Text("Descartar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.discard_confirm), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            MinicashTextButton(onClick = { guard.showConfirm = false }) { Text("Seguir editando") }
+            MinicashTextButton(onClick = { guard.showConfirm = false }) { Text(stringResource(R.string.discard_keep_editing)) }
         },
         shape = MinicashShapes.Hero,
         containerColor = MaterialTheme.colorScheme.dialogSurface

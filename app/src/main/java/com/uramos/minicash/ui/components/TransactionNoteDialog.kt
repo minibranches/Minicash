@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.dialogSurface
 import com.uramos.minicash.ui.theme.MinicashShapes
 import androidx.compose.foundation.shape.CircleShape
@@ -39,7 +41,7 @@ fun TransactionNoteDialog(
                 onClick = onDismiss,
                 shape = CircleShape
             ) {
-                Text("Cerrar", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.common_close), fontWeight = FontWeight.Bold)
             }
         },
         shape = MinicashShapes.Card,

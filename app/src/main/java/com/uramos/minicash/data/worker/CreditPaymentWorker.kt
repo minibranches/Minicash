@@ -1,5 +1,6 @@
 package com.uramos.minicash.data.worker
 
+import com.uramos.minicash.ui.utils.localized
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -55,11 +56,12 @@ class CreditPaymentWorker(
             ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) return
 
+        val localized = applicationContext.localized()
         val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, "Pagos de compras a meses", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "Avisos antes de la fecha de pago de tus compras a meses"
+                NotificationChannel(CHANNEL_ID, localized.getString(R.string.notif_credit_channel), NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = localized.getString(R.string.notif_credit_channel_desc)
                 }
             )
         }
@@ -67,13 +69,13 @@ class CreditPaymentWorker(
         val lines = due.map { (credit, day) ->
             val days = PaymentSchedule.daysUntilNextPayment(day, today)
             val whenText = when (days) {
-                0L -> "hoy"
-                1L -> "mañana"
-                else -> "en $days días"
+                0L -> localized.getString(R.string.notif_when_today)
+                1L -> localized.getString(R.string.notif_when_tomorrow)
+                else -> localized.getString(R.string.notif_when_days, days)
             }
             "${credit.article}: ${credit.monthlyAmount.toCurrencyFormat()} ($whenText)"
         }
-        val title = if (due.size == 1) "Pago próximo" else "${due.size} pagos próximos"
+        val title = localized.resources.getQuantityString(R.plurals.notif_credit_title, due.size, due.size)
 
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,

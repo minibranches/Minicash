@@ -1,5 +1,16 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.components.MinicashRowText
+import com.uramos.minicash.ui.components.MinicashRowGroup
+import com.uramos.minicash.ui.components.MinicashListRow
+import com.uramos.minicash.ui.utils.setAppLanguage
+import com.uramos.minicash.ui.utils.AppLanguage
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Language
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -98,6 +109,7 @@ fun SettingsScreen(
     val haptics = rememberMinicashHaptics()
     val snackbarHostState = remember { SnackbarHostState() }
     var showNameDialog by rememberSaveable { mutableStateOf(false) }
+    var showLanguageDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.messageEvent.collect { message -> snackbarHostState.showSnackbar(message) }
@@ -109,7 +121,7 @@ fun SettingsScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState, modifier = Modifier.padding(bottom = FLOATING_NAV_CLEARANCE)) },
         containerColor = MaterialTheme.colorScheme.screenBackground,
-        topBar = { MinicashSubScreenTopBar(title = "Ajustes", onBack = onBackClick, scrollBehavior = scrollBehavior) }
+        topBar = { MinicashSubScreenTopBar(title = stringResource(R.string.nav_settings), onBack = onBackClick, scrollBehavior = scrollBehavior) }
     ) { paddingValues ->
         LazyColumn(
             state = listState,
@@ -134,22 +146,22 @@ fun SettingsScreen(
 
             item(key = "group_money") {
                 Column {
-                    MinicashSectionLabel("Tu dinero")
+                    MinicashSectionLabel(stringResource(R.string.set_group_money))
                     SettingsGroup {
                         SettingsRowItem(
-                            title = "Cuentas",
+                            title = stringResource(R.string.set_accounts),
                             icon = Icons.Default.AccountBalanceWallet,
                             onClick = onNavigateToAccounts,
                             index = 0, count = 3
                         )
                         SettingsRowItem(
-                            title = "Categorías",
+                            title = stringResource(R.string.set_categories),
                             icon = Icons.Default.Category,
                             onClick = onNavigateToCategories,
                             index = 1, count = 3
                         )
                         SettingsRowItem(
-                            title = "Tarjetas e instituciones",
+                            title = stringResource(R.string.set_institutions),
                             icon = Icons.Default.CreditCard,
                             onClick = onNavigateToInstitutions,
                             index = 2, count = 3
@@ -160,39 +172,46 @@ fun SettingsScreen(
 
             item(key = "group_preferences") {
                 Column {
-                    MinicashSectionLabel("Preferencias")
+                    MinicashSectionLabel(stringResource(R.string.set_group_preferences))
                     SettingsGroup {
                         SettingsRowItem(
-                            title = "Tu nombre",
+                            title = stringResource(R.string.set_your_name),
                             icon = Icons.Default.Person,
-                            value = state.userName.ifBlank { "Sin definir" },
+                            value = state.userName.ifBlank { stringResource(R.string.set_name_undefined) },
                             onClick = { showNameDialog = true },
                             showChevron = false,
-                            index = 0, count = 5
+                            index = 0, count = 6
                         )
                         SettingsRowItem(
-                            title = "Apariencia",
+                            title = stringResource(R.string.set_language),
+                            icon = Icons.Default.Language,
+                            value = AppLanguage.current().nativeName,
+                            onClick = { showLanguageDialog = true },
+                            index = 1, count = 6
+                        )
+                        SettingsRowItem(
+                            title = stringResource(R.string.set_appearance),
                             icon = Icons.Default.Palette,
                             onClick = onNavigateToAppearance,
-                            index = 1, count = 5
+                            index = 2, count = 6
                         )
                         SettingsRowItem(
-                            title = "Inicio",
+                            title = stringResource(R.string.nav_home),
                             icon = Icons.Default.Home,
                             onClick = onNavigateToHome,
-                            index = 2, count = 5
+                            index = 3, count = 6
                         )
                         SettingsRowItem(
-                            title = "Módulos de la app",
+                            title = stringResource(R.string.set_modules),
                             icon = Icons.Default.Widgets,
                             onClick = onNavigateToModules,
-                            index = 3, count = 5
+                            index = 4, count = 6
                         )
                         SettingsRowItem(
-                            title = "Notificaciones",
+                            title = stringResource(R.string.set_notifications),
                             icon = Icons.Default.Notifications,
                             onClick = onNavigateToNotifications,
-                            index = 4, count = 5
+                            index = 5, count = 6
                         )
                     }
                 }
@@ -201,12 +220,12 @@ fun SettingsScreen(
             item(key = "group_privacy") {
                 val count = if (appLockEnabled) 4 else 3
                 Column {
-                    MinicashSectionLabel("Privacidad y datos")
+                    MinicashSectionLabel(stringResource(R.string.set_group_privacy))
                     SettingsGroup {
                         SettingsSwitchItem(
-                            title = "Bloqueo de la app",
-                            subtitle = if (appLockEnabled) appLockTimeoutLabel(appLockTimeout) + "; pide huella, rostro o PIN"
-                            else "Pide huella, rostro o el PIN del teléfono al abrir Minicash",
+                            title = stringResource(R.string.set_app_lock),
+                            subtitle = if (appLockEnabled) appLockTimeoutLabel(appLockTimeout) + stringResource(R.string.set_app_lock_on)
+                            else stringResource(R.string.set_app_lock_off),
                             icon = Icons.Default.Lock,
                             checked = appLockEnabled,
                             onCheckedChange = { wantsOn ->
@@ -215,18 +234,18 @@ fun SettingsScreen(
                                 when {
                                     !wantsOn -> activity?.let {
                                         // Para quitar el bloqueo también se pide verificarse
-                                        showAppLockPrompt(it, "Quitar el bloqueo", "Verifica que eres tú", onSuccess = { viewModel.setAppLockEnabled(false) })
+                                        showAppLockPrompt(it, AppStrings.get(R.string.set_lock_remove_title), AppStrings.get(R.string.set_lock_verify_you), onSuccess = { viewModel.setAppLockEnabled(false) })
                                     } ?: viewModel.setAppLockEnabled(false)
                                     activity == null || !canUseAppLock(context) ->
-                                        Toast.makeText(context, "Configura una huella, un rostro o un PIN en los ajustes del teléfono", Toast.LENGTH_LONG).show()
-                                    else -> showAppLockPrompt(activity, "Activar el bloqueo", "Verifica que puedes desbloquear", onSuccess = { viewModel.setAppLockEnabled(true) })
+                                        Toast.makeText(context, AppStrings.get(R.string.set_lock_setup_needed), Toast.LENGTH_LONG).show()
+                                    else -> showAppLockPrompt(activity, AppStrings.get(R.string.set_lock_enable_title), AppStrings.get(R.string.set_lock_verify_unlock), onSuccess = { viewModel.setAppLockEnabled(true) })
                                 }
                             },
                             index = 0, count = count
                         )
                         if (appLockEnabled) {
                             SettingsRowItem(
-                                title = "Volver a pedir",
+                                title = stringResource(R.string.set_lock_ask_again),
                                 icon = Icons.Default.Timer,
                                 value = appLockTimeoutLabel(appLockTimeout),
                                 onClick = {
@@ -238,9 +257,9 @@ fun SettingsScreen(
                             )
                         }
                         SettingsSwitchItem(
-                            title = "Ocultar en multitarea",
-                            subtitle = if (hideInRecents) "Vista previa oculta; también se bloquean las capturas"
-                            else "Oculta la vista previa al ver las apps abiertas",
+                            title = stringResource(R.string.set_hide_recents),
+                            subtitle = if (hideInRecents) stringResource(R.string.set_hide_recents_on)
+                            else stringResource(R.string.set_hide_recents_off),
                             icon = Icons.Default.VisibilityOff,
                             checked = hideInRecents,
                             onCheckedChange = {
@@ -250,7 +269,7 @@ fun SettingsScreen(
                             index = count - 2, count = count
                         )
                         SettingsRowItem(
-                            title = "Copias de seguridad",
+                            title = stringResource(R.string.set_backups),
                             icon = Icons.Default.CloudDone,
                             onClick = onNavigateToBackups,
                             index = count - 1, count = count
@@ -261,7 +280,7 @@ fun SettingsScreen(
 
             item(key = "group_about") {
                 Column {
-                    MinicashSectionLabel("Acerca de")
+                    MinicashSectionLabel(stringResource(R.string.set_group_about))
                     SettingsGroup {
                         SettingsRowItem(
                             title = "Minicash",
@@ -274,18 +293,22 @@ fun SettingsScreen(
         }
     }
 
+    if (showLanguageDialog) {
+        LanguageDialog(onDismiss = { showLanguageDialog = false })
+    }
+
     if (showNameDialog) {
         var draft by rememberSaveable { mutableStateOf(state.userName) }
         val canSave = draft.isNotBlank() && draft.trim() != state.userName
         MinicashAlertDialog(
             onDismissRequest = { showNameDialog = false },
-            title = { Text("Tu nombre", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.set_your_name), fontWeight = FontWeight.Bold) },
             text = {
                 OutlinedTextField(
                     value = draft,
                     onValueChange = { draft = it.take(MAX_USER_NAME_LENGTH) },
-                    label = { Text("Nombre") },
-                    supportingText = { Text("Se muestra en el saludo de Inicio") },
+                    label = { Text(stringResource(R.string.set_name_label)) },
+                    supportingText = { Text(stringResource(R.string.set_name_support)) },
                     singleLine = true,
                     shape = MinicashShapes.Input,
                     modifier = Modifier.fillMaxWidth()
@@ -299,13 +322,46 @@ fun SettingsScreen(
                     },
                     enabled = canSave,
                 ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold, maxLines = 1)
+                    Text(stringResource(R.string.common_save), fontWeight = FontWeight.Bold, maxLines = 1)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { showNameDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showNameDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             },
             shape = MinicashShapes.Hero
         )
     }
+}
+
+/** Elige el idioma de la app: español (predeterminado) o inglés. El cambio vuelve a crear la pantalla. */
+@Composable
+private fun LanguageDialog(onDismiss: () -> Unit) {
+    val current = AppLanguage.current()
+    MinicashAlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.set_language), fontWeight = FontWeight.Bold) },
+        text = {
+            MinicashRowGroup {
+                AppLanguage.entries.forEachIndexed { index, language ->
+                    MinicashListRow(
+                        index = index,
+                        count = AppLanguage.entries.size,
+                        onClick = {
+                            onDismiss()
+                            if (language != current) setAppLanguage(language)
+                        }
+                    ) {
+                        MinicashRowText(title = language.nativeName)
+                        if (language == current) {
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.set_chosen))
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            MinicashTextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
+        },
+        shape = MinicashShapes.Hero
+    )
 }

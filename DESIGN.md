@@ -207,7 +207,7 @@ Los valores son el punto de partida y se afinan tras revisión visual en la Fase
 fontFeatureSettings = "tnum"
 ```
 
-- **Sentence case obligatorio en español:** todos los títulos, etiquetas, botones y mensajes usan estilo de oración ("Guardar movimiento", "Gastos fijos", "Categorías registradas"). Prohibido el Title Case y el texto sin traducir en la UI.
+- **Sentence case obligatorio en español:** todos los títulos, etiquetas, botones y mensajes usan estilo de oración ("Guardar movimiento", "Quincenas", "Categorías registradas"). Prohibido el Title Case y los textos sin traducir: todo texto de la UI vive en `strings.xml` (español e inglés).
 
 ---
 
@@ -243,7 +243,7 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 | :--- | :--- | :--- | :--- |
 | Barra flotante con FAB | Propia desacoplada con resortes | `MainScreen` | Implementado |
 | Listas segmentadas | Helper propio `rememberSegmentedShape` | Historial, Fijos, Créditos, Cuentas | Implementado (estático) |
-| Estadio de dato (`StatPill`, `StatPillMoney`) | Propio: cifra grande, etiqueta y avance como relleno del estadio | Movimientos, Créditos, Gastos fijos, Reportes | Implementado |
+| Estadio de dato (`StatPill`, `StatPillMoney`) | Propio: cifra grande, etiqueta y avance como relleno del estadio | Movimientos, Créditos, Quincenas, Reportes | Implementado |
 | Aviso punteado (`InsightCard`) | Propio: borde punteado y destello, solo para mensajes que la app ya muestra | Reportes (mensaje de ahorro) | Implementado |
 | Sección plegable (`CollapsibleSectionHeader`) | Propio: píldora con contador y flecha | Créditos (Liquidados) | Implementado |
 | Chip de filtro tonal (`MinicashFilterChip`) | `FilterChip` en píldora, sin borde | Movimientos y hojas de filtros, Ajustes, Onboarding | Implementado |
@@ -275,6 +275,11 @@ Card(shape = itemShape) { /* Fila segmentada */ }
 - **Cuentas:** `AccountTypeCard` mide siempre lo mismo y usa el color de la cuenta; el tipo se distingue por el acabado dibujado (chip, borde, billete, monedas), no por el tamaño.
 - **Créditos:** cuadrícula de 2 columnas; el avance usa `WavyProgressIndicator`.
 - **Ajustes:** grupos con `MinicashSectionLabel` y filas segmentadas de una línea (`SettingsRowItem` con valor y flecha, `SettingsSwitchItem`); lo que necesita más espacio vive en subpantallas (`settings/home`, `settings/notifications`).
+
+## 10d. Filas de lista e idiomas
+
+- **Una sola fila.** Toda lista usa `MinicashListRow` dentro de `MinicashRowGroup` (`ui/components/MinicashListRow.kt`): alto mínimo de 72 dp, 16 dp de relleno lateral y 12 dp vertical, 12 dp entre ícono y texto, 4 dp entre filas, esquinas segmentadas (28 dp en los extremos del grupo, 4 dp entre filas), ícono `ScallopedIcon` de 40 dp, título de una línea (`titleMedium` SemiBold) y subtítulo de una línea (`bodySmall`) pegado debajo, y rebote de 0.97 al tocar. Las filas de Ajustes (`SettingsRowItem`, `SettingsSwitchItem`) y `MinicashOptionRow` son envolturas de la misma fila. Margen de pantalla: 20 dp.
+- **Idiomas.** Los textos viven en `res/values` (español) y `res/values-en`; en Compose se usa `stringResource` y, fuera de ella, `AppStrings`. Las fechas se dan formato con `appDateFormat(es, en)` y la moneda con `toCurrencyFormat()`, que siguen `appLocale()` (es-MX o en-US). Una prueba exige las mismas claves en ambos idiomas.
 
 ## 11. Decisiones del PO
 

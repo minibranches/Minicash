@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.navigation
 
+import androidx.annotation.StringRes
+import com.uramos.minicash.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
@@ -15,17 +17,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
     val route: String,
-    val title: String,
+    @StringRes val titleRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    object Home : Screen("home", "Inicio", Icons.Filled.Home, Icons.Outlined.Home)
-    object Transactions : Screen("transactions", "Movimientos", Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
-    object Budget : Screen("budget", "Gastos fijos", Icons.Filled.PieChart, Icons.Outlined.PieChart)
-    object Credits : Screen("credits", "Créditos", Icons.Filled.CreditCard, Icons.Outlined.CreditCard)
-    object Settings : Screen("settings", "Ajustes", Icons.Filled.Settings, Icons.Outlined.Settings)
-    object AccountsManagement : Screen("accounts_management", "Gestión de cuentas", Icons.Filled.Settings, Icons.Outlined.Settings)
-    object CategoriesManagement : Screen("categories_management", "Gestión de categorías", Icons.Filled.Settings, Icons.Outlined.Settings)
+    object Home : Screen("home", R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home)
+    object Transactions : Screen("transactions", R.string.nav_transactions, Icons.Filled.ReceiptLong, Icons.Outlined.ReceiptLong)
+    object Budget : Screen("budget", R.string.nav_budget, Icons.Filled.PieChart, Icons.Outlined.PieChart)
+    object Credits : Screen("credits", R.string.nav_credits, Icons.Filled.CreditCard, Icons.Outlined.CreditCard)
+    object Settings : Screen("settings", R.string.nav_settings, Icons.Filled.Settings, Icons.Outlined.Settings)
+    object AccountsManagement : Screen("accounts_management", R.string.nav_accounts_management, Icons.Filled.Settings, Icons.Outlined.Settings)
+    object CategoriesManagement : Screen("categories_management", R.string.nav_categories_management, Icons.Filled.Settings, Icons.Outlined.Settings)
 }
 
 /**

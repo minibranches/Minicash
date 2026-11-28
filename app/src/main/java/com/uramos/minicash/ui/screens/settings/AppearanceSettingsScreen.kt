@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.AppStrings
 import com.uramos.minicash.ui.utils.refreshLimitLabel
 import com.uramos.minicash.ui.utils.deviceMaxRefreshRate
 import com.uramos.minicash.ui.utils.coerceRefreshLimit
@@ -64,7 +67,7 @@ fun AppearanceSettingsScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Apariencia",
+                title = stringResource(R.string.set_appearance),
                 onBack = onBackClick,
                 scrollBehavior = scrollBehavior
             )
@@ -77,7 +80,7 @@ fun AppearanceSettingsScreen(
                 .padding(paddingValues.withoutTop())
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
             contentPadding = PaddingValues(
-                horizontal = spacing.standard,
+                horizontal = spacing.screen,
                 vertical = spacing.small
             ).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
@@ -95,7 +98,7 @@ fun AppearanceSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(spacing.medium)
                     ) {
                         Text(
-                            text = "Tema de la aplicación",
+                            text = stringResource(R.string.appr_theme),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -115,7 +118,7 @@ fun AppearanceSettingsScreen(
 
                         // Selector de Familia Tipográfica
                         Text(
-                            text = "Familia tipográfica",
+                            text = stringResource(R.string.appr_font),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -128,14 +131,14 @@ fun AppearanceSettingsScreen(
                                 haptics.tick()
                                 viewModel.setFontPreference(it)
                             },
-                            label = { if (it == FontPreference.ROUNDED_QUICKSAND) "Redondeada" else "Google Sans Flex" }
+                            label = { if (it == FontPreference.ROUNDED_QUICKSAND) AppStrings.get(R.string.appr_font_rounded) else "Google Sans Flex" }
                         )
 
                         Spacer(modifier = Modifier.height(spacing.small))
 
                         // Selector de estilo de barra de navegación
                         Text(
-                            text = "Barra de navegación",
+                            text = stringResource(R.string.appr_navbar),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -149,7 +152,7 @@ fun AppearanceSettingsScreen(
                                 haptics.tick()
                                 viewModel.setNavBarStyle(it)
                             },
-                            label = { if (it == NavBarStyle.INTEGRATED) "Integrada" else "Flotante" }
+                            label = { if (it == NavBarStyle.INTEGRATED) AppStrings.get(R.string.appr_navbar_integrated) else AppStrings.get(R.string.appr_navbar_floating) }
                         )
 
                         Spacer(modifier = Modifier.height(spacing.small))
@@ -162,12 +165,12 @@ fun AppearanceSettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Color dinámico",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    text = stringResource(R.string.appr_dynamic),
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "Adaptar al fondo de pantalla del sistema",
+                                    text = stringResource(R.string.appr_dynamic_sub),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -190,7 +193,7 @@ fun AppearanceSettingsScreen(
                                 Spacer(modifier = Modifier.height(spacing.small))
 
                                 Text(
-                                    text = "Color de acento de la app",
+                                    text = stringResource(R.string.appr_accent),
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -199,18 +202,18 @@ fun AppearanceSettingsScreen(
 
                                 val presetColors = remember {
                                     listOf(
-                                        "#1A73E8" to "Azul Google",
-                                        "#4FC3F7" to "Celeste Cielo Pastel",
-                                        "#2E7D32" to "Verde Esmeralda",
-                                        "#80CBC4" to "Menta Suave",
-                                        "#3F51B5" to "Índigo",
-                                        "#BA68C8" to "Lila Suave Pastel",
-                                        "#F06292" to "Rosa Pastel",
-                                        "#C2185B" to "Rosa Frambuesa",
-                                        "#F57C00" to "Naranja Cálido",
-                                        "#FFB74D" to "Ámbar Melocotón",
-                                        "#7B1FA2" to "Violeta Profundo",
-                                        "#00838F" to "Teal"
+                                        "#1A73E8" to AppStrings.get(R.string.appr_color_blue),
+                                        "#4FC3F7" to AppStrings.get(R.string.appr_color_sky),
+                                        "#2E7D32" to AppStrings.get(R.string.appr_color_emerald),
+                                        "#80CBC4" to AppStrings.get(R.string.appr_color_mint),
+                                        "#3F51B5" to AppStrings.get(R.string.appr_color_indigo),
+                                        "#BA68C8" to AppStrings.get(R.string.appr_color_lilac),
+                                        "#F06292" to AppStrings.get(R.string.appr_color_pink),
+                                        "#C2185B" to AppStrings.get(R.string.appr_color_raspberry),
+                                        "#F57C00" to AppStrings.get(R.string.appr_color_orange),
+                                        "#FFB74D" to AppStrings.get(R.string.appr_color_amber),
+                                        "#7B1FA2" to AppStrings.get(R.string.appr_color_violet),
+                                        "#00838F" to AppStrings.get(R.string.appr_color_teal)
                                     )
                                 }
 
@@ -264,12 +267,12 @@ fun AppearanceSettingsScreen(
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
-                                            text = "Negro puro",
-                                            style = MaterialTheme.typography.bodyLarge,
+                                            text = stringResource(R.string.appr_amoled),
+                                            style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = "Fondo negro absoluto para pantallas OLED en tema oscuro",
+                                            text = stringResource(R.string.appr_amoled_sub),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -306,12 +309,12 @@ fun AppearanceSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(spacing.medium)
                     ) {
                         Text(
-                            text = "Rendimiento",
+                            text = stringResource(R.string.appr_performance),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Frecuencia de actualización",
+                            text = stringResource(R.string.appr_refresh),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -323,11 +326,10 @@ fun AppearanceSettingsScreen(
                                 haptics.click()
                                 viewModel.setRefreshRateLimit(it)
                             },
-                            label = { refreshLimitLabel(it) }
+                            label = { refreshLimitLabel(it, AppStrings.get(R.string.refresh_auto)) }
                         )
                         Text(
-                            text = "Limita los cuadros por segundo de la app: menos Hz gastan menos batería y más Hz se ven más fluidos. " +
-                                "Automático deja que decida el sistema. La pantalla del teléfono puede no admitir todos los valores.",
+                            text = stringResource(R.string.appr_refresh_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

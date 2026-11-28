@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
@@ -21,6 +23,8 @@ import androidx.compose.foundation.background
 
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.foundation.layout.*
+import com.uramos.minicash.ui.components.ScallopedIcon
+import com.uramos.minicash.ui.components.MinicashListRowDefaults
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -88,7 +92,7 @@ fun AccountsManagementScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Cuentas",
+                title = stringResource(R.string.set_accounts),
                 onBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -100,7 +104,7 @@ fun AccountsManagementScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Nueva cuenta"
+                            contentDescription = stringResource(R.string.acc_new_cd)
                         )
                     }
                 }
@@ -115,8 +119,8 @@ fun AccountsManagementScreen(
             ) {
                 MinicashEmptyState(
                     icon = Icons.Default.AccountBalanceWallet,
-                    title = "Sin cuentas registradas",
-                    subtitle = "Agrega tus cuentas de efectivo, débito o banco para comenzar.",
+                    title = stringResource(R.string.acc_empty_title),
+                    subtitle = stringResource(R.string.acc_empty_sub),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
@@ -129,7 +133,7 @@ fun AccountsManagementScreen(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Agregar nueva cuenta")
+                            Text(stringResource(R.string.acc_add))
                         }
                     }
                 )
@@ -142,11 +146,11 @@ fun AccountsManagementScreen(
                     .padding(paddingValues.withoutTop())
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = lazyListState),
                 contentPadding = PaddingValues(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 120.dp).plusTop(paddingValues.calculateTopPadding()),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 item {
                     Text(
-                        text = "Gestión de cuentas y saldos",
+                        text = stringResource(R.string.acc_management),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -177,29 +181,20 @@ fun AccountsManagementScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = cardAccentColor.copy(alpha = 0.18f),
-                                    modifier = Modifier.size(38.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = accountIcon,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp),
-                                            tint = cardAccentColor.asIconTint()
-                                        )
-                                    }
-                                }
+                                ScallopedIcon(
+                                    icon = accountIcon,
+                                    size = MinicashListRowDefaults.IconSize,
+                                    container = cardAccentColor.copy(alpha = 0.18f),
+                                    tint = cardAccentColor.asIconTint()
+                                )
 
                                 Spacer(modifier = Modifier.width(12.dp))
 
                                 Column(
-                                    modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text(
                                         text = account.name,
@@ -234,7 +229,7 @@ fun AccountsManagementScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.DragHandle,
-                                        contentDescription = "Mantén presionado y arrastra para reordenar",
+                                        contentDescription = stringResource(R.string.acc_drag_cd),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier
                                             .size(36.dp)
@@ -249,7 +244,7 @@ fun AccountsManagementScreen(
                                     ) {
                                         Icon(
                                             imageVector = if (account.isVisibleInHome) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                            contentDescription = "Visibilidad",
+                                            contentDescription = stringResource(R.string.acc_visibility),
                                             tint = if (account.isVisibleInHome) cardAccentColor.asIconTint() else MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier.size(20.dp)
                                         )
@@ -286,7 +281,7 @@ fun AccountsManagementScreen(
                             )
                             Spacer(modifier = Modifier.width(spacing.small))
                             Text(
-                                text = "Agregar nueva cuenta",
+                                text = stringResource(R.string.acc_add),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -328,8 +323,8 @@ fun AccountsManagementScreen(
         val acc = accountToDelete!!
         MinicashAlertDialog(
             onDismissRequest = { accountToDelete = null },
-            title = { Text("¿Eliminar cuenta?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de eliminar la cuenta '${acc.name}'? Esta acción eliminará permanentemente la cuenta.") },
+            title = { Text(stringResource(R.string.acc_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.acc_delete_text, acc.name)) },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -342,11 +337,11 @@ fun AccountsManagementScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { accountToDelete = null }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { accountToDelete = null }) { Text(stringResource(R.string.common_cancel)) }
             },
             shape = MinicashShapes.Hero
         )

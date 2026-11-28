@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tx_new_income">New income</string>
+    <string name="tx_tap_amount">Tap to enter amount</string>
+    <string name="tx_concept">Concept</string>
+    <string name="tx_concept_hint">Name or concept of the transaction</string>
+    <string name="tx_no_category">No category</string>
+    <string name="tx_notes">Notes</string>
+    <string name="tx_notes_hint">Write a note</string>
+    <string name="tx_from">From: %1$s</string>
+    <string name="tx_to">To: %1$s</string>
+    <string name="tx_category">Category</string>
+    <string name="tx_account">Account</string>
+    <string name="tx_missing_amount">Enter an amount</string>
+    <string name="key_backspace">Delete</string>
+    <string name="tx_no_categories">No categories available</string>
+    <string name="tx_new_category">New category</string>
+    <string name="tx_category_name">Category name</string>
+    <string name="tx_no_accounts">No accounts available</string>
+    <string name="tx_origin">Source</string>
+    <string name="tx_destination">Destination</string>
+    <string name="tx_missing_two_accounts">Choose two different accounts</string>
+    <string name="tx_missing_concept">The concept is missing</string>
+    <string name="tx_missing_category">Choose a category</string>
+    <string name="tx_missing_account">Choose an account</string>
+    <string name="key_decimal">Decimal point</string>
+    <string name="key_plus">Plus</string>
+    <string name="key_minus">Minus</string>
+    <string name="key_times">Times</string>
+    <string name="key_divide">Divided by</string>
+    <string name="tx_new_transfer">New transfer</string>
+    <string name="tx_new_expense">New expense</string>
+    <string name="tx_edit_title">Edit transaction</string>
+    <string name="tx_transfer_note">Transfer between accounts</string>
+    <string name="tx_save_changes">Save changes</string>
+    <string name="tx_delete">Delete transaction</string>
+    <string name="tx_delete_confirm_title">Delete transaction?</string>
+    <string name="tx_delete_confirm_text">The transaction will be removed and the account balance adjusted. You can undo it for a few seconds.</string>
+</resources>

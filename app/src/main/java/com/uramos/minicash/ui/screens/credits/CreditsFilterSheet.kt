@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashFilterChip
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -63,7 +65,7 @@ fun CreditsFilterSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Filtros de créditos",
+                    text = stringResource(R.string.credit_filters_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -76,7 +78,7 @@ fun CreditsFilterSheet(
                         }
                     ) {
                         Text(
-                            text = "Limpiar filtros",
+                            text = stringResource(R.string.tx_filters_clear),
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
@@ -87,7 +89,7 @@ fun CreditsFilterSheet(
 
             // 1. Filtro por Responsable
             Text(
-                text = "Responsable",
+                text = stringResource(R.string.budget_responsible),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -105,7 +107,7 @@ fun CreditsFilterSheet(
                             haptics.tick()
                             onSelectResponsible(null)
                         },
-                        label = { Text("Todos") },
+                        label = { Text(stringResource(R.string.common_all)) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                         } else null)
@@ -129,7 +131,7 @@ fun CreditsFilterSheet(
 
             // 2. Filtro por Entidad Bancaria / Institución
             Text(
-                text = "Entidad bancaria / Institución",
+                text = stringResource(R.string.credit_filter_institution),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -147,7 +149,7 @@ fun CreditsFilterSheet(
                             haptics.tick()
                             onSelectInstitution(null)
                         },
-                        label = { Text("Todas") },
+                        label = { Text(stringResource(R.string.common_all_f)) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                         } else null)
@@ -171,7 +173,7 @@ fun CreditsFilterSheet(
 
             // 3. Filtro por mes de compra
             Text(
-                text = "Mes de compra",
+                text = stringResource(R.string.credit_filter_month),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -189,7 +191,7 @@ fun CreditsFilterSheet(
                             haptics.tick()
                             onSelectMonth(null)
                         },
-                        label = { Text("Todos") },
+                        label = { Text(stringResource(R.string.common_all)) },
                         leadingIcon = if (isSelected) {
                             { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                         } else null)
@@ -218,7 +220,7 @@ fun CreditsFilterSheet(
                     .heightIn(min = 48.dp)
             ) {
                 Text(
-                    text = "Aplicar filtros",
+                    text = stringResource(R.string.tx_filters_apply),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

@@ -1,5 +1,10 @@
 package com.uramos.minicash.ui.screens.onboarding
 
+import com.uramos.minicash.ui.components.MinicashSegmentedChoice
+import com.uramos.minicash.ui.utils.setAppLanguage
+import com.uramos.minicash.ui.utils.AppLanguage
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.ImeAction
@@ -148,7 +153,7 @@ fun OnboardingScreen(
                     MinicashIconButton(
                         onClick = { scope.launch { pagerState.animateScrollToPage(currentPage - 1) } }
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Página anterior")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ob_previous_page))
                     }
                 } else {
                     Spacer(modifier = Modifier.size(48.dp))
@@ -160,7 +165,7 @@ fun OnboardingScreen(
                     MinicashTextButton(
                         onClick = { scope.launch { pagerState.animateScrollToPage(PAGE_COUNT - 1) } }
                     ) {
-                        Text("Omitir", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.ob_skip), fontWeight = FontWeight.SemiBold)
                     }
                 } else {
                     Spacer(modifier = Modifier.size(48.dp))
@@ -178,13 +183,13 @@ fun OnboardingScreen(
             ) {
                 Column {
                     Text(
-                        text = "Paso ${currentPage + 1} de $PAGE_COUNT",
+                        text = stringResource(R.string.ob_step, currentPage + 1, PAGE_COUNT),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = if (isLastPage) "Todo listo para empezar" else if (canContinue) "Toca la flecha para seguir" else "Completa este paso para seguir",
+                        text = if (isLastPage) stringResource(R.string.ob_hint_last) else if (canContinue) stringResource(R.string.ob_hint_continue) else stringResource(R.string.ob_hint_incomplete),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -325,7 +330,7 @@ private fun MorphingNextButton(enabled: Boolean, isLast: Boolean, onClick: () ->
         ) {
             Icon(
                 imageVector = if (isLast) Icons.Default.Check else Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = if (isLast) "Comenzar" else "Continuar",
+                contentDescription = if (isLast) stringResource(R.string.ob_start_cd) else stringResource(R.string.ob_continue_cd),
                 tint = content,
                 modifier = Modifier.size(26.dp)
             )
@@ -377,7 +382,7 @@ private fun WelcomePage(
         }
 
         Text(
-            text = "Te damos la bienvenida a Minicash",
+            text = stringResource(R.string.ob_welcome_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
@@ -385,16 +390,30 @@ private fun WelcomePage(
         )
 
         Text(
-            text = "Comencemos por personalizar tu espacio financiero local.",
+            text = stringResource(R.string.ob_welcome_sub),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
+        // Idioma de la app: español de fábrica; el cambio vuelve a crear la pantalla con los textos nuevos
+        Text(
+            text = "Idioma · Language",
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        MinicashSegmentedChoice(
+            options = AppLanguage.entries.toList(),
+            isSelected = { it == AppLanguage.current() },
+            onSelect = { setAppLanguage(it) },
+            label = { it.nativeName }
+        )
+
         PillTextField(
             value = state.userName,
             onValueChange = onNameChange,
-            placeholder = "Escribe tu nombre",
+            placeholder = stringResource(R.string.ob_name_hint),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -414,7 +433,7 @@ private fun WelcomePage(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Todo permanece en este teléfono. Sin cuenta ni registro; nada se envía a ningún lado.",
+                    text = stringResource(R.string.ob_privacy),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -476,12 +495,12 @@ private fun AccountPage(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Dónde vive tu dinero",
+            text = stringResource(R.string.ob_account_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.ExtraBold
         )
         Text(
-            text = "Nombra la cuenta desde la que gastas y di qué hay en ella ahora.",
+            text = stringResource(R.string.ob_account_sub),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -489,7 +508,7 @@ private fun AccountPage(
         PillTextField(
             value = state.accountName,
             onValueChange = onAccountNameChange,
-            placeholder = "Nombre de la cuenta",
+            placeholder = stringResource(R.string.ob_account_name_hint),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -515,7 +534,7 @@ private fun AccountPage(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Qué hay en ella ahora",
+                    text = stringResource(R.string.ob_balance_label),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -530,7 +549,7 @@ private fun AccountPage(
                 )
 
                 Text(
-                    text = "Déjalo en cero si prefieres no decirlo.",
+                    text = stringResource(R.string.ob_balance_hint),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f)
                 )
@@ -580,7 +599,7 @@ private fun AccountPage(
     }
 }
 
-data class CategoryItem(val name: String, val icon: ImageVector)
+data class CategoryItem(val key: String, @androidx.annotation.StringRes val nameRes: Int, val icon: ImageVector)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -592,20 +611,20 @@ private fun CategoriesPage(
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Gastos, 1: Ingresos
 
     val expenseItems = listOf(
-        CategoryItem("Comestibles", Icons.Default.ShoppingCart),
-        CategoryItem("Transporte", Icons.Default.DirectionsCar),
-        CategoryItem("Comer fuera", Icons.Default.Fastfood),
-        CategoryItem("Casa/Renta", Icons.Default.Home),
-        CategoryItem("Servicios", Icons.AutoMirrored.Filled.ReceiptLong),
-        CategoryItem("Compras", Icons.Default.ShoppingBag),
-        CategoryItem("Salud", Icons.Default.MedicalServices),
-        CategoryItem("Diversión", Icons.Default.SportsEsports)
+        CategoryItem("groceries", R.string.starter_groceries, Icons.Default.ShoppingCart),
+        CategoryItem("transport", R.string.starter_transport, Icons.Default.DirectionsCar),
+        CategoryItem("dining", R.string.starter_dining, Icons.Default.Fastfood),
+        CategoryItem("rent", R.string.starter_rent, Icons.Default.Home),
+        CategoryItem("utilities", R.string.starter_utilities, Icons.AutoMirrored.Filled.ReceiptLong),
+        CategoryItem("shopping", R.string.starter_shopping, Icons.Default.ShoppingBag),
+        CategoryItem("health", R.string.starter_health, Icons.Default.MedicalServices),
+        CategoryItem("fun", R.string.starter_fun, Icons.Default.SportsEsports)
     )
     val incomeItems = listOf(
-        CategoryItem("Nómina/Sueldo", Icons.Default.Work),
-        CategoryItem("Rendimientos/Inversiones", Icons.AutoMirrored.Filled.TrendingUp),
-        CategoryItem("Reembolsos", Icons.Default.AttachMoney),
-        CategoryItem("Venta/Comisiones", Icons.Default.Payments)
+        CategoryItem("salary", R.string.starter_salary, Icons.Default.Work),
+        CategoryItem("investments", R.string.starter_investments, Icons.AutoMirrored.Filled.TrendingUp),
+        CategoryItem("refunds", R.string.starter_refunds, Icons.Default.AttachMoney),
+        CategoryItem("sales", R.string.starter_sales, Icons.Default.Payments)
     )
 
     Column(
@@ -616,20 +635,20 @@ private fun CategoriesPage(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "¿En qué gastas e ingresas?",
+            text = stringResource(R.string.ob_categories_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.ExtraBold
         )
         Text(
-            text = "Elige tus categorías iniciales; después podrás cambiarlas en Ajustes.",
+            text = stringResource(R.string.ob_categories_sub),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         MinicashPillTabs(
             labels = listOf(
-                "Gastos (${state.selectedExpenseCategories.size})",
-                "Ingresos (${state.selectedIncomeCategories.size})"
+                stringResource(R.string.ob_tab_expenses, state.selectedExpenseCategories.size),
+                stringResource(R.string.ob_tab_income, state.selectedIncomeCategories.size)
             ),
             selectedIndex = selectedTab,
             onSelect = { selectedTab = it }
@@ -648,8 +667,8 @@ private fun CategoriesPage(
                     pair.forEach { item ->
                         CategoryTile(
                             item = item,
-                            selected = item.name in selected,
-                            onClick = { onToggle(item.name) },
+                            selected = item.key in selected,
+                            onClick = { onToggle(item.key) },
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -664,7 +683,7 @@ private fun CategoriesPage(
         ) {
             val totalSelected = state.selectedExpenseCategories.size + state.selectedIncomeCategories.size
             Text(
-                text = if (totalSelected == 1) "1 categoría seleccionada" else "$totalSelected categorías seleccionadas",
+                text = pluralStringResource(R.plurals.ob_categories_selected, totalSelected, totalSelected),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
@@ -719,7 +738,7 @@ private fun CategoryTile(
                 }
             }
             Text(
-                text = item.name,
+                text = stringResource(item.nameRes),
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface,

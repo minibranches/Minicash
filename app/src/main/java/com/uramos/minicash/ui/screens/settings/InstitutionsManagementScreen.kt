@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -21,6 +24,8 @@ import com.uramos.minicash.ui.components.MinicashButton
 import com.uramos.minicash.ui.components.DiscardChangesDialog
 import com.uramos.minicash.ui.components.rememberDiscardGuard
 import androidx.compose.foundation.layout.*
+import com.uramos.minicash.ui.components.ScallopedIcon
+import com.uramos.minicash.ui.components.MinicashListRowDefaults
 import com.uramos.minicash.ui.utils.asIconTint
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -79,8 +84,8 @@ fun InstitutionsManagementScreen(
         val inst = instToDelete!!
         MinicashAlertDialog(
             onDismissRequest = { instToDelete = null },
-            title = { Text("¿Eliminar institución?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Deseas eliminar '${inst.name}' de tus instituciones de crédito?") },
+            title = { Text(stringResource(R.string.inst_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.inst_delete_text, inst.name)) },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -93,11 +98,11 @@ fun InstitutionsManagementScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { instToDelete = null }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { instToDelete = null }) { Text(stringResource(R.string.common_cancel)) }
             },
             shape = MinicashShapes.Hero
         )
@@ -131,7 +136,7 @@ fun InstitutionsManagementScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Tarjetas e instituciones",
+                title = stringResource(R.string.set_institutions),
                 onBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -143,7 +148,7 @@ fun InstitutionsManagementScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Nueva institución"
+                            contentDescription = stringResource(R.string.credit_new_institution)
                         )
                     }
                 }
@@ -158,8 +163,8 @@ fun InstitutionsManagementScreen(
             ) {
                 MinicashEmptyState(
                     icon = Icons.Default.CreditCard,
-                    title = "Sin instituciones registradas",
-                    subtitle = "Agrega tus tarjetas o bancos mediante el botón inferior.",
+                    title = stringResource(R.string.credit_inst_empty_title),
+                    subtitle = stringResource(R.string.credit_inst_empty_sub),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
@@ -172,7 +177,7 @@ fun InstitutionsManagementScreen(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Agregar nueva institución")
+                            Text(stringResource(R.string.inst_add))
                         }
                     }
                 )
@@ -194,7 +199,7 @@ fun InstitutionsManagementScreen(
             ) {
                 item {
                     Text(
-                        text = "Instituciones financieras registradas",
+                        text = stringResource(R.string.inst_registered),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -221,42 +226,38 @@ fun InstitutionsManagementScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = spacing.standard, vertical = spacing.medium),
+                                .heightIn(min = MinicashListRowDefaults.MinHeight)
+                                .padding(horizontal = MinicashListRowDefaults.HorizontalPadding, vertical = MinicashListRowDefaults.VerticalPadding),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(spacing.medium)
+                            horizontalArrangement = Arrangement.spacedBy(MinicashListRowDefaults.IconTextGap)
                         ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = instColor.copy(alpha = 0.25f),
-                                modifier = Modifier.size(36.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.CreditCard,
-                                        contentDescription = null,
-                                        tint = instColor.asIconTint(),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
+                            ScallopedIcon(
+                                icon = Icons.Default.CreditCard,
+                                size = MinicashListRowDefaults.IconSize,
+                                container = instColor.copy(alpha = 0.25f),
+                                tint = instColor.asIconTint()
+                            )
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = inst.name,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                 )
                                 inst.paymentDay?.let { day ->
                                     Text(
-                                        text = "Pago el día $day" + when (inst.reminderDaysBefore) {
+                                        text = stringResource(R.string.inst_payment_day, day) + when (inst.reminderDaysBefore) {
                                             null -> ""
-                                            0 -> " • aviso el mismo día"
-                                            1 -> " • aviso 1 día antes"
-                                            else -> " • aviso ${inst.reminderDaysBefore} días antes"
+                                            0 -> " • " + stringResource(R.string.inst_reminder_same)
+                                            else -> " • " + pluralStringResource(R.plurals.inst_reminder_before, inst.reminderDaysBefore, inst.reminderDaysBefore)
                                         },
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
                                 }
                             }
@@ -266,7 +267,7 @@ fun InstitutionsManagementScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
-                                    contentDescription = "Eliminar",
+                                    contentDescription = stringResource(R.string.common_delete),
                                     tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(18.dp)
                                 )
@@ -301,7 +302,7 @@ fun InstitutionsManagementScreen(
                             )
                             Spacer(modifier = Modifier.width(spacing.small))
                             Text(
-                                text = "Agregar nueva institución",
+                                text = stringResource(R.string.inst_add),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -358,7 +359,7 @@ fun AddInstitutionSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = if (institution == null) "Nueva institución" else "Editar institución",
+                text = if (institution == null) stringResource(R.string.credit_new_institution) else stringResource(R.string.inst_edit),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -366,22 +367,22 @@ fun AddInstitutionSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nombre de la institución") },
-                placeholder = { Text("Escribe el nombre de la institución") },
+                label = { Text(stringResource(R.string.credit_institution_name)) },
+                placeholder = { Text(stringResource(R.string.credit_institution_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.credit_color), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             MinicashColorPicker(
                 selectedColorHex = selectedColorHex,
                 onColorSelected = { selectedColorHex = it }
             )
 
-            Text("Pago de las compras a meses", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.inst_payment_title), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             Text(
-                text = "Las compras de esta institución heredan este día; cada una puede usar otro.",
+                text = stringResource(R.string.inst_payment_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -404,9 +405,9 @@ fun AddInstitutionSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
+                MinicashTonalButton(text = stringResource(R.string.common_cancel), onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Guardar",
+                    text = stringResource(R.string.common_save),
                     onClick = {
                         if (name.isNotBlank() && !paymentInvalid) {
                             onConfirm(

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="credit_form_edit">Editar compra a meses</string>
+    <string name="credit_delete">Eliminar crédito</string>
+    <string name="credit_delete_text">¿Deseas eliminar el registro de \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="credit_article">Artículo o servicio</string>
+    <string name="credit_article_hint">Nombre del producto o servicio</string>
+    <string name="credit_pick_institution">Selecciona una institución</string>
+    <string name="credit_responsible_hint">Nombre del responsable (por defecto, Yo)</string>
+    <string name="credit_purchase_date">Fecha de compra: %1$s</string>
+    <string name="credit_cash_price">Precio de contado (opcional)</string>
+    <string name="credit_months_other">Otro</string>
+    <string name="credit_already_paid">Ya pagadas</string>
+    <string name="credit_paid_range">0 a %1$d</string>
+    <string name="credit_total_term">Plazo total</string>
+    <string name="credit_monthly_amount">Monto mensual</string>
+    <string name="credit_the_institution">la institución</string>
+    <string name="credit_inherit_no_day">%1$s no tiene día de pago. Configúralo en Ajustes › Tarjetas e instituciones o usa un día propio.</string>
+    <string name="credit_use_other_day">Usar otro día para esta compra</string>
+    <string name="credit_form_new">Nueva compra a meses</string>
+    <string name="credit_save_purchase">Guardar compra</string>
+    <string name="credit_inherit_no_reminder">Usa el pago de %1$s: día %2$d, sin aviso.</string>
+    <string name="credit_inherit_same_day">Usa el pago de %1$s: día %2$d, aviso el mismo día.</string>
+    <string name="credit_months_short">%1$d m</string>
+    <plurals name="credit_inherit_days_before">
+        <item quantity="one">Usa el pago de %1$s: día %2$d, aviso %3$d día antes.</item>
+        <item quantity="other">Usa el pago de %1$s: día %2$d, aviso %3$d días antes.</item>
+    </plurals>
+    <string name="credit_pay_day_label">Día de pago del mes (opcional)</string>
+    <string name="credit_pay_day_hint">Por ejemplo, 5</string>
+    <string name="credit_pay_day_invalid">Escribe un día entre 1 y 31</string>
+    <string name="credit_remind_me">Avisarme</string>
+    <string name="credit_remind_none">Sin aviso</string>
+    <string name="credit_remind_none_text">No recibirás aviso de este pago.</string>
+    <string name="credit_pay_day_note">Si el mes no tiene ese día, se usa el último</string>
+    <string name="credit_remind_same">El mismo día</string>
+    <string name="credit_remind_same_text">Recibirás el aviso el mismo día del pago.</string>
+    <plurals name="credit_remind_before">
+        <item quantity="one">%d día antes</item>
+        <item quantity="other">%d días antes</item>
+    </plurals>
+    <plurals name="credit_remind_before_text">
+        <item quantity="one">Recibirás el aviso %d día antes del pago.</item>
+        <item quantity="other">Recibirás el aviso %d días antes del pago.</item>
+    </plurals>
+    <string name="credit_filters_title">Filtros de créditos</string>
+    <string name="credit_filter_institution">Entidad bancaria / Institución</string>
+    <string name="credit_filter_month">Mes de compra</string>
+    <string name="credit_empty_title">Sin créditos activos</string>
+    <string name="credit_empty_sub">No tienes compras a meses pendientes de pago.</string>
+    <string name="credit_settled">Liquidados</string>
+    <string name="credit_default_responsible">Yo</string>
+    <string name="credit_pay_title">Abonar a %1$s</string>
+    <string name="credit_installment_line">%1$s • Mensualidad %2$d de %3$d</string>
+    <string name="credit_create_expense">Crear movimiento de gasto</string>
+    <string name="credit_next_payment">próximo pago %1$s</string>
+    <string name="credit_settled_chip">✓ Liquidado</string>
+    <string name="credit_with_reminder">Con aviso de pago</string>
+    <string name="credit_progress">%1$d de %2$d</string>
+    <string name="credit_pay_month">Pagar mes</string>
+    <string name="credit_total_paid">Total pagado</string>
+    <string name="credit_institutions">Instituciones de crédito</string>
+    <string name="credit_inst_empty_title">Sin instituciones registradas</string>
+    <string name="credit_inst_empty_sub">Agrega tus tarjetas o bancos mediante el botón inferior.</string>
+    <string name="credit_new_institution_btn">+ Nueva institución</string>
+    <string name="credit_new_institution">Nueva institución</string>
+    <string name="credit_institution_name">Nombre de la institución</string>
+    <string name="credit_institution_name_hint">Escribe el nombre de la institución</string>
+    <string name="credit_color">Color distintivo</string>
+    <string name="credit_default_institution">Tarjeta de Crédito</string>
+    <string name="credit_payment_note">Abono MSI - %1$s (%2$d/%3$d)</string>
+    <string name="credit_debt_pending">Deuda pendiente</string>
+    <plurals name="credit_monthly_active">
+        <item quantity="one">Mensual · %d activo</item>
+        <item quantity="other">Mensual · %d activos</item>
+    </plurals>
+</resources>

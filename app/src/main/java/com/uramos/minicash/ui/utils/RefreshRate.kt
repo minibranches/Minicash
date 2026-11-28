@@ -22,7 +22,7 @@ fun availableRefreshLimits(deviceMaxHz: Float): List<Int> = buildList {
 /** Si el valor guardado ya no es válido para esta pantalla (por ejemplo, un respaldo de otro teléfono), vuelve a automático. */
 fun coerceRefreshLimit(saved: Int, available: List<Int>): Int = if (saved in available) saved else REFRESH_RATE_AUTO
 
-fun refreshLimitLabel(limit: Int): String = if (limit == REFRESH_RATE_AUTO) "Automático" else "$limit Hz"
+fun refreshLimitLabel(limit: Int, autoLabel: String = "Automático"): String = if (limit == REFRESH_RATE_AUTO) autoLabel else "$limit Hz"
 
 /** Frecuencia máxima que admite la pantalla principal, en Hz (60 si no se puede saber). */
 fun deviceMaxRefreshRate(context: Context): Float {

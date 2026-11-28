@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import com.uramos.minicash.data.preferences.PatrimonyStyle
 import com.uramos.minicash.data.preferences.HomeWidget
 import androidx.compose.runtime.rememberUpdatedState
@@ -146,8 +152,8 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel) {
         viewModel.deletedEvents.collect { deleted ->
-            val message = if (deleted.size == 1) "Movimiento eliminado" else "${deleted.size} movimientos eliminados"
-            val result = snackbarHostState.showSnackbar(message = message, actionLabel = "Deshacer", duration = SnackbarDuration.Long)
+            val message = AppStrings.plural(R.plurals.home_tx_deleted, deleted.size, deleted.size)
+            val result = snackbarHostState.showSnackbar(message = message, actionLabel = AppStrings.get(R.string.common_undo), duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) viewModel.restoreTransactions(deleted)
         }
     }
@@ -156,7 +162,7 @@ fun HomeScreen(
     val isRestricted = LocalAnimationRestriction.current
     // Fecha de hoy bajo el saludo, p. ej. Sábado 21 de noviembre
     val todayLabel = remember {
-        java.text.SimpleDateFormat("EEEE d 'de' MMMM", java.util.Locale("es", "MX")).format(java.util.Date())
+        appDateFormat("EEEE d 'de' MMMM", "EEEE, MMMM d").format(java.util.Date())
             .replaceFirstChar { it.uppercase() }
     }
 
@@ -168,11 +174,11 @@ fun HomeScreen(
 
     val greetingPattern = remember {
         listOf(
-            "Hola, %s",
-            "Qué tal, %s",
-            "Buen día, %s",
-            "Todo listo, %s",
-            "Qué hay de nuevo, %s"
+            AppStrings.get(R.string.greeting_1),
+            AppStrings.get(R.string.greeting_2),
+            AppStrings.get(R.string.greeting_3),
+            AppStrings.get(R.string.greeting_4),
+            AppStrings.get(R.string.greeting_5)
         ).random()
     }
     val greetingText = remember(userName) { greetingPattern.format(userName) }
@@ -264,8 +270,8 @@ fun HomeScreen(
                         item(key = "home_no_widgets") {
                             MinicashEmptyState(
                                 icon = Icons.Default.AccountBalanceWallet,
-                                title = "Inicio sin secciones",
-                                subtitle = "Elige qué se muestra en Ajustes → Inicio.",
+                                title = stringResource(R.string.home_empty_title),
+                                subtitle = stringResource(R.string.home_empty_sub),
                                 modifier = Modifier.padding(vertical = spacing.large)
                             )
                         }
@@ -290,7 +296,7 @@ fun HomeScreen(
 
                             HomeWidget.ACCOUNTS -> item(key = "home_accounts") {
                                 Column(modifier = Modifier.listEntrance(entranceTracker, "home_accounts", widgetIndex)) {
-                                    MinicashSectionTitle("Mis cuentas")
+                                    MinicashSectionTitle(stringResource(R.string.home_widget_accounts))
                                     Spacer(modifier = Modifier.height(spacing.medium))
                                     // Carrusel: las tarjetas de los bordes se recortan con máscara y se acomodan al desplazar
                                     val accountsCarouselState = rememberCarouselState { state.accounts.size }
@@ -312,7 +318,7 @@ fun HomeScreen(
 
                             HomeWidget.DISTRIBUTION -> item(key = "home_distribution") {
                                 Column(modifier = Modifier.listEntrance(entranceTracker, "home_stats", widgetIndex)) {
-                                    MinicashSectionTitle("Distribución del mes")
+                                    MinicashSectionTitle(stringResource(R.string.home_widget_distribution))
                                     Spacer(modifier = Modifier.height(spacing.small))
                                     val chartMonthOverride by viewModel.chartMonth.collectAsState()
                                     val chartYears by viewModel.chartYears.collectAsState()
@@ -345,7 +351,7 @@ fun HomeScreen(
                             HomeWidget.RECENTS -> {
                                 item(key = "home_recents_title") {
                                     Column(modifier = Modifier.listEntrance(entranceTracker, "home_recent", widgetIndex)) {
-                                        MinicashSectionTitle("Movimientos recientes")
+                                        MinicashSectionTitle(stringResource(R.string.home_widget_recents))
                                         Spacer(modifier = Modifier.height(spacing.medium))
                                     }
                                 }
@@ -354,8 +360,8 @@ fun HomeScreen(
                                     item(key = "home_recents_empty") {
                                         MinicashEmptyState(
                                             icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                                            title = "Sin movimientos recientes",
-                                            subtitle = "Tus movimientos de los últimos días aparecerán aquí.",
+                                            title = stringResource(R.string.home_recent_empty_title),
+                                            subtitle = stringResource(R.string.home_recent_empty_sub),
                                             modifier = Modifier.padding(vertical = spacing.large)
                                         )
                                     }
@@ -395,7 +401,7 @@ fun HomeScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
-                                                    text = "Ver más movimientos",
+                                                    text = stringResource(R.string.home_see_more),
                                                     style = MaterialTheme.typography.titleMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = MaterialTheme.colorScheme.primary
@@ -433,12 +439,12 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         MinicashIconButton(onClick = { viewModel.clearSelection() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cancelar")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.common_cancel))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = if (selectedIds.size == 1) "1 seleccionado" else "${selectedIds.size} seleccionados",
+                                text = pluralStringResource(R.plurals.home_selected, selectedIds.size, selectedIds.size),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -462,7 +468,7 @@ fun HomeScreen(
                         }) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Eliminar seleccionados",
+                                contentDescription = stringResource(R.string.home_delete_selected),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -529,7 +535,7 @@ fun GroupedTransactionCard(
                     transaction = tx,
                     index = index,
                     count = group.transactions.size,
-                    accountName = accountMap[tx.sourceAccountId] ?: "Cuenta",
+                    accountName = accountMap[tx.sourceAccountId] ?: stringResource(R.string.tx_account),
                     categoryName = tx.categoryId?.let { categoryMap[it] },
                     selectedIds = selectedIds,
                     onToggleSelection = onToggleSelection,
@@ -578,7 +584,7 @@ private fun TransactionListRow(
                     // Quien no pueda deslizar (TalkBack) elimina desde las acciones del elemento
                     if (onTransactionDelete != null) {
                         customActions = listOf(
-                            CustomAccessibilityAction("Eliminar movimiento") {
+                            CustomAccessibilityAction(AppStrings.get(R.string.tx_delete)) {
                                 onTransactionDelete(transaction)
                                 true
                             }
@@ -767,7 +773,7 @@ fun CompactTransactionRow(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Notes,
-                            contentDescription = "Ver notas",
+                            contentDescription = stringResource(R.string.home_view_notes),
                             tint = colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )

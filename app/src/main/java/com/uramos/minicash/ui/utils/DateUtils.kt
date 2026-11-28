@@ -36,7 +36,7 @@ fun monthKey(millis: Long): String {
 fun monthKeyLabel(key: String): String {
     val (year, month) = key.split('-').map { it.toInt() }
     val name = java.time.Month.of(month)
-        .getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.forLanguageTag("es-MX"))
+        .getDisplayName(java.time.format.TextStyle.SHORT, appLocale())
         .replace(".", "")
     return "${name.replaceFirstChar { it.uppercase() }} $year"
 }

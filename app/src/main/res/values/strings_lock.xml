@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lock_title">Minicash está bloqueada</string>
+    <string name="lock_sub">Desbloquea con tu huella, rostro o el PIN del teléfono.</string>
+    <string name="lock_unlock">Desbloquear</string>
+    <string name="lock_prompt_sub">Desbloquea para continuar</string>
+</resources>

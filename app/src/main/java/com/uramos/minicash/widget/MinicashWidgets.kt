@@ -1,5 +1,6 @@
 package com.uramos.minicash.widget
 
+import com.uramos.minicash.ui.utils.localized
 import com.uramos.minicash.data.preferences.FontPreference
 import androidx.glance.LocalSize
 import androidx.glance.layout.fillMaxHeight
@@ -132,7 +133,7 @@ private fun MinicashWidgetContent(context: Context, snapshot: WidgetSnapshot) {
     ) {
         Column(modifier = GlanceModifier.fillMaxWidth().clickable(openAppAction(context))) {
             FontText(
-                text = "Patrimonio",
+                text = context.localized().getString(R.string.widget_net_worth),
                 sizeSp = 12f,
                 weight = WidgetWeight.SEMIBOLD,
                 color = GlanceTheme.colors.onSurfaceVariant,
@@ -148,7 +149,7 @@ private fun MinicashWidgetContent(context: Context, snapshot: WidgetSnapshot) {
                 maxWidth = textWidth
             )
             FontText(
-                text = "Gastado este mes: " + widgetAmountText(snapshot.monthExpense, snapshot.hideAmounts) { it.toCurrencyFormat() },
+                text = context.localized().getString(R.string.widget_spent, widgetAmountText(snapshot.monthExpense, snapshot.hideAmounts) { it.toCurrencyFormat() }),
                 sizeSp = 12f,
                 weight = WidgetWeight.REGULAR,
                 color = GlanceTheme.colors.onSurfaceVariant,
@@ -166,11 +167,11 @@ private fun MinicashWidgetContent(context: Context, snapshot: WidgetSnapshot) {
 @Composable
 private fun QuickActionsRow(context: Context, font: FontPreference, modifier: GlanceModifier) {
     Row(modifier = modifier.fillMaxWidth()) {
-        QuickActionTile(R.drawable.ic_shortcut_expense, "Gasto", font, quickAction(context, ACTION_EXPENSE, "EXPENSE"))
+        QuickActionTile(R.drawable.ic_shortcut_expense, context.localized().getString(R.string.tx_type_expense), font, quickAction(context, ACTION_EXPENSE, "EXPENSE"))
         Spacer(GlanceModifier.width(8.dp))
-        QuickActionTile(R.drawable.ic_shortcut_income, "Ingreso", font, quickAction(context, ACTION_INCOME, "INCOME"))
+        QuickActionTile(R.drawable.ic_shortcut_income, context.localized().getString(R.string.tx_type_income), font, quickAction(context, ACTION_INCOME, "INCOME"))
         Spacer(GlanceModifier.width(8.dp))
-        QuickActionTile(R.drawable.ic_shortcut_transfer, "Transfer.", font, quickAction(context, ACTION_TRANSFER, "TRANSFER"))
+        QuickActionTile(R.drawable.ic_shortcut_transfer, context.localized().getString(R.string.widget_transfer_short), font, quickAction(context, ACTION_TRANSFER, "TRANSFER"))
     }
 }
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="state_expanded">Desplegado</string>
+    <string name="state_collapsed">Plegado</string>
+    <string name="discard_title">¿Descartar cambios?</string>
+    <string name="discard_text">Tienes cambios sin guardar. Si sales ahora se perderán.</string>
+    <string name="discard_confirm">Descartar</string>
+    <string name="discard_keep_editing">Seguir editando</string>
+    <string name="filters_clear">Quitar filtros</string>
+    <string name="icon_group_finance">Finanzas</string>
+    <string name="icon_group_home">Hogar y servicios</string>
+    <string name="icon_group_food">Alimentación</string>
+    <string name="icon_group_transport">Transporte</string>
+    <string name="icon_group_leisure">Ocio y compras</string>
+    <string name="icon_group_health">Salud y medicina</string>
+    <string name="icon_group_beauty">Belleza y cuidado personal</string>
+    <string name="icon_group_education">Educación y trabajo</string>
+    <string name="icon_group_pets">Mascotas y otros</string>
+    <string name="icon_select">Seleccionar icono</string>
+    <string name="period_prev_month">Mes anterior</string>
+    <string name="period_next_month">Mes siguiente</string>
+    <string name="period_pick_year">Elegir año</string>
+    <string name="nav_reports">Reportes</string>
+    <string name="time_hour">Hora</string>
+    <string name="time_minutes">Minutos</string>
+    <string name="filter_active">Filtro activo</string>
+    <string name="filter_inactive">Filtro inactivo</string>
+    <plurals name="filter_count">
+        <item quantity="one">%d filtro</item>
+        <item quantity="other">%d filtros</item>
+    </plurals>
+</resources>

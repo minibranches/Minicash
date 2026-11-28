@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.uramos.minicash.ui.theme.trackSurface
 import androidx.compose.animation.animateColorAsState
@@ -35,7 +37,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 
-private val SHORT_MONTHS = listOf("Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic")
+/** Mes abreviado en el idioma en uso ("Ene", "Feb"…; "Jan", "Feb"…). */
+private fun shortMonth(index: Int): String =
+    java.time.Month.of(index + 1).getDisplayName(java.time.format.TextStyle.SHORT, com.uramos.minicash.ui.utils.appLocale())
+        .replace(".", "").replaceFirstChar { it.uppercase() }
 private const val JUMP_MONTHS = 1
 
 /**
@@ -66,24 +71,24 @@ fun MinicashPeriodSelector(
 
                 PeriodArrow(
                     icon = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                    description = "Mes anterior",
+                    description = stringResource(R.string.period_prev_month),
                     onClick = { onShiftMonths(-JUMP_MONTHS) }
                 )
 
                 MonthPill(
-                    label = SHORT_MONTHS[(monthIndex + 11) % 12],
+                    label = shortMonth((monthIndex + 11) % 12),
                     selected = false,
                     onClick = { onShiftMonths(-1) },
                     modifier = Modifier.weight(1f)
                 )
                 MonthPill(
-                    label = SHORT_MONTHS[monthIndex],
+                    label = shortMonth(monthIndex),
                     selected = true,
                     onClick = {},
                     modifier = Modifier.weight(1f)
                 )
                 MonthPill(
-                    label = SHORT_MONTHS[(monthIndex + 1) % 12],
+                    label = shortMonth((monthIndex + 1) % 12),
                     selected = false,
                     onClick = { onShiftMonths(1) },
                     modifier = Modifier.weight(1f)
@@ -91,7 +96,7 @@ fun MinicashPeriodSelector(
 
                 PeriodArrow(
                     icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    description = "Mes siguiente",
+                    description = stringResource(R.string.period_next_month),
                     onClick = { onShiftMonths(JUMP_MONTHS) }
                 )
             }
@@ -123,7 +128,7 @@ private fun YearSelect(year: Int, years: List<Int>, onYearSelect: (Int) -> Unit)
                 )
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Elegir año",
+                    contentDescription = stringResource(R.string.period_pick_year),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }

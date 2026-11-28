@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.budget
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.lazy.itemsIndexed
 import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
@@ -207,7 +213,7 @@ fun BudgetScreen(
                                     navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
                                     title = {
                                         Text(
-                                            "Gastos fijos",
+                                            stringResource(R.string.nav_budget),
                                             style = MaterialTheme.typography.headlineMedium,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -215,7 +221,7 @@ fun BudgetScreen(
                                     actions = {
                                         TabActionButton(
                                             icon = Icons.Outlined.ContentCopy,
-                                            contentDescription = "Copiar partidas de quincena",
+                                            contentDescription = stringResource(R.string.budget_copy_cd),
                                             onClick = { showSelectiveCloneDialog = true }
                                         )
                                         TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings)
@@ -276,11 +282,11 @@ fun BudgetScreen(
                     item(key = "budget_empty", span = { GridItemSpan(maxLineSpan) }) {
                         MinicashEmptyState(
                             icon = Icons.Default.Savings,
-                            title = if (typeFilter != null) "Sin partidas de este tipo" else "Sin partidas presupuestadas",
+                            title = if (typeFilter != null) stringResource(R.string.budget_empty_filtered) else stringResource(R.string.budget_empty),
                             subtitle = if (typeFilter != null) {
-                                "Toca de nuevo el filtro para ver todas las partidas de la quincena."
+                                stringResource(R.string.budget_empty_filter_hint)
                             } else {
-                                "No has agregado ingresos ni gastos para esta quincena."
+                                stringResource(R.string.budget_empty_sub)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -334,8 +340,8 @@ fun BudgetScreen(
                 viewModel.deleteItem(target)
                 scope.launch {
                     val result = snackbarHostState.showSnackbar(
-                        message = "Partida eliminada",
-                        actionLabel = "Deshacer",
+                        message = AppStrings.get(R.string.budget_item_deleted),
+                        actionLabel = AppStrings.get(R.string.common_undo),
                         duration = SnackbarDuration.Long
                     )
                     if (result == SnackbarResult.ActionPerformed) viewModel.restoreItem(target)
@@ -352,9 +358,9 @@ fun BudgetScreen(
             onConfirmed = { count ->
                 scope.launch {
                     if (count > 0) {
-                        snackbarHostState.showSnackbar("Se copiaron $count partidas con éxito")
+                        snackbarHostState.showSnackbar(AppStrings.plural(R.plurals.budget_copied, count, count))
                     } else {
-                        snackbarHostState.showSnackbar("No se encontraron partidas para copiar en la quincena seleccionada")
+                        snackbarHostState.showSnackbar(AppStrings.get(R.string.budget_copy_none))
                     }
                 }
                 showSelectiveCloneDialog = false
@@ -425,7 +431,7 @@ internal fun BudgetPeriodBar(
                     )
                 }
                 MinicashIconButton(onClick = onPreviousMonth, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Mes anterior")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.period_prev_month))
                 }
                 AnimatedContent(
                     targetState = monthLabel,
@@ -453,7 +459,7 @@ internal fun BudgetPeriodBar(
                     )
                 }
                 MinicashIconButton(onClick = onNextMonth, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Mes siguiente")
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.period_next_month))
                 }
 
                 listOf(1, 2).forEach { q ->
@@ -470,11 +476,11 @@ internal fun BudgetPeriodBar(
                         modifier = Modifier
                             .height(40.dp)
                             .widthIn(min = 48.dp)
-                            .semantics { contentDescription = "Quincena $q" }
+                            .semantics { contentDescription = AppStrings.get(R.string.budget_fortnight_cd, q) }
                     ) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
                             Text(
-                                text = "${q}ª",
+                                text = stringResource(R.string.budget_fortnight_chip, q),
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
                                 color = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
@@ -501,7 +507,7 @@ private fun BudgetSummaryCard(
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         StatPill(
-            label = "Disponible · ${(progress * 100).toInt()}% pagado",
+            label = stringResource(R.string.budget_available, (progress * 100).toInt()),
             progress = progress,
             modifier = Modifier.fillMaxWidth()
         ) { style, _ ->
@@ -516,19 +522,19 @@ private fun BudgetSummaryCard(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             SummaryFigure(
-                "Ingresos", "+" + summary.executedIncome.toCompactCurrency(), financialColors.income,
+                stringResource(R.string.common_income), "+" + summary.executedIncome.toCompactCurrency(), financialColors.income,
                 selected = typeFilter == BudgetItemType.INCOME,
                 onClick = { onTypeFilterSelect(BudgetItemType.INCOME) },
                 modifier = Modifier.weight(1f)
             )
             SummaryFigure(
-                "Reembolsos", "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income,
+                stringResource(R.string.budget_reimbursements), "+" + summary.executedReimbursement.toCompactCurrency(), financialColors.income,
                 selected = typeFilter == BudgetItemType.REIMBURSEMENT,
                 onClick = { onTypeFilterSelect(BudgetItemType.REIMBURSEMENT) },
                 modifier = Modifier.weight(1f)
             )
             SummaryFigure(
-                "Gastos", "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense,
+                stringResource(R.string.common_expenses), "-" + summary.paidExpense.toCompactCurrency(), financialColors.expense,
                 selected = typeFilter == BudgetItemType.EXPENSE,
                 onClick = { onTypeFilterSelect(BudgetItemType.EXPENSE) },
                 modifier = Modifier.weight(1f)
@@ -585,7 +591,7 @@ fun BudgetItemCard(
         animationSpec = minicashSpatialSpec(),
         label = "budget_card_drag"
     )
-    val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.forLanguageTag("es-MX")) }
+    val dateFormat = remember { appDateFormat("dd/MM", "MM/dd") }
     val subtitle = buildString {
         append(item.type.displayName)
         item.dueDate?.let { append(" • ").append(dateFormat.format(Date(it))) }
@@ -669,7 +675,7 @@ fun BudgetItemCard(
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = if (item.isPaid) "Marcar pendiente" else "Marcar ejecutado",
+                                contentDescription = if (item.isPaid) stringResource(R.string.budget_mark_pending) else stringResource(R.string.budget_mark_done),
                                 tint = if (item.isPaid) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
                                 modifier = Modifier
                                     .size(18.dp)
@@ -700,10 +706,10 @@ fun ReactivateBudgetItemDialog(
 ) {
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("¿Reactivar partida?", fontWeight = FontWeight.SemiBold) },
+        title = { Text(stringResource(R.string.budget_reactivate_title), fontWeight = FontWeight.SemiBold) },
         text = {
             Text(
-                "¿Deseas marcar esta partida como pendiente nuevamente?",
+                stringResource(R.string.budget_reactivate_text),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -711,12 +717,12 @@ fun ReactivateBudgetItemDialog(
             MinicashFilledButton(
                 onClick = onConfirm,
             ) {
-                Text("Reactivar", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.budget_reactivate), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             MinicashTextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.common_cancel))
             }
         },
         shape = MinicashShapes.Hero
@@ -733,11 +739,11 @@ fun ConfirmPaymentDialog(
 
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Confirmar ${item.concept}", fontWeight = FontWeight.SemiBold) },
+        title = { Text(stringResource(R.string.budget_confirm_title, item.concept), fontWeight = FontWeight.SemiBold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "¿Deseas registrar '${item.concept}' (${item.amount.toCurrencyFormat()}) como ejecutado?",
+                    text = stringResource(R.string.budget_confirm_text, item.concept, item.amount.toCurrencyFormat()),
                     style = MaterialTheme.typography.bodyMedium
                 )
 
@@ -750,7 +756,7 @@ fun ConfirmPaymentDialog(
                         onCheckedChange = { createTransaction = it }
                     )
                     Text(
-                        text = "Crear movimiento",
+                        text = stringResource(R.string.budget_create_tx),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -760,12 +766,12 @@ fun ConfirmPaymentDialog(
             MinicashFilledButton(
                 onClick = { onConfirm(createTransaction) },
             ) {
-                Text("Confirmar", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.common_confirm), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             MinicashTextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(R.string.common_cancel))
             }
         },
         shape = MinicashShapes.Hero
@@ -823,11 +829,11 @@ fun AddBudgetItemDialog(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Nueva partida de presupuesto",
+                    text = stringResource(R.string.budget_new_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: "Sin fecha"
+                val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: stringResource(R.string.common_no_date)
                 Surface(
                     onClick = {
                         keyboardController?.hide()
@@ -898,8 +904,8 @@ fun AddBudgetItemDialog(
             OutlinedTextField(
                 value = concept,
                 onValueChange = { concept = it },
-                label = { Text("Concepto") },
-                placeholder = { Text("Nombre de la partida") },
+                label = { Text(stringResource(R.string.tx_concept)) },
+                placeholder = { Text(stringResource(R.string.budget_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier
@@ -910,8 +916,8 @@ fun AddBudgetItemDialog(
             OutlinedTextField(
                 value = responsible,
                 onValueChange = { responsible = it },
-                label = { Text("Responsable") },
-                placeholder = { Text("Nombre del responsable") },
+                label = { Text(stringResource(R.string.budget_responsible)) },
+                placeholder = { Text(stringResource(R.string.budget_responsible_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -928,7 +934,7 @@ fun AddBudgetItemDialog(
 
             // Botón de acción principal (Píldora full width independiente)
             MinicashButton(
-                text = "Agregar partida",
+                text = stringResource(R.string.budget_add),
                 onClick = {
                     haptics.confirm()
                     if (calculatedAmount > 0.0) {
@@ -957,12 +963,12 @@ fun AddBudgetItemDialog(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Aceptar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_accept), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 MinicashTextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -1006,8 +1012,8 @@ fun EditBudgetItemSheet(
     if (showDeleteConfirmDialog) {
         MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
-            title = { Text("¿Eliminar partida?", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Deseas eliminar '${item.concept}' de tus partidas de presupuesto?") },
+            title = { Text(stringResource(R.string.budget_delete_title), fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.budget_delete_text, item.concept)) },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -1021,11 +1027,11 @@ fun EditBudgetItemSheet(
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { showDeleteConfirmDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDeleteConfirmDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             },
             shape = MinicashShapes.Hero
         )
@@ -1053,11 +1059,11 @@ fun EditBudgetItemSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Editar partida",
+                    text = stringResource(R.string.budget_edit_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: "Sin fecha"
+                val formattedDateLabel = selectedDateMillis?.let { formatTransactionDate(it) } ?: stringResource(R.string.common_no_date)
                 Surface(
                     onClick = {
                         keyboardController?.hide()
@@ -1128,8 +1134,8 @@ fun EditBudgetItemSheet(
             OutlinedTextField(
                 value = concept,
                 onValueChange = { concept = it },
-                label = { Text("Concepto") },
-                placeholder = { Text("Nombre de la partida") },
+                label = { Text(stringResource(R.string.tx_concept)) },
+                placeholder = { Text(stringResource(R.string.budget_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -1138,8 +1144,8 @@ fun EditBudgetItemSheet(
             OutlinedTextField(
                 value = responsible,
                 onValueChange = { responsible = it },
-                label = { Text("Responsable") },
-                placeholder = { Text("Nombre del responsable") },
+                label = { Text(stringResource(R.string.budget_responsible)) },
+                placeholder = { Text(stringResource(R.string.budget_responsible_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -1156,7 +1162,7 @@ fun EditBudgetItemSheet(
 
             // Botón de acción principal (Píldora full width independiente)
             MinicashButton(
-                text = "Guardar cambios",
+                text = stringResource(R.string.tx_save_changes),
                 onClick = {
                     haptics.confirm()
                     if (calculatedAmount > 0.0) {
@@ -1180,7 +1186,7 @@ fun EditBudgetItemSheet(
             ) {
                 Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Eliminar partida", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.budget_delete), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1200,12 +1206,12 @@ fun EditBudgetItemSheet(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Aceptar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_accept), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 MinicashTextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -1253,7 +1259,7 @@ fun CopyFortnightSheet(
     var sourceFortnight by remember { mutableIntStateOf(if (defaultDestQ == 1) 2 else 1) }
 
     val monthNames = remember {
-        listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+        (1..12).map { java.time.Month.of(it).getDisplayName(java.time.format.TextStyle.FULL, com.uramos.minicash.ui.utils.appLocale()).replaceFirstChar { c -> c.uppercase() } }
     }
     fun label(year: Int, month: Int) = "${monthNames[month - 1].take(3)} $year"
 
@@ -1297,13 +1303,13 @@ fun CopyFortnightSheet(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "Copiar quincena",
+                text = stringResource(R.string.budget_copy_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
 
             BudgetPeriodBar(
-                leadingLabel = "Desde",
+                leadingLabel = stringResource(R.string.common_from),
                 monthLabel = label(sourceYear, sourceMonth),
                 fortnight = sourceFortnight,
                 onPreviousMonth = { shiftYearMonth(sourceYear, sourceMonth, -1).let { sourceYear = it.first; sourceMonth = it.second } },
@@ -1311,7 +1317,7 @@ fun CopyFortnightSheet(
                 onSelectFortnight = { sourceFortnight = it }
             )
             BudgetPeriodBar(
-                leadingLabel = "Hacia",
+                leadingLabel = stringResource(R.string.common_to),
                 monthLabel = label(destYear, destMonth),
                 fortnight = destFortnight,
                 onPreviousMonth = { shiftYearMonth(destYear, destMonth, -1).let { destYear = it.first; destMonth = it.second } },
@@ -1321,7 +1327,7 @@ fun CopyFortnightSheet(
 
             if (isSameKey) {
                 Text(
-                    text = "El origen y el destino no pueden ser el mismo.",
+                    text = stringResource(R.string.budget_copy_same),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -1333,7 +1339,7 @@ fun CopyFortnightSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Partidas (${selectedIds.size} de ${sourceItems.size})",
+                    text = stringResource(R.string.budget_copy_items, selectedIds.size, sourceItems.size),
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1343,7 +1349,7 @@ fun CopyFortnightSheet(
                     MinicashTextButton(
                         onClick = { selectedIds = if (allSelected) emptySet() else sourceItems.map { it.id }.toSet() }
                     ) {
-                        Text(if (allSelected) "Ninguna" else "Todas", fontWeight = FontWeight.Bold)
+                        Text(if (allSelected) stringResource(R.string.common_none) else stringResource(R.string.common_all_f), fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -1351,7 +1357,7 @@ fun CopyFortnightSheet(
             when {
                 isLoading -> MinicashLoading(modifier = Modifier.size(40.dp).align(Alignment.CenterHorizontally))
                 sourceItems.isEmpty() -> Text(
-                    text = "No hay partidas registradas en la quincena origen seleccionada.",
+                    text = stringResource(R.string.budget_copy_empty),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1394,7 +1400,7 @@ fun CopyFortnightSheet(
                                 if (item.id in duplicateIds) {
                                     Surface(shape = CircleShape, color = MaterialTheme.colorScheme.tertiaryContainer) {
                                         Text(
-                                            text = "Ya existe",
+                                            text = stringResource(R.string.budget_exists),
                                             style = MaterialTheme.typography.labelSmall,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onTertiaryContainer,
@@ -1433,7 +1439,7 @@ fun CopyFortnightSheet(
                     .height(48.dp)
             ) {
                 Text(
-                    text = if (selectedIds.size == 1) "Copiar 1 partida" else "Copiar ${selectedIds.size} partidas",
+                    text = pluralStringResource(R.plurals.budget_copy_button, selectedIds.size, selectedIds.size),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

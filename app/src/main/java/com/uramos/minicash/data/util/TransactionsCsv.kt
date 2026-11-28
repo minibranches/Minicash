@@ -8,11 +8,13 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /** Periodo de los movimientos que se exportan a CSV. */
-enum class CsvRange(val label: String) {
-    THIS_MONTH("Este mes"),
-    LAST_3_MONTHS("Últimos 3 meses"),
-    THIS_YEAR("Este año"),
-    ALL("Todo el historial");
+enum class CsvRange(@androidx.annotation.StringRes val labelRes: Int) {
+    THIS_MONTH(com.uramos.minicash.R.string.csv_range_this_month),
+    LAST_3_MONTHS(com.uramos.minicash.R.string.csv_range_last_3_months),
+    THIS_YEAR(com.uramos.minicash.R.string.csv_range_this_year),
+    ALL(com.uramos.minicash.R.string.csv_range_all);
+
+    val label: String get() = com.uramos.minicash.ui.utils.AppStrings.get(labelRes)
 
     /** Si el movimiento de fecha [dateMillis] cae dentro del periodo, contando hasta el final de hoy. */
     fun contains(dateMillis: Long, today: LocalDate, zone: ZoneId): Boolean {
@@ -26,6 +28,13 @@ enum class CsvRange(val label: String) {
         val until = today.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
         return dateMillis in from until until
     }
+}
+
+/** Etiqueta de tipo con la que se exporta por omisión (español); la app pasa la del idioma en uso. */
+fun defaultCsvTypeLabel(type: com.uramos.minicash.data.local.entities.TransactionType): String = when (type) {
+    com.uramos.minicash.data.local.entities.TransactionType.EXPENSE -> "Gasto"
+    com.uramos.minicash.data.local.entities.TransactionType.INCOME -> "Ingreso"
+    com.uramos.minicash.data.local.entities.TransactionType.TRANSFER -> "Transferencia"
 }
 
 const val CSV_HEADER = "Fecha,Tipo,Monto,Cuenta,Cuenta destino,Categoría,Nota"
@@ -50,15 +59,17 @@ fun buildTransactionsCsv(
     transactions: List<TransactionEntity>,
     accountNames: Map<Long, String>,
     categoryNames: Map<Long, String>,
-    zone: ZoneId = ZoneId.systemDefault()
+    zone: ZoneId = ZoneId.systemDefault(),
+    header: String = CSV_HEADER,
+    typeLabel: (com.uramos.minicash.data.local.entities.TransactionType) -> String = ::defaultCsvTypeLabel
 ): String {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.US)
     return buildString {
-        append(CSV_HEADER).append('\n')
+        append(header).append('\n')
         transactions.sortedBy { it.date }.forEach { tx ->
             val line = listOf(
                 csvCell(dateFormat.format(Instant.ofEpochMilli(tx.date).atZone(zone))),
-                csvCell(tx.type.displayName),
+                csvCell(typeLabel(tx.type)),
                 csvAmount(tx.amount),
                 csvCell(accountNames[tx.sourceAccountId].orEmpty()),
                 csvCell(tx.destinationAccountId?.let { accountNames[it] }.orEmpty()),

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="starter_groceries">Groceries</string>
+    <string name="starter_transport">Transport</string>
+    <string name="starter_dining">Dining out</string>
+    <string name="starter_rent">Home/Rent</string>
+    <string name="starter_utilities">Utilities</string>
+    <string name="starter_shopping">Shopping</string>
+    <string name="starter_health">Health</string>
+    <string name="starter_fun">Entertainment</string>
+    <string name="starter_salary">Payroll/Salary</string>
+    <string name="starter_investments">Returns/Investments</string>
+    <string name="starter_refunds">Refunds</string>
+    <string name="starter_sales">Sales/Commissions</string>
+    <string name="default_account_name">Cash</string>
+    <string name="default_user_name">User</string>
+    <string name="ob_previous_page">Previous page</string>
+    <string name="ob_skip">Skip</string>
+    <string name="ob_step">Step %1$d of %2$d</string>
+    <string name="ob_hint_last">All set to begin</string>
+    <string name="ob_start_cd">Get started</string>
+    <string name="ob_welcome_title">Welcome to Minicash</string>
+    <string name="ob_welcome_sub">Let’s start by setting up your local finance space.</string>
+    <string name="ob_name_hint">Enter your name</string>
+    <string name="ob_privacy">Everything stays on this phone. No account or sign-up; nothing is sent anywhere.</string>
+    <string name="ob_account_title">Where your money lives</string>
+    <string name="ob_account_sub">Name the account you spend from and say what is in it now.</string>
+    <string name="ob_account_name_hint">Account name</string>
+    <string name="ob_balance_label">What is in it now</string>
+    <string name="ob_balance_hint">Leave it at zero if you prefer not to say.</string>
+    <string name="ob_categories_title">What do you spend and earn on?</string>
+    <string name="ob_categories_sub">Pick your starting categories; you can change them later in Settings.</string>
+    <string name="ob_tab_expenses">Expenses (%1$d)</string>
+    <plurals name="ob_categories_selected">
+        <item quantity="one">%d category selected</item>
+        <item quantity="other">%d categories selected</item>
+    </plurals>
+    <string name="ob_hint_continue">Tap the arrow to continue</string>
+    <string name="ob_hint_incomplete">Complete this step to continue</string>
+    <string name="ob_continue_cd">Continue</string>
+    <string name="ob_tab_income">Income (%1$d)</string>
+</resources>

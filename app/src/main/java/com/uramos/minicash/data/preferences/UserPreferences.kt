@@ -16,10 +16,12 @@ import kotlinx.coroutines.flow.map
 
 private val Context.dataStore by preferencesDataStore(name = "user_settings")
 
-enum class ThemeMode(val displayName: String) {
-    SYSTEM("Sistema"),
-    LIGHT("Claro"),
-    DARK("Oscuro")
+enum class ThemeMode(@androidx.annotation.StringRes val labelRes: Int) {
+    SYSTEM(com.uramos.minicash.R.string.theme_system),
+    LIGHT(com.uramos.minicash.R.string.theme_light),
+    DARK(com.uramos.minicash.R.string.theme_dark);
+
+    val displayName: String get() = com.uramos.minicash.ui.utils.AppStrings.get(labelRes)
 }
 
 enum class FontPreference {

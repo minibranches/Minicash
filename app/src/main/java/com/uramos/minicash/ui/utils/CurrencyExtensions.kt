@@ -6,16 +6,20 @@ import com.uramos.minicash.ui.theme.MinicashThemeExtensions
 import java.text.NumberFormat
 import java.util.Locale
 
-private val currencyFormatter = ThreadLocal.withInitial {
-    NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-MX"))
+private val currencyFormatters = ThreadLocal.withInitial { HashMap<Locale, NumberFormat>() }
+
+/** Formato de moneda del idioma en uso (es-MX o en-US); se guarda por idioma para no quedar con uno viejo. */
+private fun currencyFormatter(): NumberFormat {
+    val locale = appLocale()
+    return currencyFormatters.get()!!.getOrPut(locale) { NumberFormat.getCurrencyInstance(locale) }
 }
 
 fun Long.toCurrencyFormat(): String {
-    return currencyFormatter.get()?.format(this / 100.0) ?: ""
+    return currencyFormatter().format(this / 100.0)
 }
 
 fun Double.toCurrencyFormat(): String {
-    return currencyFormatter.get()?.format(this) ?: ""
+    return currencyFormatter().format(this)
 }
 
 /**

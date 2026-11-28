@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.reports
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
 import com.uramos.minicash.ui.components.InsightCard
 import com.uramos.minicash.ui.components.StatPill
 import com.uramos.minicash.ui.theme.screenBackground
@@ -79,13 +83,12 @@ import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-private val esMx: Locale = Locale.forLanguageTag("es-MX")
 
 private fun YearMonth.shortLabel(): String =
-    month.getDisplayName(JavaTextStyle.SHORT, esMx).trimEnd('.')
+    month.getDisplayName(JavaTextStyle.SHORT, appLocale()).trimEnd('.')
 
 private fun YearMonth.fullLabel(): String =
-    month.getDisplayName(JavaTextStyle.FULL, esMx).replaceFirstChar { it.uppercase() } + " $year"
+    month.getDisplayName(JavaTextStyle.FULL, appLocale()).replaceFirstChar { it.uppercase() } + " $year"
 
 /**
  * Dashboard de reportes: balance del periodo, cifras clave, ingresos contra gastos por mes, en qué se gasta
@@ -107,7 +110,7 @@ fun ReportsScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Reportes",
+                title = stringResource(R.string.nav_reports),
                 onBack = onBackClick,
                 scrollBehavior = scrollBehavior
             )
@@ -132,7 +135,7 @@ fun ReportsScreen(
                     options = listOf(6, 12),
                     isSelected = { it == state.monthsRange },
                     onSelect = viewModel::selectRange,
-                    label = { "$it meses" }
+                    label = { AppStrings.get(R.string.reports_months, it) }
                 )
             }
 
@@ -140,8 +143,8 @@ fun ReportsScreen(
                 item {
                     MinicashEmptyState(
                         icon = Icons.Default.BarChart,
-                        title = "Sin movimientos",
-                        subtitle = "Aún no hay ingresos ni gastos en estos meses.",
+                        title = stringResource(R.string.account_empty_title),
+                        subtitle = stringResource(R.string.reports_empty_sub),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = spacing.large)
@@ -150,12 +153,12 @@ fun ReportsScreen(
             } else {
                 item { HeroBalanceCard(state) }
 
-                item { InsightCard(title = "Ahorro", text = savingsMessage(state.savingsRate)) }
+                item { InsightCard(title = stringResource(R.string.reports_savings), text = savingsMessage(state.savingsRate)) }
 
                 item { StatTiles(state) }
 
                 item {
-                    ChartCard(title = "Ingresos vs gastos por mes") {
+                    ChartCard(title = stringResource(R.string.reports_income_vs_expenses)) {
                         ChartLegend()
                         IncomeExpenseChart(months = state.months)
                     }
@@ -163,21 +166,21 @@ fun ReportsScreen(
 
                 if (state.categorySpend.isNotEmpty()) {
                     item {
-                        ChartCard(title = "En qué gastas") {
+                        ChartCard(title = stringResource(R.string.reports_where_you_spend)) {
                             CategoryBars(state.categorySpend)
                         }
                     }
                 }
 
                 item {
-                    ChartCard(title = "Balance acumulado") {
+                    ChartCard(title = stringResource(R.string.reports_cumulative)) {
                         CumulativeLine(months = state.months, values = state.cumulative)
                     }
                 }
 
                 item {
                     Text(
-                        text = "Mes por mes",
+                        text = stringResource(R.string.reports_month_by_month),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(start = 4.dp, top = spacing.small)
@@ -216,7 +219,7 @@ private fun HeroBalanceCard(state: ReportsUiState) {
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "Balance de los últimos ${state.monthsRange} meses",
+                    text = stringResource(R.string.reports_balance_last, state.monthsRange),
                     style = MaterialTheme.typography.labelLarge,
                     color = onContainer
                 )
@@ -236,9 +239,9 @@ private fun HeroBalanceCard(state: ReportsUiState) {
 
 /** Mensaje de ahorro del periodo, el mismo texto de siempre, ahora en una tarjeta de aviso. */
 private fun savingsMessage(rate: Float?): String = when {
-    rate == null -> "Sin ingresos en el periodo"
-    rate >= 0f -> "Ahorraste el ${(rate * 100).roundToInt()} % de tus ingresos"
-    else -> "Gastaste ${(abs(rate) * 100).roundToInt()} % más de lo que ingresó"
+    rate == null -> AppStrings.get(R.string.reports_no_income)
+    rate >= 0f -> AppStrings.get(R.string.reports_saved, (rate * 100).roundToInt())
+    else -> AppStrings.get(R.string.reports_overspent, (abs(rate) * 100).roundToInt())
 }
 
 /** Cuatro cifras en estadios, dos por fila. */
@@ -247,16 +250,16 @@ private fun StatTiles(state: ReportsUiState) {
     val colors = MinicashThemeExtensions.financialColors
     val best = state.bestMonth
     val savings = state.averageBalance.toCompactCurrency().let { if (state.averageBalance < 0) "-$it" else it }
-    val bestName = best?.month?.month?.getDisplayName(JavaTextStyle.FULL, esMx)?.replaceFirstChar { it.uppercase() } ?: "—"
-    val bestLabel = best?.balance?.let { b -> "Mejor mes · " + (if (b < 0) "-" else "") + b.toCompactCurrency() } ?: "Mejor mes"
+    val bestName = best?.month?.month?.getDisplayName(JavaTextStyle.FULL, appLocale())?.replaceFirstChar { it.uppercase() } ?: "—"
+    val bestLabel = best?.balance?.let { b -> stringResource(R.string.reports_best_month) + " · " + (if (b < 0) "-" else "") + b.toCompactCurrency() } ?: stringResource(R.string.reports_best_month)
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            StatFigure("Ingreso promedio", state.averageIncome.toCompactCurrency(), colors.income, Modifier.weight(1f))
-            StatFigure("Gasto promedio", state.averageExpense.toCompactCurrency(), colors.expense, Modifier.weight(1f))
+            StatFigure(stringResource(R.string.reports_avg_income), state.averageIncome.toCompactCurrency(), colors.income, Modifier.weight(1f))
+            StatFigure(stringResource(R.string.reports_avg_expense), state.averageExpense.toCompactCurrency(), colors.expense, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            StatFigure("Ahorro mensual", savings, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+            StatFigure(stringResource(R.string.reports_monthly_savings), savings, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
             StatFigure(bestLabel, bestName, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
         }
     }
@@ -290,8 +293,8 @@ private fun ChartCard(title: String, content: @Composable () -> Unit) {
 private fun ChartLegend() {
     val colors = MinicashThemeExtensions.financialColors
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-        LegendItem("Ingresos", colors.income)
-        LegendItem("Gastos", colors.expense)
+        LegendItem(stringResource(R.string.common_income), colors.income)
+        LegendItem(stringResource(R.string.common_expenses), colors.expense)
     }
 }
 
@@ -509,12 +512,12 @@ private fun MonthRow(month: MonthlyTotals) {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Text(
-                    "Ingresos ${month.income.toCompactCurrency()}",
+                    stringResource(R.string.reports_income_amount, month.income.toCompactCurrency()),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    "Gastos ${month.expense.toCompactCurrency()}",
+                    stringResource(R.string.reports_expense_amount, month.expense.toCompactCurrency()),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

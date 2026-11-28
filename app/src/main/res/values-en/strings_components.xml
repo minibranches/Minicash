@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="state_expanded">Expanded</string>
+    <string name="state_collapsed">Collapsed</string>
+    <string name="discard_title">Discard changes?</string>
+    <string name="discard_text">You have unsaved changes. If you leave now they will be lost.</string>
+    <string name="discard_confirm">Discard</string>
+    <string name="discard_keep_editing">Keep editing</string>
+    <string name="filters_clear">Clear filters</string>
+    <string name="icon_group_finance">Finance</string>
+    <string name="icon_group_home">Home and utilities</string>
+    <string name="icon_group_food">Food</string>
+    <string name="icon_group_transport">Transport</string>
+    <string name="icon_group_leisure">Leisure and shopping</string>
+    <string name="icon_group_health">Health and medicine</string>
+    <string name="icon_group_beauty">Beauty and personal care</string>
+    <string name="icon_group_education">Education and work</string>
+    <string name="icon_group_pets">Pets and other</string>
+    <string name="icon_select">Select icon</string>
+    <string name="period_prev_month">Previous month</string>
+    <string name="period_next_month">Next month</string>
+    <string name="period_pick_year">Pick year</string>
+    <string name="nav_reports">Reports</string>
+    <string name="time_hour">Hour</string>
+    <string name="time_minutes">Minutes</string>
+    <string name="filter_active">Filter on</string>
+    <string name="filter_inactive">Filter off</string>
+    <plurals name="filter_count">
+        <item quantity="one">%d filter</item>
+        <item quantity="other">%d filters</item>
+    </plurals>
+</resources>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tx_categories_title">Categories</string>
+    <string name="tx_search_category">Search category...</string>
+    <string name="tx_clear_search">Clear search</string>
+    <string name="tx_categories_title_count">Categories (%1$d)</string>
+    <string name="tx_filters_title">Transaction filters</string>
+    <string name="tx_filters_clear">Clear filters</string>
+    <string name="tx_filter_type">Transaction type</string>
+    <string name="tx_all_accounts">All accounts</string>
+    <string name="tx_all_categories">All categories</string>
+    <string name="tx_filters_apply">Apply filters</string>
+    <string name="tx_empty_title">No transactions recorded</string>
+    <string name="tx_empty_filtered">No transactions match the selected filters.</string>
+    <string name="tx_empty_month">No transactions recorded this month.</string>
+    <string name="tx_search_hint">Search...</string>
+    <string name="tx_search_close">Close search</string>
+    <string name="tx_search_cd">Search transactions</string>
+    <string name="tx_clear_history">Clear history</string>
+    <string name="account_balance_change">Balance change per month</string>
+    <string name="account_empty_title">No transactions</string>
+    <string name="account_empty_sub">This account has no transactions yet.</string>
+    <string name="account_empty_months">No transactions in these months.</string>
+    <string name="tx_balance">Balance</string>
+</resources>

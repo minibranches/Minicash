@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashSwipeNumpad
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.isImeVisible
@@ -231,9 +234,9 @@ fun AddTransactionSheet(
             ) {
                     // Cabecera: Título contextual y Moneda
                     val contextualTitle = when (state.type) {
-                        TransactionType.INCOME -> "Nuevo ingreso"
-                        TransactionType.TRANSFER -> "Nueva transferencia"
-                        else -> "Nuevo gasto"
+                        TransactionType.INCOME -> stringResource(R.string.tx_new_income)
+                        TransactionType.TRANSFER -> stringResource(R.string.tx_new_transfer)
+                        else -> stringResource(R.string.tx_new_expense)
                     }
 
                     val dateText = remember(state.selectedDate) {
@@ -286,9 +289,9 @@ fun AddTransactionSheet(
                         },
                         label = {
                             when (it) {
-                                TransactionType.EXPENSE -> "Gasto"
-                                TransactionType.INCOME -> "Ingreso"
-                                TransactionType.TRANSFER -> "Transferencia"
+                                TransactionType.EXPENSE -> AppStrings.get(R.string.tx_type_expense)
+                                TransactionType.INCOME -> AppStrings.get(R.string.tx_type_income)
+                                TransactionType.TRANSFER -> AppStrings.get(R.string.tx_type_transfer)
                             }
                         }
                     )
@@ -324,7 +327,7 @@ fun AddTransactionSheet(
                             verticalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             Text(
-                                text = if (state.amountExpression.isNotBlank()) state.amountExpression else "Toca para ingresar monto",
+                                text = if (state.amountExpression.isNotBlank()) state.amountExpression else stringResource(R.string.tx_tap_amount),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -343,8 +346,8 @@ fun AddTransactionSheet(
                             OutlinedTextField(
                                 value = state.concept,
                                 onValueChange = { viewModel.setConcept(it) },
-                                label = { Text("Concepto") },
-                                placeholder = { Text("Nombre o concepto del movimiento") },
+                                label = { Text(stringResource(R.string.tx_concept)) },
+                                placeholder = { Text(stringResource(R.string.tx_concept_hint)) },
                                 singleLine = true,
                                 shape = MinicashShapes.Input,
                                 keyboardOptions = KeyboardOptions(
@@ -395,7 +398,7 @@ fun AddTransactionSheet(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                                 Text(
-                                                    text = " • ${suggestion.categoryName ?: "Sin categoría"} • ${suggestion.accountName}",
+                                                    text = " • ${suggestion.categoryName ?: stringResource(R.string.tx_no_category)} • ${suggestion.accountName}",
                                                     style = MaterialTheme.typography.labelSmall
                                                 )
                                             }
@@ -407,8 +410,8 @@ fun AddTransactionSheet(
                             OutlinedTextField(
                                 value = state.note,
                                 onValueChange = { viewModel.setNotes(it) },
-                                label = { Text("Notas") },
-                                placeholder = { Text("Escribe una nota") },
+                                label = { Text(stringResource(R.string.tx_notes)) },
+                                placeholder = { Text(stringResource(R.string.tx_notes_hint)) },
                                 singleLine = false,
                                 minLines = 2,
                                 maxLines = 4,
@@ -481,7 +484,7 @@ fun AddTransactionSheet(
                                         }
                                     }
                                     Text(
-                                        text = "De: ${selectedAccount?.name ?: "Origen"}",
+                                        text = stringResource(R.string.tx_from, selectedAccount?.name ?: stringResource(R.string.tx_origin)),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -540,7 +543,7 @@ fun AddTransactionSheet(
                                         }
                                     }
                                     Text(
-                                        text = "A: ${selectedDestAccount?.name ?: "Destino"}",
+                                        text = stringResource(R.string.tx_to, selectedDestAccount?.name ?: stringResource(R.string.tx_destination)),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -602,7 +605,7 @@ fun AddTransactionSheet(
                                         }
                                     }
                                     Text(
-                                        text = selectedCategory?.name ?: "Categoría",
+                                        text = selectedCategory?.name ?: stringResource(R.string.tx_category),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -659,7 +662,7 @@ fun AddTransactionSheet(
                                         }
                                     }
                                     Text(
-                                        text = selectedAccount?.name ?: "Cuenta",
+                                        text = selectedAccount?.name ?: stringResource(R.string.tx_account),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -698,11 +701,11 @@ fun AddTransactionSheet(
                     // Qué falta para guardar, siempre visible sobre el botón
                     if (!canSave) {
                         val missing = when {
-                            rawAmount <= 0L -> "Ingresa un monto"
-                            isTransfer -> "Elige dos cuentas distintas"
-                            state.concept.isBlank() -> "Falta el concepto"
-                            selectedCategory == null -> "Falta elegir la categoría"
-                            else -> "Falta elegir la cuenta"
+                            rawAmount <= 0L -> stringResource(R.string.tx_missing_amount)
+                            isTransfer -> stringResource(R.string.tx_missing_two_accounts)
+                            state.concept.isBlank() -> stringResource(R.string.tx_missing_concept)
+                            selectedCategory == null -> stringResource(R.string.tx_missing_category)
+                            else -> stringResource(R.string.tx_missing_account)
                         }
                         Text(
                             text = missing,
@@ -729,7 +732,7 @@ fun AddTransactionSheet(
                             .heightIn(min = 48.dp)
                     ) {
                         Text(
-                            text = "Guardar",
+                            text = stringResource(R.string.common_save),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -793,12 +796,12 @@ fun AddTransactionSheet(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Aceptar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_accept), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 MinicashTextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         ) {
@@ -839,12 +842,12 @@ fun KeypadButton(
     val currentOnClick by rememberUpdatedState(onClick)
 
     val spoken = when (text) {
-        "⌫" -> "Borrar"
-        "." -> "Punto decimal"
-        "+" -> "Más"
-        "-" -> "Menos"
-        "×" -> "Por"
-        "÷" -> "Entre"
+        "⌫" -> stringResource(R.string.key_backspace)
+        "." -> stringResource(R.string.key_decimal)
+        "+" -> stringResource(R.string.key_plus)
+        "-" -> stringResource(R.string.key_minus)
+        "×" -> stringResource(R.string.key_times)
+        "÷" -> stringResource(R.string.key_divide)
         else -> text
     }
     Box(
@@ -901,7 +904,7 @@ fun KeypadButton(
                 if (icon != null || text == "⌫") {
                     Icon(
                         imageVector = icon ?: Icons.AutoMirrored.Filled.Backspace,
-                        contentDescription = "Borrar",
+                        contentDescription = stringResource(R.string.key_backspace),
                         tint = contentColor,
                         modifier = Modifier.size(20.dp)
                     )
@@ -946,7 +949,7 @@ fun CategorySelectionSheet(
             verticalArrangement = Arrangement.spacedBy(spacing.standard)
         ) {
             Text(
-                text = "Categoría",
+                text = stringResource(R.string.tx_category),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -959,7 +962,7 @@ fun CategorySelectionSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Sin categorías disponibles",
+                        text = stringResource(R.string.tx_no_categories),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1066,7 +1069,7 @@ private fun NewCategoryRow(onCreate: (String) -> Unit) {
                 Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Nueva categoría",
+                    stringResource(R.string.tx_new_category),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -1079,14 +1082,14 @@ private fun NewCategoryRow(onCreate: (String) -> Unit) {
         OutlinedTextField(
             value = name,
             onValueChange = { name = it.take(30) },
-            label = { Text("Nombre de la categoría") },
+            label = { Text(stringResource(R.string.tx_category_name)) },
             singleLine = true,
             shape = CircleShape,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.Sentences),
             keyboardActions = KeyboardActions(onDone = { if (canCreate) onCreate(name.trim()) }),
             trailingIcon = {
                 MinicashTextButton(onClick = { onCreate(name.trim()) }, enabled = canCreate) {
-                    Text("Crear", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_create), fontWeight = FontWeight.Bold)
                 }
             },
             modifier = Modifier
@@ -1127,7 +1130,7 @@ fun AccountSelectionSheet(
             verticalArrangement = Arrangement.spacedBy(spacing.standard)
         ) {
             Text(
-                text = "Cuenta",
+                text = stringResource(R.string.tx_account),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -1140,7 +1143,7 @@ fun AccountSelectionSheet(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Sin cuentas disponibles",
+                        text = stringResource(R.string.tx_no_accounts),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

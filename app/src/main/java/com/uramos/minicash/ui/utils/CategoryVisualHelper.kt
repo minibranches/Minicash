@@ -1,5 +1,6 @@
 package com.uramos.minicash.ui.utils
 
+import com.uramos.minicash.R
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -231,24 +232,14 @@ fun getCategoryIcon(categoryName: String?, type: TransactionType): ImageVector {
     }
 }
 
-private val dateFormatShortSameYear = ThreadLocal.withInitial {
-    SimpleDateFormat("d 'de' MMM", Locale.forLanguageTag("es-MX"))
-}
-private val dateFormatShortOtherYear = ThreadLocal.withInitial {
-    SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX"))
-}
 private val dayKeyFormatThreadLocal = ThreadLocal.withInitial {
     SimpleDateFormat("yyyy-MM-dd", Locale.US)
 }
-private val dayLabelFullFormatThreadLocal = ThreadLocal.withInitial {
-    SimpleDateFormat("EEEE, d 'de' MMMM", Locale.forLanguageTag("es-MX"))
-}
-private val yearLabelFormatThreadLocal = ThreadLocal.withInitial {
-    SimpleDateFormat("d 'de' MMMM yyyy", Locale.forLanguageTag("es-MX"))
-}
-private val monthDayLabelFormatThreadLocal = ThreadLocal.withInitial {
-    SimpleDateFormat("d 'de' MMMM", Locale.forLanguageTag("es-MX"))
-}
+private fun dateFormatShortSameYear() = appDateFormat("d 'de' MMM", "MMM d")
+private fun dateFormatShortOtherYear() = appDateFormat("d MMM yyyy", "MMM d, yyyy")
+private fun dayLabelFullFormat() = appDateFormat("EEEE, d 'de' MMMM", "EEEE, MMMM d")
+private fun yearLabelFormat() = appDateFormat("d 'de' MMMM yyyy", "MMMM d, yyyy")
+private fun monthDayLabelFormat() = appDateFormat("d 'de' MMMM", "MMMM d")
 
 fun formatTransactionDate(dateMillis: Long): String {
     val now = Calendar.getInstance()
@@ -262,10 +253,10 @@ fun formatTransactionDate(dateMillis: Long): String {
             yesterday.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR)
 
     return when {
-        isSameDay -> "Hoy"
-        isYesterday -> "Ayer"
-        isSameYear -> dateFormatShortSameYear.get()?.format(Date(dateMillis)) ?: ""
-        else -> dateFormatShortOtherYear.get()?.format(Date(dateMillis)) ?: ""
+        isSameDay -> AppStrings.get(R.string.date_today)
+        isYesterday -> AppStrings.get(R.string.date_yesterday)
+        isSameYear -> dateFormatShortSameYear().format(Date(dateMillis))
+        else -> dateFormatShortOtherYear().format(Date(dateMillis))
     }
 }
 
@@ -280,9 +271,10 @@ fun groupTransactionsByDate(transactions: List<com.uramos.minicash.data.local.en
     if (transactions.isEmpty()) return emptyList()
 
     val dayKeyFmt = dayKeyFormatThreadLocal.get()
-    val dayLabelFullFmt = dayLabelFullFormatThreadLocal.get()
-    val yearLabelFmt = yearLabelFormatThreadLocal.get()
-    val monthDayFmt = monthDayLabelFormatThreadLocal.get()
+    val dayLabelFullFmt = dayLabelFullFormat()
+    val yearLabelFmt = yearLabelFormat()
+    val monthDayFmt = monthDayLabelFormat()
+    val todayLabel = AppStrings.get(R.string.date_today)
 
     val now = Calendar.getInstance()
     val yesterday = (now.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, -1) }
@@ -303,10 +295,10 @@ fun groupTransactionsByDate(transactions: List<com.uramos.minicash.data.local.en
                 yesterday.get(Calendar.DAY_OF_YEAR) == target.get(Calendar.DAY_OF_YEAR)
 
         val dateLabel = when {
-            isSameDay -> "Hoy"
-            isYesterday -> "Ayer, " + (monthDayFmt?.format(target.time) ?: "")
-            isSameYear -> (dayLabelFullFmt?.format(target.time) ?: "").replaceFirstChar { it.uppercase() }
-            else -> (yearLabelFmt?.format(target.time) ?: "").replaceFirstChar { it.uppercase() }
+            isSameDay -> todayLabel
+            isYesterday -> AppStrings.get(R.string.date_yesterday_with_day, monthDayFmt.format(target.time))
+            isSameYear -> dayLabelFullFmt.format(target.time).replaceFirstChar { it.uppercase() }
+            else -> yearLabelFmt.format(target.time).replaceFirstChar { it.uppercase() }
         }
 
         val dayNetTotal = txList.sumOf { tx ->

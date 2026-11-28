@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -46,7 +48,7 @@ fun CollapsibleSectionHeader(
         color = MaterialTheme.colorScheme.cardSurface,
         modifier = modifier.semantics {
             role = Role.Button
-            stateDescription = if (expanded) "Desplegado" else "Plegado"
+            stateDescription = if (expanded) AppStrings.get(R.string.state_expanded) else AppStrings.get(R.string.state_collapsed)
         }
     ) {
         Row(

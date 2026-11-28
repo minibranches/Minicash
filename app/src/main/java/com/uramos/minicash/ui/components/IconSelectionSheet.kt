@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
@@ -41,7 +43,7 @@ fun IconSelectionSheet(
 
     val groups = listOf(
         IconCategoryGroup(
-            title = "Finanzas",
+            title = stringResource(R.string.icon_group_finance),
             icons = listOf(
                 "account_balance_wallet" to Icons.Default.AccountBalanceWallet,
                 "payments" to Icons.Default.Payments,
@@ -55,7 +57,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Hogar y servicios",
+            title = stringResource(R.string.icon_group_home),
             icons = listOf(
                 "home" to Icons.Default.Home,
                 "tv" to Icons.Default.Tv,
@@ -71,7 +73,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Alimentación",
+            title = stringResource(R.string.icon_group_food),
             icons = listOf(
                 "restaurant" to Icons.Default.Restaurant,
                 "local_cafe" to Icons.Default.LocalCafe,
@@ -87,7 +89,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Transporte",
+            title = stringResource(R.string.icon_group_transport),
             icons = listOf(
                 "directions_car" to Icons.Default.DirectionsCar,
                 "airport_shuttle" to Icons.Default.AirportShuttle,
@@ -102,7 +104,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Ocio y compras",
+            title = stringResource(R.string.icon_group_leisure),
             icons = listOf(
                 "shopping_cart" to Icons.Default.ShoppingCart,
                 "shopping_bag" to Icons.Default.ShoppingBag,
@@ -116,7 +118,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Salud y medicina",
+            title = stringResource(R.string.icon_group_health),
             icons = listOf(
                 "medication" to Icons.Default.Medication,
                 "healing" to Icons.Default.Healing,
@@ -125,7 +127,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Belleza y cuidado personal",
+            title = stringResource(R.string.icon_group_beauty),
             icons = listOf(
                 "face_retouching_natural" to Icons.Default.FaceRetouchingNatural,
                 "brush" to Icons.Default.Brush,
@@ -136,7 +138,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Educación y trabajo",
+            title = stringResource(R.string.icon_group_education),
             icons = listOf(
                 "school" to Icons.Default.School,
                 "menu_book" to Icons.AutoMirrored.Filled.MenuBook,
@@ -146,7 +148,7 @@ fun IconSelectionSheet(
             )
         ),
         IconCategoryGroup(
-            title = "Mascotas y otros",
+            title = stringResource(R.string.icon_group_pets),
             icons = listOf(
                 "pets" to Icons.Default.Pets,
                 "flight_takeoff" to Icons.Default.FlightTakeoff,
@@ -171,7 +173,7 @@ fun IconSelectionSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Seleccionar icono",
+                text = stringResource(R.string.icon_select),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )

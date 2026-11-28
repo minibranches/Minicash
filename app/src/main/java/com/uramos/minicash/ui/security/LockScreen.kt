@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.security
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,14 +38,14 @@ fun LockScreen(showUnlock: Boolean, onUnlock: () -> Unit) {
         MinicashLogo(size = 72.dp)
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "Minicash está bloqueada",
+            text = stringResource(R.string.lock_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Desbloquea con tu huella, rostro o el PIN del teléfono.",
+            text = stringResource(R.string.lock_sub),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -53,7 +55,7 @@ fun LockScreen(showUnlock: Boolean, onUnlock: () -> Unit) {
             Button(onClick = onUnlock) {
                 Icon(Icons.Default.LockOpen, contentDescription = null)
                 Spacer(Modifier.padding(horizontal = 4.dp))
-                Text("Desbloquear")
+                Text(stringResource(R.string.lock_unlock))
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.uramos.minicash
 
 import com.uramos.minicash.data.local.entities.TransactionType
-import com.uramos.minicash.ui.components.filterCountLabel
 import com.uramos.minicash.ui.components.headerOffsetAfterScroll
 import com.uramos.minicash.ui.components.headerSettleTarget
 import com.uramos.minicash.ui.screens.transactions.activeFilterCount
@@ -41,11 +40,5 @@ class HeaderCollapseTest {
         assertEquals(1, activeFilterCount(TransactionType.EXPENSE, null, emptySet()))
         assertEquals(2, activeFilterCount(null, 3L, setOf(1L, 2L, 5L)))
         assertEquals(3, activeFilterCount(TransactionType.INCOME, 3L, setOf(9L)))
-    }
-
-    @Test
-    fun textoDelBotonDeFiltros() {
-        assertEquals("1 filtro", filterCountLabel(1))
-        assertEquals("2 filtros", filterCountLabel(2))
     }
 }

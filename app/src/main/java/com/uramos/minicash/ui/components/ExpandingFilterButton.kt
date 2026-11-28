@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandHorizontally
@@ -30,9 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.uramos.minicash.ui.theme.minicashEffectsSpec
 import com.uramos.minicash.ui.theme.minicashFastEffectsSpec
 import com.uramos.minicash.ui.theme.minicashSpatialSpec
-
-/** Texto del botón de filtros con [count] filtros aplicados («1 filtro», «3 filtros»). */
-internal fun filterCountLabel(count: Int): String = if (count == 1) "1 filtro" else "$count filtros"
 
 /**
  * Botón de filtros que cambia de forma: sin filtros es un ícono redondo de 48 dp; con filtros aplicados crece con
@@ -75,7 +75,7 @@ fun ExpandingFilterButton(
                     exit = fadeOut(minicashFastEffectsSpec()) + shrinkHorizontally(minicashSpatialSpec())
                 ) {
                     Text(
-                        text = filterCountLabel(activeCount),
+                        text = pluralStringResource(R.plurals.filter_count, activeCount, activeCount),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -94,7 +94,7 @@ fun ExpandingFilterButton(
                         .clickable(role = Role.Button, onClick = onClear),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Close, contentDescription = "Quitar filtros", modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.filters_clear), modifier = Modifier.size(18.dp))
                 }
             }
         }

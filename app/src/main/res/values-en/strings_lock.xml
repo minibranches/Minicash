@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lock_title">Minicash is locked</string>
+    <string name="lock_sub">Unlock with your fingerprint, face or your phone PIN.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_sub">Unlock to continue</string>
+</resources>

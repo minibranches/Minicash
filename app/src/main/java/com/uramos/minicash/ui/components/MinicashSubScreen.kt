@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.cardSurface
@@ -18,6 +20,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -100,68 +104,40 @@ fun MinicashSectionNote(text: String, modifier: Modifier = Modifier) {
     )
 }
 
-/** Grupo de filas con esquinas redondeadas y separación mínima entre filas. */
+/** Grupo de filas segmentadas: 4 dp visibles entre filas (ver [MinicashRowGroup]). */
 @Composable
-fun MinicashOptionGroup(content: @Composable () -> Unit) {
-    Surface(
-        shape = MinicashShapes.Card,
-        color = MaterialTheme.colorScheme.cardSurface,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) { content() }
-    }
-}
+fun MinicashOptionGroup(content: @Composable ColumnScope.() -> Unit) = MinicashRowGroup(content = content)
 
-/** Fila de opción: ícono en círculo tonal, título y subtítulo; `trailing` para interruptores o insignias. */
+/**
+ * Fila de opción: ícono festoneado, título y subtítulo de una línea; `trailing` para interruptores o insignias.
+ * [index] y [count] son su lugar en el grupo, para las esquinas segmentadas.
+ */
 @Composable
 fun MinicashOptionRow(
     title: String,
     subtitle: String?,
     icon: ImageVector,
     onClick: (() -> Unit)?,
+    index: Int = 0,
+    count: Int = 1,
     iconContainer: Color = MaterialTheme.colorScheme.secondaryContainer,
     iconTint: Color = MaterialTheme.colorScheme.onSecondaryContainer,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     enabled: Boolean = true,
     trailing: (@Composable () -> Unit)? = null
 ) {
-    val row: @Composable () -> Unit = {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ScallopedIcon(icon = icon, size = 40.dp, container = iconContainer, tint = iconTint)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (enabled) titleColor else titleColor.copy(alpha = 0.5f)
-                )
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            trailing?.invoke()
+    MinicashListRow(index = index, count = count, onClick = onClick, enabled = enabled) {
+        ScallopedIcon(icon = icon, size = MinicashListRowDefaults.IconSize, container = iconContainer, tint = iconTint)
+        androidx.compose.foundation.layout.Spacer(Modifier.width(MinicashListRowDefaults.IconTextGap))
+        MinicashRowText(
+            title = title,
+            subtitle = subtitle,
+            titleColor = if (enabled) titleColor else titleColor.copy(alpha = 0.5f)
+        )
+        if (trailing != null) {
+            androidx.compose.foundation.layout.Spacer(Modifier.width(12.dp))
+            trailing()
         }
-    }
-    if (onClick != null) {
-        val interactionSource = remember { MutableInteractionSource() }
-        Surface(
-            onClick = onClick,
-            enabled = enabled,
-            color = Color.Transparent,
-            interactionSource = interactionSource,
-            modifier = Modifier.bounceOnPress(interactionSource, pressedScale = 0.97f)
-        ) { row() }
-    } else {
-        row()
     }
 }
 
@@ -227,7 +203,7 @@ fun MinicashBackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Volver",
+                    contentDescription = stringResource(R.string.common_back),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -243,7 +219,7 @@ fun SettingsGearButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
-                    contentDescription = "Ajustes",
+                    contentDescription = stringResource(R.string.nav_settings),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -271,7 +247,7 @@ fun TabActionButton(
 /** Botón de Reportes de las barras superiores de las pestañas. */
 @Composable
 fun ReportsButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    TabActionButton(Icons.Outlined.BarChart, "Reportes", onClick, modifier)
+    TabActionButton(Icons.Outlined.BarChart, stringResource(R.string.nav_reports), onClick, modifier)
 }
 
 /** Reportes y Ajustes, juntos arriba a la derecha de todas las pestañas. */

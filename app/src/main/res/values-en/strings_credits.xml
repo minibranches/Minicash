@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="credit_form_edit">Edit installment purchase</string>
+    <string name="credit_delete">Delete credit</string>
+    <string name="credit_delete_text">Do you want to delete the record of \"%1$s\"? This action can’t be undone.</string>
+    <string name="credit_article">Item or service</string>
+    <string name="credit_article_hint">Name of the product or service</string>
+    <string name="credit_pick_institution">Select an institution</string>
+    <string name="credit_responsible_hint">Name of the person responsible (defaults to Me)</string>
+    <string name="credit_purchase_date">Purchase date: %1$s</string>
+    <string name="credit_cash_price">Cash price (optional)</string>
+    <string name="credit_months_other">Other</string>
+    <string name="credit_already_paid">Already paid</string>
+    <string name="credit_paid_range">0 to %1$d</string>
+    <string name="credit_total_term">Total term</string>
+    <string name="credit_monthly_amount">Monthly amount</string>
+    <string name="credit_the_institution">the institution</string>
+    <string name="credit_inherit_no_day">%1$s has no payment day. Set it in Settings › Cards and institutions or use a day of your own.</string>
+    <string name="credit_use_other_day">Use a different day for this purchase</string>
+    <string name="credit_form_new">New installment purchase</string>
+    <string name="credit_save_purchase">Save purchase</string>
+    <string name="credit_inherit_no_reminder">Uses the payment of %1$s: day %2$d, no reminder.</string>
+    <string name="credit_inherit_same_day">Uses the payment of %1$s: day %2$d, reminder on the same day.</string>
+    <string name="credit_months_short">%1$d mo</string>
+    <plurals name="credit_inherit_days_before">
+        <item quantity="one">Uses the payment of %1$s: day %2$d, reminder %3$d day before.</item>
+        <item quantity="other">Uses the payment of %1$s: day %2$d, reminder %3$d days before.</item>
+    </plurals>
+    <string name="credit_pay_day_label">Day of the month to pay (optional)</string>
+    <string name="credit_pay_day_hint">For example, 5</string>
+    <string name="credit_pay_day_invalid">Enter a day between 1 and 31</string>
+    <string name="credit_remind_me">Remind me</string>
+    <string name="credit_remind_none">No reminder</string>
+    <string name="credit_remind_none_text">You won’t get a reminder for this payment.</string>
+    <string name="credit_pay_day_note">If the month doesn’t have that day, the last one is used</string>
+    <string name="credit_remind_same">Same day</string>
+    <string name="credit_remind_same_text">You’ll get the reminder on the payment day.</string>
+    <plurals name="credit_remind_before">
+        <item quantity="one">%d day before</item>
+        <item quantity="other">%d days before</item>
+    </plurals>
+    <plurals name="credit_remind_before_text">
+        <item quantity="one">You’ll get the reminder %d day before the payment.</item>
+        <item quantity="other">You’ll get the reminder %d days before the payment.</item>
+    </plurals>
+    <string name="credit_filters_title">Credit filters</string>
+    <string name="credit_filter_institution">Bank / Institution</string>
+    <string name="credit_filter_month">Purchase month</string>
+    <string name="credit_empty_title">No active credits</string>
+    <string name="credit_empty_sub">You have no installment purchases pending payment.</string>
+    <string name="credit_settled">Settled</string>
+    <string name="credit_default_responsible">Me</string>
+    <string name="credit_pay_title">Pay toward %1$s</string>
+    <string name="credit_installment_line">%1$s • Installment %2$d of %3$d</string>
+    <string name="credit_create_expense">Create expense transaction</string>
+    <string name="credit_next_payment">next payment %1$s</string>
+    <string name="credit_settled_chip">✓ Settled</string>
+    <string name="credit_with_reminder">Payment reminder on</string>
+    <string name="credit_progress">%1$d of %2$d</string>
+    <string name="credit_pay_month">Pay month</string>
+    <string name="credit_total_paid">Total paid</string>
+    <string name="credit_institutions">Credit institutions</string>
+    <string name="credit_inst_empty_title">No institutions registered</string>
+    <string name="credit_inst_empty_sub">Add your cards or banks with the button below.</string>
+    <string name="credit_new_institution_btn">+ New institution</string>
+    <string name="credit_new_institution">New institution</string>
+    <string name="credit_institution_name">Institution name</string>
+    <string name="credit_institution_name_hint">Enter the institution name</string>
+    <string name="credit_color">Distinctive color</string>
+    <string name="credit_default_institution">Credit card</string>
+    <string name="credit_payment_note">Installment payment - %1$s (%2$d/%3$d)</string>
+    <string name="credit_debt_pending">Pending debt</string>
+    <plurals name="credit_monthly_active">
+        <item quantity="one">Monthly · %d active</item>
+        <item quantity="other">Monthly · %d active</item>
+    </plurals>
+</resources>

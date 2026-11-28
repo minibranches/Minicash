@@ -1,12 +1,14 @@
 package com.uramos.minicash
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.utils.applyRefreshRateLimit
 import com.uramos.minicash.widget.updateMinicashWidgets
 import androidx.compose.runtime.LaunchedEffect
 import android.view.WindowManager
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.SystemClock
 import com.uramos.minicash.data.util.shouldLock
 import com.uramos.minicash.ui.security.LockScreen
@@ -51,8 +53,8 @@ import kotlinx.coroutines.runBlocking
 /** Estado del bloqueo de la app: CHECKING solo dura el instante en que se lee si el bloqueo está activo. */
 private enum class LockStatus { CHECKING, LOCKED, UNLOCKED }
 
-// FragmentActivity (que ya es una ComponentActivity) es lo que necesita el diálogo biométrico del sistema
-class MainActivity : FragmentActivity() {
+// AppCompatActivity (que ya es una FragmentActivity) sirve al diálogo biométrico del sistema y al cambio de idioma por app
+class MainActivity : AppCompatActivity() {
 
     private var shortcutActionState by mutableStateOf<String?>(null)
     private var lockStatus by mutableStateOf(LockStatus.CHECKING)
@@ -224,7 +226,7 @@ class MainActivity : FragmentActivity() {
         showAppLockPrompt(
             activity = this,
             title = "Minicash",
-            subtitle = "Desbloquea para continuar",
+            subtitle = AppStrings.get(R.string.lock_prompt_sub),
             onSuccess = {
                 promptShowing = false
                 lockStatus = LockStatus.UNLOCKED

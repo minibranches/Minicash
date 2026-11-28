@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashTimePickerDialog
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -65,7 +68,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.uramos.minicash.ui.components.MinicashAlertDialog
 import com.uramos.minicash.ui.components.MinicashFilledButton
-import com.uramos.minicash.ui.components.MinicashOptionGroup
+import com.uramos.minicash.ui.components.MinicashRowGroup
 import com.uramos.minicash.ui.components.MinicashOptionRow
 import com.uramos.minicash.ui.components.MinicashSectionLabel
 import com.uramos.minicash.ui.components.MinicashSectionNote
@@ -79,7 +82,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val WIPE_CONFIRMATION_WORD = "BORRAR"
+private val WIPE_CONFIRMATION_WORD: String get() = AppStrings.get(R.string.backup_wipe_word)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,7 +140,7 @@ fun BackupSettingsScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Copias de seguridad",
+                title = stringResource(R.string.set_backups),
                 onBack = onBackClick,
                 scrollBehavior = scrollBehavior
             )
@@ -149,45 +152,46 @@ fun BackupSettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
-            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
+            contentPadding = PaddingValues(horizontal = spacing.screen, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
         ) {
-            item { MinicashSectionLabel("Copia de seguridad") }
+            item { MinicashSectionLabel(stringResource(R.string.backup_section_backup)) }
             item {
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Crear copia de seguridad",
-                        subtitle = "Cuentas, categorías, movimientos, gastos fijos y créditos",
+                        title = stringResource(R.string.backup_create),
+                        subtitle = stringResource(R.string.backup_create_sub),
                         icon = Icons.Default.CloudUpload,
+                        index = 0, count = 2,
                         onClick = {
                             val dateStr = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date())
                             createDocumentLauncher.launch("minicash_backup_$dateStr.json")
                         }
                     )
                     MinicashOptionRow(
-                        title = "Restaurar copia",
-                        subtitle = "Reemplaza los datos actuales con los de un archivo",
+                        title = stringResource(R.string.backup_restore),
+                        subtitle = stringResource(R.string.backup_restore_sub),
                         icon = Icons.Default.CloudDownload,
+                        index = 1, count = 2,
                         onClick = { openDocumentLauncher.launch(arrayOf("application/json", "*/*")) }
                     )
                 }
             }
             item {
                 MinicashSectionNote(
-                    "La copia es un archivo JSON completo de la app: cuentas, categorías, movimientos, presupuesto, " +
-                        "créditos con sus instituciones y tus ajustes. Restaurar reemplaza todo lo que hay ahora; " +
-                        "antes se guarda una copia interna de lo actual."
+                    stringResource(R.string.backup_note)
                 )
             }
 
-            item { MinicashSectionLabel("Respaldo automático") }
+            item { MinicashSectionLabel(stringResource(R.string.backup_section_auto)) }
             item {
                 val timeText = "${state.autoBackupHour.toString().padStart(2, '0')}:${state.autoBackupMinute.toString().padStart(2, '0')}"
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Respaldo diario",
-                        subtitle = if (state.autoBackupEnabled) "Programado todos los días a las $timeText hrs" else "Desactivado",
+                        title = stringResource(R.string.backup_daily),
+                        subtitle = if (state.autoBackupEnabled) stringResource(R.string.backup_daily_on, timeText) else stringResource(R.string.backup_daily_off),
                         icon = Icons.Default.AutoMode,
+                        index = 0, count = if (state.autoBackupEnabled) 2 else 1,
                         onClick = {
                             haptics.click()
                             viewModel.setAutoBackupEnabled(context, !state.autoBackupEnabled)
@@ -207,9 +211,10 @@ fun BackupSettingsScreen(
                     )
                     AnimatedVisibility(visible = state.autoBackupEnabled) {
                         MinicashOptionRow(
-                            title = "Hora del respaldo",
-                            subtitle = "$timeText hrs",
+                            title = stringResource(R.string.backup_time),
+                            subtitle = stringResource(R.string.set_hours, timeText),
                             icon = Icons.Default.Schedule,
+                            index = 1, count = 2,
                             onClick = { showTimePickerDialog = true }
                         )
                     }
@@ -218,38 +223,38 @@ fun BackupSettingsScreen(
             item {
                 val lastBackupText = remember(state.lastAutoBackupTimestamp) {
                     if (state.lastAutoBackupTimestamp > 0) {
-                        val formatted = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date(state.lastAutoBackupTimestamp))
-                        "Último respaldo completado: $formatted."
+                        val formatted = com.uramos.minicash.ui.utils.appDateFormat("dd/MM/yyyy HH:mm", "MM/dd/yyyy HH:mm").format(Date(state.lastAutoBackupTimestamp))
+                        AppStrings.get(R.string.backup_last, formatted)
                     } else {
-                        "Aún no se ha realizado ningún respaldo automático."
+                        AppStrings.get(R.string.backup_never)
                     }
                 }
                 MinicashSectionNote(
-                    "Las copias automáticas se guardan en el almacenamiento interno de la app y se conservan las 3 más recientes. $lastBackupText"
+                    stringResource(R.string.backup_auto_note, lastBackupText)
                 )
             }
 
-            item { MinicashSectionLabel("Hojas de cálculo") }
+            item { MinicashSectionLabel(stringResource(R.string.backup_section_sheets)) }
             item {
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Exportar a CSV",
-                        subtitle = "Guarda cada movimiento en un archivo para hojas de cálculo",
+                        title = stringResource(R.string.backup_csv),
+                        subtitle = stringResource(R.string.backup_csv_sub),
                         icon = Icons.Default.TableChart,
                         onClick = { showCsvRangeDialog = true }
                     )
                 }
             }
             item {
-                MinicashSectionNote("El CSV solo lleva movimientos y sirve para analizarlos fuera de la app. Para respaldar todo usa la copia de seguridad.")
+                MinicashSectionNote(stringResource(R.string.backup_csv_note))
             }
 
-            item { MinicashSectionLabel("Zona de peligro", color = MaterialTheme.colorScheme.error) }
+            item { MinicashSectionLabel(stringResource(R.string.backup_section_danger), color = MaterialTheme.colorScheme.error) }
             item {
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Borrar todos los datos",
-                        subtitle = "Elimina cuentas, movimientos, presupuesto y créditos",
+                        title = stringResource(R.string.backup_wipe),
+                        subtitle = stringResource(R.string.backup_wipe_sub),
                         icon = Icons.Default.DeleteForever,
                         iconContainer = MaterialTheme.colorScheme.errorContainer,
                         iconTint = MaterialTheme.colorScheme.onErrorContainer,
@@ -259,7 +264,7 @@ fun BackupSettingsScreen(
                 }
             }
             item {
-                MinicashSectionNote("Antes de borrar se guarda una copia interna, por si necesitas recuperar los datos.")
+                MinicashSectionNote(stringResource(R.string.backup_wipe_note))
                 androidx.compose.foundation.layout.Spacer(Modifier.size(96.dp))
             }
         }
@@ -270,7 +275,7 @@ fun BackupSettingsScreen(
 
         MinicashAlertDialog(
             onDismissRequest = { if (!isRestoring) pendingRestoreUri = null },
-            title = { Text("¿Restaurar copia de seguridad?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.backup_restore_title), fontWeight = FontWeight.Bold) },
             text = {
                 if (isRestoring) {
                     Column(
@@ -281,10 +286,10 @@ fun BackupSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         MinicashLoading()
-                        Text("Restaurando datos...", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.backup_restoring), style = MaterialTheme.typography.bodyMedium)
                     }
                 } else {
-                    Text("Esta acción reemplazará los datos actuales de la aplicación con la información del archivo de respaldo. Antes de restaurar se guarda automáticamente una copia de los datos actuales. ¿Deseas proceder?")
+                    Text(stringResource(R.string.backup_restore_text))
                 }
             },
             confirmButton = {
@@ -299,12 +304,12 @@ fun BackupSettingsScreen(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
-                    ) { Text("Restaurar", fontWeight = FontWeight.Bold) }
+                    ) { Text(stringResource(R.string.backup_restore_btn), fontWeight = FontWeight.Bold) }
                 }
             },
             dismissButton = {
                 if (!isRestoring) {
-                    MinicashTextButton(onClick = { pendingRestoreUri = null }) { Text("Cancelar") }
+                    MinicashTextButton(onClick = { pendingRestoreUri = null }) { Text(stringResource(R.string.common_cancel)) }
                 }
             },
             shape = MinicashShapes.Hero
@@ -315,14 +320,14 @@ fun BackupSettingsScreen(
         var typed by rememberSaveable { mutableStateOf("") }
         MinicashAlertDialog(
             onDismissRequest = { showWipeDialog = false },
-            title = { Text("¿Borrar todos los datos?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.backup_wipe_title), fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Se eliminarán cuentas, categorías, movimientos, presupuesto y créditos. Se guarda una copia interna antes de borrar.")
+                    Text(stringResource(R.string.backup_wipe_text))
                     OutlinedTextField(
                         value = typed,
                         onValueChange = { typed = it },
-                        label = { Text("Escribe $WIPE_CONFIRMATION_WORD para confirmar") },
+                        label = { Text(stringResource(R.string.backup_wipe_confirm, WIPE_CONFIRMATION_WORD)) },
                         singleLine = true,
                         shape = MinicashShapes.Input,
                         keyboardOptions = KeyboardOptions.Default,
@@ -342,16 +347,16 @@ fun BackupSettingsScreen(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("Borrar todo", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.backup_wipe_btn), fontWeight = FontWeight.Bold) }
             },
-            dismissButton = { MinicashTextButton(onClick = { showWipeDialog = false }) { Text("Cancelar") } },
+            dismissButton = { MinicashTextButton(onClick = { showWipeDialog = false }) { Text(stringResource(R.string.common_cancel)) } },
             shape = MinicashShapes.Hero
         )
     }
 
     if (showTimePickerDialog) {
         MinicashTimePickerDialog(
-            title = "Hora del respaldo automático",
+            title = stringResource(R.string.backup_auto_time_title),
             initialHour = state.autoBackupHour,
             initialMinute = state.autoBackupMinute,
             onConfirm = { hour, minute ->
@@ -368,7 +373,7 @@ fun BackupSettingsScreen(
 private fun CsvRangeDialog(onDismiss: () -> Unit, onPick: (CsvRange) -> Unit) {
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("¿Qué movimientos exportar?", fontWeight = FontWeight.SemiBold) },
+        title = { Text(stringResource(R.string.backup_csv_which), fontWeight = FontWeight.SemiBold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 CsvRange.entries.forEachIndexed { index, range ->
@@ -380,7 +385,7 @@ private fun CsvRangeDialog(onDismiss: () -> Unit, onPick: (CsvRange) -> Unit) {
                     ) {
                         Text(
                             text = range.label,
-                            style = MaterialTheme.typography.titleSmall,
+                            style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
                         )
                     }
@@ -388,6 +393,6 @@ private fun CsvRangeDialog(onDismiss: () -> Unit, onPick: (CsvRange) -> Unit) {
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) } }
     )
 }

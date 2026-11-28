@@ -2,6 +2,8 @@ package com.uramos.minicash.ui.screens.onboarding
 
 import com.uramos.minicash.ui.utils.toCents
 import androidx.lifecycle.ViewModel
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.AppStrings
 import androidx.lifecycle.viewModelScope
 import com.uramos.minicash.data.local.dao.AccountDao
 import com.uramos.minicash.data.local.dao.CategoryDao
@@ -88,7 +90,7 @@ class OnboardingViewModel(
             val balanceCents = balanceDouble.toCents()
             accountDao.insertAccount(
                 AccountEntity(
-                    name = state.accountName.trim().ifBlank { "Efectivo" },
+                    name = state.accountName.trim().ifBlank { AppStrings.get(R.string.default_account_name) },
                     type = state.accountType,
                     balance = balanceCents,
                     colorHex = "#1A73E8",
@@ -100,9 +102,9 @@ class OnboardingViewModel(
 
             // 2. Guardar categorías de gasto seleccionadas (exclusivamente si el usuario eligió alguna)
             if (state.selectedExpenseCategories.isNotEmpty()) {
-                val expenseEntities = state.selectedExpenseCategories.map { catName ->
+                val expenseEntities = state.selectedExpenseCategories.mapNotNull { key -> StarterCategories.nameRes(key) }.map { nameRes ->
                     CategoryEntity(
-                        name = catName,
+                        name = AppStrings.get(nameRes),
                         type = TransactionType.EXPENSE,
                         colorHex = "#EF5350",
                         iconName = "category"
@@ -113,9 +115,9 @@ class OnboardingViewModel(
 
             // 3. Guardar categorías de ingreso seleccionadas (exclusivamente si el usuario eligió alguna)
             if (state.selectedIncomeCategories.isNotEmpty()) {
-                val incomeEntities = state.selectedIncomeCategories.map { catName ->
+                val incomeEntities = state.selectedIncomeCategories.mapNotNull { key -> StarterCategories.nameRes(key) }.map { nameRes ->
                     CategoryEntity(
-                        name = catName,
+                        name = AppStrings.get(nameRes),
                         type = TransactionType.INCOME,
                         colorHex = "#26A69A",
                         iconName = "category"
@@ -127,7 +129,7 @@ class OnboardingViewModel(
             // 4. Guardar preferencia de sesión terminada
             userPreferences.saveOnboardingState(
                 completed = true,
-                name = state.userName.trim().ifBlank { "Usuario" }
+                name = state.userName.trim().ifBlank { AppStrings.get(R.string.default_user_name) }
             )
 
             onSuccess()

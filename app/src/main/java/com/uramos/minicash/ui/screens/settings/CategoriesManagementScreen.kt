@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.minicashAnimateItem
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
@@ -16,6 +18,9 @@ import com.uramos.minicash.ui.components.MinicashTextButton
 import com.uramos.minicash.ui.components.MinicashFilledButton
 import com.uramos.minicash.ui.components.MinicashIconButton
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.text.style.TextOverflow
+import com.uramos.minicash.ui.components.ScallopedIcon
+import com.uramos.minicash.ui.components.MinicashListRowDefaults
 
 
 import androidx.compose.material3.MaterialShapes
@@ -86,7 +91,7 @@ fun CategoriesManagementScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Categorías",
+                title = stringResource(R.string.set_categories),
                 onBack = onNavigateBack,
                 scrollBehavior = scrollBehavior,
                 actions = {
@@ -98,7 +103,7 @@ fun CategoriesManagementScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Nueva categoría"
+                            contentDescription = stringResource(R.string.tx_new_category)
                         )
                     }
                 }
@@ -116,13 +121,13 @@ fun CategoriesManagementScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = spacing.standard, vertical = spacing.extraSmall),
-                placeholder = { Text("Buscar categorías...") },
+                    .padding(horizontal = spacing.screen, vertical = spacing.extraSmall),
+                placeholder = { Text(stringResource(R.string.cat_search)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         MinicashIconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Limpiar búsqueda")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.tx_clear_search))
                         }
                     }
                 },
@@ -136,21 +141,21 @@ fun CategoriesManagementScreen(
 
             // Selector Segmentado de Gastos vs Ingresos
             MinicashPillTabs(
-                labels = listOf("Gastos (${state.expenseCategories.size})", "Ingresos (${state.incomeCategories.size})"),
+                labels = listOf(stringResource(R.string.ob_tab_expenses, state.expenseCategories.size), stringResource(R.string.ob_tab_income, state.incomeCategories.size)),
                 selectedIndex = selectedTab,
                 onSelect = {
                     haptics.tick()
                     selectedTab = it
                 },
-                modifier = Modifier.padding(horizontal = spacing.standard, vertical = spacing.small)
+                modifier = Modifier.padding(horizontal = spacing.screen, vertical = spacing.small)
             )
 
             // Lista de Categorías
             if (filteredCategories.isEmpty()) {
                 MinicashEmptyState(
                     icon = Icons.Default.Category,
-                    title = "Sin categorías",
-                    subtitle = if (searchQuery.isNotBlank()) "No se encontraron categorías con '$searchQuery'." else "Organiza tus movimientos creando una nueva categoría.",
+                    title = stringResource(R.string.cat_empty_title),
+                    subtitle = if (searchQuery.isNotBlank()) stringResource(R.string.cat_empty_search, searchQuery) else stringResource(R.string.cat_empty_sub),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = spacing.hero),
@@ -163,7 +168,7 @@ fun CategoriesManagementScreen(
                         ) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Nueva categoría")
+                            Text(stringResource(R.string.tx_new_category))
                         }
                     }
                 )
@@ -177,7 +182,7 @@ fun CategoriesManagementScreen(
                         end = spacing.screen,
                         bottom = 120.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(MinicashListRowDefaults.RowGap)
                 ) {
                     itemsIndexed(filteredCategories, key = { _, cat -> cat.id }) { index, category ->
                         val itemShape = rememberSegmentedShape(index = index, count = filteredCategories.size)
@@ -204,7 +209,8 @@ fun CategoriesManagementScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(spacing.standard),
+                                    .heightIn(min = MinicashListRowDefaults.MinHeight)
+                                    .padding(horizontal = MinicashListRowDefaults.HorizontalPadding, vertical = MinicashListRowDefaults.VerticalPadding),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -212,31 +218,25 @@ fun CategoriesManagementScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Surface(
-                                        shape = categoryIconShape,
-                                        color = containerColor,
-                                        modifier = Modifier.size(44.dp)
-                                    ) {
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Icon(
-                                                imageVector = icon,
-                                                contentDescription = null,
-                                                tint = contentColor,
-                                                modifier = Modifier.size(22.dp)
-                                            )
-                                        }
-                                    }
+                                    ScallopedIcon(
+                                        icon = icon,
+                                        size = MinicashListRowDefaults.IconSize,
+                                        container = containerColor,
+                                        tint = contentColor
+                                    )
                                     Spacer(modifier = Modifier.width(spacing.medium))
-                                    Column(verticalArrangement = Arrangement.spacedBy(spacing.extraSmall)) {
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = category.name,
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
-                                            text = if (isExpense) "Categoría de gasto" else "Categoría de ingreso",
-                                            style = MaterialTheme.typography.labelSmall,
+                                            text = if (isExpense) stringResource(R.string.cat_expense_kind) else stringResource(R.string.cat_income_kind),
+                                            style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
@@ -251,7 +251,7 @@ fun CategoriesManagementScreen(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Eliminar categoría",
+                                            contentDescription = stringResource(R.string.cat_delete_cd),
                                             tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -287,7 +287,7 @@ fun CategoriesManagementScreen(
                                 )
                                 Spacer(modifier = Modifier.width(spacing.small))
                                 Text(
-                                    text = "Nueva categoría",
+                                    text = stringResource(R.string.tx_new_category),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
@@ -327,9 +327,9 @@ fun CategoriesManagementScreen(
         val cat = categoryToDelete!!
         MinicashAlertDialog(
             onDismissRequest = { categoryToDelete = null },
-            title = { Text("¿Eliminar categoría?", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.cat_delete_title), fontWeight = FontWeight.Bold) },
             text = {
-                Text("Esta acción eliminará la categoría '${cat.name}'. Los movimientos asociados no se borrarán y pasarán a estar sin categoría asignada.")
+                Text(stringResource(R.string.cat_delete_text, cat.name))
             },
             confirmButton = {
                 MinicashFilledButton(
@@ -343,12 +343,12 @@ fun CategoriesManagementScreen(
                         contentColor = MaterialTheme.colorScheme.onError
                     ),
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 MinicashTextButton(onClick = { categoryToDelete = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
             shape = MinicashShapes.Card

@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.home
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import com.uramos.minicash.data.util.removeTransactions
 import com.uramos.minicash.ui.screens.account.transactionsOfAccount
 import kotlinx.coroutines.flow.map
@@ -188,7 +192,7 @@ class HomeViewModel(
                 .map { (catEntity, txList) ->
                     val catTotal = txList.sumOf { it.amount }
                     CategoryExpenseStat(
-                        categoryName = catEntity?.name ?: "Otros",
+                        categoryName = catEntity?.name ?: AppStrings.get(R.string.cat_others),
                         totalAmount = catTotal,
                         percentage = catTotal.toFloat() / totalMonthlyExpense.toFloat(),
                         colorHex = catEntity?.colorHex,
@@ -211,7 +215,7 @@ class HomeViewModel(
                 .map { (catEntity, txList) ->
                     val catTotal = txList.sumOf { it.amount }
                     CategoryExpenseStat(
-                        categoryName = catEntity?.name ?: "Otros",
+                        categoryName = catEntity?.name ?: AppStrings.get(R.string.cat_others),
                         totalAmount = catTotal,
                         percentage = catTotal.toFloat() / totalMonthlyIncome.toFloat(),
                         colorHex = catEntity?.colorHex,
@@ -252,10 +256,10 @@ class HomeViewModel(
             val expenses = transactions.filter { it.type == TransactionType.EXPENSE }
             PreviousMonthExpense(
                 totalByCategory = expenses
-                    .groupBy { tx -> tx.categoryId?.let { names[it] } ?: "Otros" }
+                    .groupBy { tx -> tx.categoryId?.let { names[it] } ?: AppStrings.get(R.string.cat_others) }
                     .mapValues { (_, list) -> list.sumOf { it.amount } },
                 total = expenses.sumOf { it.amount },
-                monthLabel = previous.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.forLanguageTag("es-MX"))
+                monthLabel = previous.month.getDisplayName(java.time.format.TextStyle.FULL, appLocale())
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PreviousMonthExpense())

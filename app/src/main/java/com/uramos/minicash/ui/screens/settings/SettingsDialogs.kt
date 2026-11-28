@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashFilterChip
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
@@ -56,7 +58,7 @@ fun ColorAndIconSelector(
     val color = MinicashColorUtils.parseHexColor(selectedColorHex, MaterialTheme.colorScheme.primary)
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.credit_color), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
         MinicashColorPicker(
             selectedColorHex = selectedColorHex,
             onColorSelected = onColorSelected
@@ -64,7 +66,7 @@ fun ColorAndIconSelector(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        Text("Icono", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.dlg_icon), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
         Surface(
             onClick = { showIconSheet = true },
             shape = CircleShape,
@@ -95,7 +97,7 @@ fun ColorAndIconSelector(
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Seleccionar icono",
+                    text = stringResource(R.string.icon_select),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
@@ -151,7 +153,7 @@ fun EditAccountSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Editar cuenta",
+                text = stringResource(R.string.dlg_edit_account),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -159,8 +161,8 @@ fun EditAccountSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nombre de la cuenta") },
-                placeholder = { Text("Escribe el nombre de la cuenta") },
+                label = { Text(stringResource(R.string.ob_account_name_hint)) },
+                placeholder = { Text(stringResource(R.string.dlg_account_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -169,15 +171,15 @@ fun EditAccountSheet(
             OutlinedTextField(
                 value = balanceText,
                 onValueChange = { balanceText = it },
-                label = { Text("Saldo actual") },
-                placeholder = { Text("Ingresa el saldo actual") },
+                label = { Text(stringResource(R.string.dlg_current_balance)) },
+                placeholder = { Text(stringResource(R.string.dlg_current_balance_hint)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Tipo de cuenta", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.dlg_account_type), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AccountType.entries) { type ->
                     MinicashFilterChip(
@@ -205,16 +207,16 @@ fun EditAccountSheet(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Eliminar cuenta")
+                Text(stringResource(R.string.dlg_delete_account))
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
+                MinicashTonalButton(text = stringResource(R.string.common_cancel), onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Guardar",
+                    text = stringResource(R.string.common_save),
                     onClick = {
                         val parsedDouble = balanceText.toDoubleOrNull() ?: 0.0
                         val balanceCents = parsedDouble.toCents()
@@ -279,7 +281,7 @@ fun EditCategorySheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Editar categoría",
+                text = stringResource(R.string.dlg_edit_category),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -287,8 +289,8 @@ fun EditCategorySheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nombre de la categoría") },
-                placeholder = { Text("Escribe el nombre de la categoría") },
+                label = { Text(stringResource(R.string.tx_category_name)) },
+                placeholder = { Text(stringResource(R.string.dlg_category_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -305,9 +307,9 @@ fun EditCategorySheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
+                MinicashTonalButton(text = stringResource(R.string.common_cancel), onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Guardar",
+                    text = stringResource(R.string.common_save),
                     onClick = { onConfirm(name.trim(), selectedColorHex, selectedIconName) },
                     enabled = name.isNotBlank(),
                     modifier = Modifier.weight(1f)
@@ -359,7 +361,7 @@ fun AddAccountSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nueva cuenta",
+                text = stringResource(R.string.acc_new_cd),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -367,8 +369,8 @@ fun AddAccountSheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nombre de la cuenta") },
-                placeholder = { Text("Escribe el nombre de la cuenta") },
+                label = { Text(stringResource(R.string.ob_account_name_hint)) },
+                placeholder = { Text(stringResource(R.string.dlg_account_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
@@ -377,15 +379,15 @@ fun AddAccountSheet(
             OutlinedTextField(
                 value = balanceText,
                 onValueChange = { balanceText = it },
-                label = { Text("Saldo inicial") },
-                placeholder = { Text("Ingresa el saldo inicial") },
+                label = { Text(stringResource(R.string.dlg_initial_balance)) },
+                placeholder = { Text(stringResource(R.string.dlg_initial_balance_hint)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Tipo de cuenta", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.dlg_account_type), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AccountType.entries) { type ->
                     MinicashFilterChip(
@@ -406,9 +408,9 @@ fun AddAccountSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
+                MinicashTonalButton(text = stringResource(R.string.common_cancel), onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Crear",
+                    text = stringResource(R.string.common_create),
                     onClick = {
                         val bal = balanceText.toDoubleOrNull() ?: 0.0
                         onConfirm(name.trim(), selectedType, bal, selectedColorHex, selectedIconName)
@@ -461,7 +463,7 @@ fun AddCategorySheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nueva categoría",
+                text = stringResource(R.string.tx_new_category),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -469,23 +471,23 @@ fun AddCategorySheet(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Nombre de categoría") },
-                placeholder = { Text("Escribe el nombre de la categoría") },
+                label = { Text(stringResource(R.string.dlg_category_name)) },
+                placeholder = { Text(stringResource(R.string.dlg_category_name_hint)) },
                 singleLine = true,
                 shape = MinicashShapes.Input,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Text("Aplica para", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.dlg_applies_to), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MinicashFilterChip(
                     selected = selectedType == TransactionType.EXPENSE,
                     onClick = { selectedType = TransactionType.EXPENSE },
-                    label = { Text("Gasto") })
+                    label = { Text(stringResource(R.string.tx_type_expense)) })
                 MinicashFilterChip(
                     selected = selectedType == TransactionType.INCOME,
                     onClick = { selectedType = TransactionType.INCOME },
-                    label = { Text("Ingreso") })
+                    label = { Text(stringResource(R.string.tx_type_income)) })
             }
 
             ColorAndIconSelector(
@@ -499,9 +501,9 @@ fun AddCategorySheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MinicashTonalButton(text = "Cancelar", onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
+                MinicashTonalButton(text = stringResource(R.string.common_cancel), onClick = guard::requestDismiss, modifier = Modifier.weight(1f))
                 MinicashButton(
-                    text = "Guardar",
+                    text = stringResource(R.string.common_save),
                     onClick = { onConfirm(name.trim(), selectedType, selectedColorHex, selectedIconName) },
                     enabled = name.isNotBlank(),
                     modifier = Modifier.weight(1f)

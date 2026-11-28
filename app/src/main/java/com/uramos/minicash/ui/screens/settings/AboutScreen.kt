@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.screens.settings
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.plusTop
@@ -41,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.uramos.minicash.ui.components.MinicashLogo
-import com.uramos.minicash.ui.components.MinicashOptionGroup
+import com.uramos.minicash.ui.components.MinicashRowGroup
 import com.uramos.minicash.ui.components.MinicashOptionRow
 import com.uramos.minicash.ui.components.MinicashSectionLabel
 import com.uramos.minicash.ui.components.MinicashSubScreenTopBar
@@ -63,7 +66,7 @@ fun AboutScreen(onBackClick: () -> Unit) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
-            MinicashSubScreenTopBar(title = "Acerca de", onBack = onBackClick, scrollBehavior = scrollBehavior)
+            MinicashSubScreenTopBar(title = stringResource(R.string.set_group_about), onBack = onBackClick, scrollBehavior = scrollBehavior)
         }
     ) { paddingValues ->
         LazyColumn(
@@ -72,7 +75,7 @@ fun AboutScreen(onBackClick: () -> Unit) {
                 .fillMaxSize()
                 .padding(paddingValues.withoutTop())
                 .underHeaderBlur(paddingValues.calculateTopPadding(), bottomBand = 64.dp, listState = fadeListState),
-            contentPadding = PaddingValues(horizontal = spacing.standard, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
+            contentPadding = PaddingValues(horizontal = spacing.screen, vertical = spacing.small).plusTop(paddingValues.calculateTopPadding()),
             verticalArrangement = Arrangement.spacedBy(spacing.small)
         ) {
             item {
@@ -97,14 +100,14 @@ fun AboutScreen(onBackClick: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Finanzas personales, locales y sin cuentas",
+                        text = stringResource(R.string.set_about_tagline),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                     Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                         Text(
-                            text = "Versión $versionName",
+                            text = stringResource(R.string.set_about_version, versionName),
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
                         )
@@ -112,11 +115,11 @@ fun AboutScreen(onBackClick: () -> Unit) {
                 }
             }
 
-            item { MinicashSectionLabel("Conectar") }
+            item { MinicashSectionLabel(stringResource(R.string.set_about_connect)) }
             item {
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Código en GitHub",
+                        title = stringResource(R.string.set_about_github),
                         subtitle = "minibranches/minicash",
                         icon = Icons.Default.Code,
                         onClick = { openLink(context, REPOSITORY_URL) }
@@ -124,12 +127,12 @@ fun AboutScreen(onBackClick: () -> Unit) {
                 }
             }
 
-            item { MinicashSectionLabel("Compartir") }
+            item { MinicashSectionLabel(stringResource(R.string.set_about_share)) }
             item {
-                MinicashOptionGroup {
+                MinicashRowGroup {
                     MinicashOptionRow(
-                        title = "Compartir Minicash",
-                        subtitle = "Envía el instalador de esta versión a otra persona",
+                        title = stringResource(R.string.set_about_share_app),
+                        subtitle = stringResource(R.string.set_about_share_sub),
                         icon = Icons.Default.Share,
                         onClick = { shareApk(context, versionName) }
                     )
@@ -163,6 +166,6 @@ private fun shareApk(context: Context, versionName: String) {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(send, "Compartir Minicash").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent.createChooser(send, AppStrings.get(R.string.set_about_share_app)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 }

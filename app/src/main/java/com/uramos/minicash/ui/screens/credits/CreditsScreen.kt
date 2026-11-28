@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.credits
 
+import androidx.compose.ui.res.pluralStringResource
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -140,14 +146,14 @@ fun CreditsScreen(
             onDismissRequest = { creditToDelete = null },
             title = {
                 Text(
-                    text = "Eliminar crédito",
+                    text = stringResource(R.string.credit_delete),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Text(
-                    text = "¿Deseas eliminar el registro de \"${targetCredit.article}\"? Esta acción no se puede deshacer.",
+                    text = stringResource(R.string.credit_delete_text, targetCredit.article),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -162,12 +168,12 @@ fun CreditsScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Eliminar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 MinicashTextButton(onClick = { creditToDelete = null }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.common_cancel))
                 }
             },
             shape = MinicashShapes.Hero,
@@ -189,7 +195,7 @@ fun CreditsScreen(
                                         containerColor = Color.Transparent
                                     ),
                                     navigationIcon = { onBack?.let { MinicashBackButton(onClick = it) } },
-                                    title = { Text("Créditos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
+                                    title = { Text(stringResource(R.string.nav_credits), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                                     actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
                                 )
             },
@@ -204,13 +210,13 @@ fun CreditsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StatPillMoney(
-                            label = "Deuda pendiente",
+                            label = stringResource(R.string.credit_debt_pending),
                             amountCents = state.summary.totalPendingDebt,
                             type = MoneyDisplayType.NEUTRAL,
                             modifier = Modifier.weight(1f)
                         )
                         StatPillMoney(
-                            label = "Mensual · ${state.summary.activeCreditsCount} activos",
+                            label = pluralStringResource(R.plurals.credit_monthly_active, state.summary.activeCreditsCount, state.summary.activeCreditsCount),
                             amountCents = state.summary.monthlyPaymentCommitment,
                             type = MoneyDisplayType.NEUTRAL,
                             modifier = Modifier.weight(1f)
@@ -229,7 +235,7 @@ fun CreditsScreen(
                                 haptics.tick()
                                 viewModel.clearFilters()
                             },
-                            contentDescription = "Filtros de créditos"
+                            contentDescription = stringResource(R.string.credit_filters_title)
                         )
                     }
                 }
@@ -248,8 +254,8 @@ fun CreditsScreen(
                     item(key = "credits_empty", span = { GridItemSpan(maxLineSpan) }) {
                         MinicashEmptyState(
                             icon = Icons.Default.CreditCard,
-                            title = "Sin créditos activos",
-                            subtitle = "No tienes compras a meses pendientes de pago.",
+                            title = stringResource(R.string.credit_empty_title),
+                            subtitle = stringResource(R.string.credit_empty_sub),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(top = spacing.large)
@@ -268,7 +274,7 @@ fun CreditsScreen(
                 if (state.settledCredits.isNotEmpty()) {
                     item(key = "credits_settled_header", span = { GridItemSpan(maxLineSpan) }) {
                         CollapsibleSectionHeader(
-                            title = "Liquidados",
+                            title = stringResource(R.string.credit_settled),
                             count = state.settledCredits.size,
                             expanded = settledExpanded,
                             onToggle = {
@@ -339,7 +345,7 @@ fun CreditsScreen(
                     editing.copy(
                         article = v.article,
                         institution = v.institution,
-                        responsible = v.responsible.ifBlank { "Yo" },
+                        responsible = v.responsible.ifBlank { AppStrings.get(R.string.credit_default_responsible) },
                         purchaseDate = v.purchaseDate,
                         paidInstallments = v.paidInstallments.coerceIn(0, v.totalInstallments),
                         totalInstallments = v.totalInstallments,
@@ -391,7 +397,7 @@ fun ConfirmCreditPaymentDialog(
 
     MinicashAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Abonar a ${credit.article}", fontWeight = FontWeight.Bold) },
+        title = { Text(stringResource(R.string.credit_pay_title, credit.article), fontWeight = FontWeight.Bold) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Card(
@@ -406,7 +412,7 @@ fun ConfirmCreditPaymentDialog(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "${credit.institution} • Mensualidad $nextInstallment de ${credit.totalInstallments}",
+                            text = stringResource(R.string.credit_installment_line, credit.institution, nextInstallment, credit.totalInstallments),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -428,7 +434,7 @@ fun ConfirmCreditPaymentDialog(
                         onCheckedChange = { createExpenseTransaction = it }
                     )
                     Text(
-                        text = "Crear movimiento de gasto",
+                        text = stringResource(R.string.credit_create_expense),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -438,11 +444,11 @@ fun ConfirmCreditPaymentDialog(
             MinicashFilledButton(
                 onClick = { onConfirm(createExpenseTransaction) },
             ) {
-                Text("Confirmar", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.common_confirm), fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
-            MinicashTextButton(onClick = onDismiss) { Text("Cancelar") }
+            MinicashTextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
         shape = MinicashShapes.Hero
     )
@@ -478,19 +484,19 @@ fun CreditItemCard(
     val nextPaymentLabel = remember(paymentDay, isCompleted) {
         paymentDay?.takeIf { !isCompleted }?.let { day ->
             val next = com.uramos.minicash.data.util.PaymentSchedule.nextPayment(day, java.time.LocalDate.now())
-            SimpleDateFormat("d MMM", Locale.forLanguageTag("es-MX"))
+            appDateFormat("d MMM", "MMM d")
                 .format(Date.from(next.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()))
         }
     }
     val purchaseLabel = remember(credit.purchaseDate) {
-        SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(credit.purchaseDate)
+        appDateFormat("d MMM yyyy", "MMM d, yyyy").format(credit.purchaseDate)
     }
     val subtitle = if (isCompleted) {
         "${credit.institution} • $purchaseLabel"
     } else {
         buildString {
             append(credit.institution)
-            nextPaymentLabel?.let { append(" • próximo pago ").append(it) }
+            nextPaymentLabel?.let { append(" • ").append(AppStrings.get(R.string.credit_next_payment, it)) }
         }
     }
 
@@ -535,7 +541,7 @@ fun CreditItemCard(
                 } else {
                     Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceContainerHighest) {
                         Text(
-                            text = "✓ Liquidado",
+                            text = stringResource(R.string.credit_settled_chip),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -555,7 +561,7 @@ fun CreditItemCard(
                 if (reminderDays != null && nextPaymentLabel != null) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "Con aviso de pago",
+                        contentDescription = stringResource(R.string.credit_with_reminder),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(12.dp)
                     )
@@ -579,7 +585,7 @@ fun CreditItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${credit.paidInstallments} de ${credit.totalInstallments}",
+                        text = stringResource(R.string.credit_progress, credit.paidInstallments, credit.totalInstallments),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -596,7 +602,7 @@ fun CreditItemCard(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = spacing.medium, vertical = spacing.extraSmall)
                 ) {
-                    Text("Pagar mes")
+                    Text(stringResource(R.string.credit_pay_month))
                 }
             } else {
                 Row(
@@ -605,7 +611,7 @@ fun CreditItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total pagado",
+                        text = stringResource(R.string.credit_total_paid),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -650,7 +656,7 @@ fun InstitutionSelectionSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Instituciones de crédito",
+                text = stringResource(R.string.credit_institutions),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -658,8 +664,8 @@ fun InstitutionSelectionSheet(
             if (institutions.isEmpty()) {
                 MinicashEmptyState(
                     icon = Icons.Default.CreditCard,
-                    title = "Sin instituciones registradas",
-                    subtitle = "Agrega tus tarjetas o bancos mediante el botón inferior.",
+                    title = stringResource(R.string.credit_inst_empty_title),
+                    subtitle = stringResource(R.string.credit_inst_empty_sub),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
             } else {
@@ -734,7 +740,7 @@ fun InstitutionSelectionSheet(
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
             ) {
-                Text("+ Nueva institución", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.credit_new_institution_btn), fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -745,20 +751,20 @@ fun InstitutionSelectionSheet(
 
         MinicashAlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text("Nueva institución", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.credit_new_institution), fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = newInstName,
                         onValueChange = { newInstName = it },
-                        label = { Text("Nombre de la institución") },
-                        placeholder = { Text("Escribe el nombre de la institución") },
+                        label = { Text(stringResource(R.string.credit_institution_name)) },
+                        placeholder = { Text(stringResource(R.string.credit_institution_name_hint)) },
                         singleLine = true,
                         shape = CircleShape,
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Color distintivo", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.credit_color), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                     MinicashColorPicker(
                         selectedColorHex = selectedColorHex,
                         onColorSelected = { selectedColorHex = it }
@@ -778,11 +784,11 @@ fun InstitutionSelectionSheet(
                         }
                     },
                 ) {
-                    Text("Guardar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_save), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { showAddDialog = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showAddDialog = false }) { Text(stringResource(R.string.common_cancel)) }
             },
             shape = MinicashShapes.Hero
         )

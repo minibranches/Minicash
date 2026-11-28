@@ -1,25 +1,31 @@
 package com.uramos.minicash.data.preferences
 
 /** Secciones de la pantalla de Inicio que se pueden mostrar, ocultar y reordenar desde Ajustes. */
-enum class HomeWidget(val id: String, val title: String) {
-    PATRIMONY("patrimony", "Patrimonio"),
-    ACCOUNTS("accounts", "Mis cuentas"),
-    DISTRIBUTION("distribution", "Distribución del mes"),
-    RECENTS("recents", "Movimientos recientes")
+enum class HomeWidget(val id: String, @androidx.annotation.StringRes val titleRes: Int) {
+    PATRIMONY("patrimony", com.uramos.minicash.R.string.home_widget_patrimony),
+    ACCOUNTS("accounts", com.uramos.minicash.R.string.home_widget_accounts),
+    DISTRIBUTION("distribution", com.uramos.minicash.R.string.home_widget_distribution),
+    RECENTS("recents", com.uramos.minicash.R.string.home_widget_recents);
+
+    val title: String get() = com.uramos.minicash.ui.utils.AppStrings.get(titleRes)
 }
 
 /** Cómo se dibuja «Distribución del mes». */
-enum class DistributionStyle(val displayName: String) {
-    DONUT("Dona"),
-    BARS("Barras"),
-    STACKED("Barra apilada"),
-    TOP5("Top 5 vs mes anterior")
+enum class DistributionStyle(@androidx.annotation.StringRes val labelRes: Int) {
+    DONUT(com.uramos.minicash.R.string.dist_style_donut),
+    BARS(com.uramos.minicash.R.string.dist_style_bars),
+    STACKED(com.uramos.minicash.R.string.dist_style_stacked),
+    TOP5(com.uramos.minicash.R.string.dist_style_top5);
+
+    val displayName: String get() = com.uramos.minicash.ui.utils.AppStrings.get(labelRes)
 }
 
 /** Cómo se dibuja el Patrimonio. */
-enum class PatrimonyStyle(val displayName: String) {
-    STRIP("Franja"),
-    CARD("Tarjeta")
+enum class PatrimonyStyle(@androidx.annotation.StringRes val labelRes: Int) {
+    STRIP(com.uramos.minicash.R.string.patrimony_style_strip),
+    CARD(com.uramos.minicash.R.string.patrimony_style_card);
+
+    val displayName: String get() = com.uramos.minicash.ui.utils.AppStrings.get(labelRes)
 }
 
 /** Configuración de Inicio: qué secciones se ven, en qué orden y con qué estilo. */

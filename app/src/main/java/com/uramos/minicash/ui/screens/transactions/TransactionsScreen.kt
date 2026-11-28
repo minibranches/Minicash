@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.utils.rememberTabListBottomPadding
 import kotlinx.coroutines.flow.first
 import kotlin.math.roundToInt
@@ -128,8 +132,8 @@ fun TransactionsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(viewModel) {
         viewModel.deletedEvents.collect { deleted ->
-            val message = if (deleted.size == 1) "Movimiento eliminado" else "${deleted.size} movimientos eliminados"
-            val result = snackbarHostState.showSnackbar(message = message, actionLabel = "Deshacer", duration = SnackbarDuration.Long)
+            val message = AppStrings.plural(R.plurals.home_tx_deleted, deleted.size, deleted.size)
+            val result = snackbarHostState.showSnackbar(message = message, actionLabel = AppStrings.get(R.string.common_undo), duration = SnackbarDuration.Long)
             if (result == SnackbarResult.ActionPerformed) viewModel.restoreTransactions(deleted)
         }
     }
@@ -182,7 +186,7 @@ fun TransactionsScreen(
                                 colors = TopAppBarDefaults.topAppBarColors(
                                     containerColor = Color.Transparent
                                 ),
-                                title = { Text("Movimientos", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
+                                title = { Text(stringResource(R.string.nav_transactions), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) },
                                 actions = { TabTopBarActions(onOpenReports = onOpenReports, onOpenSettings = onOpenSettings) }
                             )
             },
@@ -229,7 +233,7 @@ fun TransactionsScreen(
                             haptics.tick()
                             viewModel.clearFilters()
                         },
-                        contentDescription = "Filtros de movimientos"
+                        contentDescription = stringResource(R.string.tx_filters_title)
                     )
                 }
             }
@@ -276,14 +280,14 @@ fun TransactionsScreen(
                     val total = income + expense
                     Row(horizontalArrangement = Arrangement.spacedBy(spacing.small)) {
                         StatPillMoney(
-                            label = "Balance",
+                            label = stringResource(R.string.tx_balance),
                             amountCents = state.summary.netBalance,
                             type = if (state.summary.netBalance >= 0) MoneyDisplayType.INCOME else MoneyDisplayType.EXPENSE,
                             compact = true,
                             modifier = Modifier.weight(1f)
                         )
                         StatPillMoney(
-                            label = "Ingresos",
+                            label = stringResource(R.string.common_income),
                             amountCents = income,
                             type = MoneyDisplayType.INCOME,
                             progress = if (total > 0) income.toFloat() / total else null,
@@ -296,7 +300,7 @@ fun TransactionsScreen(
                             modifier = Modifier.weight(1f)
                         )
                         StatPillMoney(
-                            label = "Gastos",
+                            label = stringResource(R.string.common_expenses),
                             amountCents = expense,
                             type = MoneyDisplayType.EXPENSE,
                             progress = if (total > 0) expense.toFloat() / total else null,
@@ -316,11 +320,11 @@ fun TransactionsScreen(
                     item(key = "empty_state") {
                         MinicashEmptyState(
                             icon = Icons.AutoMirrored.Filled.ReceiptLong,
-                            title = "Sin movimientos registrados",
+                            title = stringResource(R.string.tx_empty_title),
                             subtitle = if (state.searchQuery.isNotBlank() || hasActiveFilters) {
-                                "No se encontraron movimientos con los filtros seleccionados."
+                                stringResource(R.string.tx_empty_filtered)
                             } else {
-                                "No hay movimientos registrados en este mes."
+                                stringResource(R.string.tx_empty_month)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -372,12 +376,12 @@ fun TransactionsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         MinicashIconButton(onClick = { viewModel.clearSelection() }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cancelar")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.common_cancel))
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(
-                                text = if (selectedIds.size == 1) "1 seleccionado" else "${selectedIds.size} seleccionados",
+                                text = pluralStringResource(R.plurals.home_selected, selectedIds.size, selectedIds.size),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -401,7 +405,7 @@ fun TransactionsScreen(
                         }) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Eliminar seleccionados",
+                                contentDescription = stringResource(R.string.home_delete_selected),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -517,19 +521,19 @@ private fun RecentSearchBar(
                         .fillMaxWidth()
                         .focusRequester(focusRequester)
                         .onFocusChanged { focused = it.isFocused },
-                    placeholder = { Text("Buscar...", style = MaterialTheme.typography.bodyMedium) },
+                    placeholder = { Text(stringResource(R.string.tx_search_hint), style = MaterialTheme.typography.bodyMedium) },
                     leadingIcon = {
                         MinicashIconButton(onClick = {
                             focusManager.clearFocus()
                             closeSearch()
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cerrar búsqueda")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.tx_search_close))
                         }
                     },
                     trailingIcon = {
                         if (query.isNotEmpty()) {
                             MinicashIconButton(onClick = { onQueryChange("") }) {
-                                Icon(Icons.Default.Close, contentDescription = "Limpiar búsqueda")
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.tx_clear_search))
                             }
                         }
                     },
@@ -548,7 +552,7 @@ private fun RecentSearchBar(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar movimientos")
+                    Icon(Icons.Default.Search, contentDescription = stringResource(R.string.tx_search_cd))
                 }
             }
         }
@@ -589,7 +593,7 @@ private fun RecentSearchBar(
                             onClick = onClearRecents,
                             modifier = Modifier.padding(horizontal = 8.dp)
                         ) {
-                            Text("Borrar historial")
+                            Text(stringResource(R.string.tx_clear_history))
                         }
                     }
                 }
@@ -601,10 +605,11 @@ private fun RecentSearchBar(
 /** Desde qué avance de la animación se muestra el campo de búsqueda; antes es solo el ícono (el campo no cabe). */
 private const val SEARCH_FIELD_VISIBLE_FRACTION = 0.4f
 
-private val FULL_MONTHS = listOf(
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-)
+/** Nombre completo del mes en el idioma en uso, con mayúscula inicial. */
+private fun fullMonth(index: Int): String =
+    java.time.Month.of(index.coerceIn(0, 11) + 1)
+        .getDisplayName(java.time.format.TextStyle.FULL, com.uramos.minicash.ui.utils.appLocale())
+        .replaceFirstChar { it.uppercase() }
 
 /** Periodo que se está viendo, para la fila fija del encabezado («Noviembre 2026»). */
-private fun periodLabel(monthIndex: Int, year: Int): String = "${FULL_MONTHS[monthIndex.coerceIn(0, 11)]} $year"
+private fun periodLabel(monthIndex: Int, year: Int): String = "${fullMonth(monthIndex)} $year"

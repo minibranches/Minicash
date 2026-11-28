@@ -1,5 +1,11 @@
 package com.uramos.minicash.ui.screens.credits
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
+import com.uramos.minicash.ui.utils.appLocale
+import com.uramos.minicash.ui.utils.appDateFormat
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.components.GuardedModalBottomSheet
 import com.uramos.minicash.ui.components.MinicashAlertDialog
@@ -239,12 +245,12 @@ fun CreditFormSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (isEdit) "Editar compra a meses" else "Nueva compra a meses",
+                    text = if (isEdit) stringResource(R.string.credit_form_edit) else stringResource(R.string.credit_form_new),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Paso ${step + 1} de ${LAST_STEP + 1}",
+                    text = stringResource(R.string.ob_step, step + 1, LAST_STEP + 1),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -347,12 +353,12 @@ fun CreditFormSheet(
                 when (step) {
                     0 -> {
                         MinicashTonalButton(
-                            text = "Cancelar",
+                            text = stringResource(R.string.common_cancel),
                             onClick = guard::requestDismiss,
                             modifier = Modifier.weight(1f)
                         )
                         MinicashButton(
-                            text = "Siguiente",
+                            text = stringResource(R.string.common_next),
                             onClick = {
                                 haptics.tick()
                                 keyboard?.hide()
@@ -364,7 +370,7 @@ fun CreditFormSheet(
                         )
                         if (isEdit) {
                             MinicashButton(
-                                text = "Guardar",
+                                text = stringResource(R.string.common_save),
                                 onClick = { save() },
                                 enabled = canSubmit,
                                 modifier = Modifier.weight(1f)
@@ -373,12 +379,12 @@ fun CreditFormSheet(
                     }
                     1 -> {
                         MinicashTonalButton(
-                            text = "Atrás",
+                            text = stringResource(R.string.common_previous),
                             onClick = { step = 0 },
                             modifier = Modifier.weight(1f)
                         )
                         MinicashButton(
-                            text = "Siguiente",
+                            text = stringResource(R.string.common_next),
                             onClick = {
                                 haptics.tick()
                                 keyboard?.hide()
@@ -390,7 +396,7 @@ fun CreditFormSheet(
                         )
                         if (isEdit) {
                             MinicashButton(
-                                text = "Guardar",
+                                text = stringResource(R.string.common_save),
                                 onClick = { save() },
                                 enabled = canSubmit,
                                 modifier = Modifier.weight(1f)
@@ -407,16 +413,16 @@ fun CreditFormSheet(
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
                                 modifier = Modifier.size(48.dp)
                             ) {
-                                Icon(Icons.Default.Delete, contentDescription = "Eliminar crédito", modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.credit_delete), modifier = Modifier.size(20.dp))
                             }
                         }
                         MinicashTonalButton(
-                            text = "Atrás",
+                            text = stringResource(R.string.common_previous),
                             onClick = { step = 1 },
                             modifier = Modifier.weight(1f)
                         )
                         MinicashButton(
-                            text = if (isEdit) "Guardar" else "Guardar compra",
+                            text = if (isEdit) stringResource(R.string.common_save) else stringResource(R.string.credit_save_purchase),
                             onClick = {
                                 save()
                             },
@@ -450,9 +456,9 @@ fun CreditFormSheet(
                         datePickerState.selectedDateMillis?.let { purchaseDate = normalizeUtcToLocalMillis(it) }
                         showDatePicker = false
                     }
-                ) { Text("Aceptar", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.common_accept), fontWeight = FontWeight.Bold) }
             },
-            dismissButton = { MinicashTextButton(onClick = { showDatePicker = false }) { Text("Cancelar") } }
+            dismissButton = { MinicashTextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.common_cancel)) } }
         ) {
             DatePicker(state = datePickerState)
         }
@@ -461,10 +467,10 @@ fun CreditFormSheet(
     if (showDeleteConfirm && credit != null && onDelete != null) {
         MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Eliminar crédito", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.credit_delete), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold) },
             text = {
                 Text(
-                    "¿Deseas eliminar el registro de \"${credit.article}\"? Esta acción no se puede deshacer.",
+                    stringResource(R.string.credit_delete_text, credit.article),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -476,9 +482,9 @@ fun CreditFormSheet(
                         onDelete()
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                ) { Text("Eliminar", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.common_delete), fontWeight = FontWeight.Bold) }
             },
-            dismissButton = { MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text("Cancelar") } },
+            dismissButton = { MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.common_cancel)) } },
             shape = MinicashShapes.Hero,
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
@@ -523,15 +529,15 @@ private fun PurchaseStep(
         ?.colorHex?.let { MinicashColorUtils.parseHexColor(it, MaterialTheme.colorScheme.primary) }
         ?: MaterialTheme.colorScheme.primary
     val dateLabel = remember(purchaseDate) {
-        SimpleDateFormat("d MMM yyyy", Locale.forLanguageTag("es-MX")).format(purchaseDate)
+        appDateFormat("d MMM yyyy", "MMM d, yyyy").format(purchaseDate)
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         OutlinedTextField(
             value = article,
             onValueChange = onArticleChange,
-            label = { Text("Artículo o servicio") },
-            placeholder = { Text("Nombre del producto o servicio") },
+            label = { Text(stringResource(R.string.credit_article)) },
+            placeholder = { Text(stringResource(R.string.credit_article_hint)) },
             singleLine = true,
             shape = MinicashShapes.Input,
             modifier = Modifier.fillMaxWidth()
@@ -548,15 +554,15 @@ private fun PurchaseStep(
                     modifier = Modifier.size(20.dp)
                 )
             },
-            text = selectedInstitution.ifBlank { "Selecciona una institución" },
+            text = selectedInstitution.ifBlank { stringResource(R.string.credit_pick_institution) },
             filled = selectedInstitution.isNotBlank()
         )
 
         OutlinedTextField(
             value = responsible,
             onValueChange = onResponsibleChange,
-            label = { Text("Responsable") },
-            placeholder = { Text("Nombre del responsable (por defecto, Yo)") },
+            label = { Text(stringResource(R.string.budget_responsible)) },
+            placeholder = { Text(stringResource(R.string.credit_responsible_hint)) },
             singleLine = true,
             shape = MinicashShapes.Input,
             modifier = Modifier.fillMaxWidth()
@@ -573,14 +579,14 @@ private fun PurchaseStep(
                     modifier = Modifier.size(20.dp)
                 )
             },
-            text = "Fecha de compra: $dateLabel",
+            text = stringResource(R.string.credit_purchase_date, dateLabel),
             filled = true
         )
 
         OutlinedTextField(
             value = originalPriceStr,
             onValueChange = onOriginalPriceChange,
-            label = { Text("Precio de contado (opcional)") },
+            label = { Text(stringResource(R.string.credit_cash_price)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true,
             shape = MinicashShapes.Input,
@@ -656,17 +662,17 @@ private fun PlanStep(
                     onTotalChange(it.toString())
                 }
             },
-            label = { if (it == CUSTOM_MONTHS) "Otro" else "$it m" }
+            label = { if (it == CUSTOM_MONTHS) AppStrings.get(R.string.credit_months_other) else AppStrings.get(R.string.credit_months_short, it) }
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = paidInstallmentsStr,
                 onValueChange = { onPaidChange(it.filter(Char::isDigit).take(3)) },
-                label = { Text("Ya pagadas") },
+                label = { Text(stringResource(R.string.credit_already_paid)) },
                 isError = paidInvalid,
                 supportingText = if (paidInvalid) {
-                    { Text("0 a $totalInstallments") }
+                    { Text(stringResource(R.string.credit_paid_range, totalInstallments)) }
                 } else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
@@ -677,7 +683,7 @@ private fun PlanStep(
                 OutlinedTextField(
                     value = totalInstallmentsStr,
                     onValueChange = { onTotalChange(it.filter(Char::isDigit).take(3)) },
-                    label = { Text("Plazo total") },
+                    label = { Text(stringResource(R.string.credit_total_term)) },
                     suffix = { Text("meses", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -701,7 +707,7 @@ private fun PlanStep(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Monto mensual",
+                        text = stringResource(R.string.credit_monthly_amount),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -743,13 +749,12 @@ private fun PaymentStep(
 ) {
     val inheritedDay = institution?.paymentDay
     val inheritedReminder = institution?.reminderDaysBefore
-    val name = institutionName.ifBlank { "la institución" }
+    val name = institutionName.ifBlank { stringResource(R.string.credit_the_institution) }
     val inheritedText = when {
-        inheritedDay == null -> "$name no tiene día de pago. Configúralo en Ajustes › Tarjetas e instituciones o usa un día propio."
-        inheritedReminder == null -> "Usa el pago de $name: día $inheritedDay, sin aviso."
-        inheritedReminder == 0 -> "Usa el pago de $name: día $inheritedDay, aviso el mismo día."
-        inheritedReminder == 1 -> "Usa el pago de $name: día $inheritedDay, aviso 1 día antes."
-        else -> "Usa el pago de $name: día $inheritedDay, aviso $inheritedReminder días antes."
+        inheritedDay == null -> stringResource(R.string.credit_inherit_no_day, name)
+        inheritedReminder == null -> stringResource(R.string.credit_inherit_no_reminder, name, inheritedDay)
+        inheritedReminder == 0 -> stringResource(R.string.credit_inherit_same_day, name, inheritedDay)
+        else -> pluralStringResource(R.plurals.credit_inherit_days_before, inheritedReminder, name, inheritedDay, inheritedReminder)
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -767,7 +772,7 @@ private fun PaymentStep(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Usar otro día para esta compra",
+                text = stringResource(R.string.credit_use_other_day),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f)

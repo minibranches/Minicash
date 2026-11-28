@@ -28,7 +28,7 @@ Segunda ronda, hecha en cinco fases con prueba en el teléfono. Detalle completo
 | 2 | Zonas táctiles menores a 48 dp | Corregido (fase B): flechas de mes, palomita, engrane y atrás miden 48 dp con el mismo tamaño visual. |
 | 3 | Título duplicado en Inicio | Corregido (fase A): un solo título de sección y "Gastos" / "Ingresos" dentro de la tarjeta. |
 | 4 | El botón de agregar tapa contenido | Corregido (fase A): relleno inferior revisado en cada lista. |
-| 5 | Nombres distintos para lo mismo | Corregido (fase A): "Movimientos", "Gastos fijos" y "Créditos" en barra, títulos y Extras. |
+| 5 | Nombres distintos para lo mismo | Corregido (fase A): "Movimientos", "Quincenas" (antes «Gastos fijos») y "Créditos" en barra, títulos y Extras. |
 | 6 | Jerarquía tipográfica plana | Corregido (fase D): pesos y tamaños en escala. |
 | 7 | Campos de texto con cuatro formas | Corregido (fase C): una sola forma. |
 | 8 | Hojas sin protección al descartar | Corregido (fase C): las que capturan datos usan la versión protegida. |

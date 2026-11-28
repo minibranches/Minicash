@@ -1,5 +1,8 @@
 package com.uramos.minicash.ui.transactions
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashSwipeNumpad
 import com.uramos.minicash.ui.theme.MinicashTransitions
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -239,7 +242,7 @@ fun EditTransactionSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Editar movimiento",
+                    text = stringResource(R.string.tx_edit_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -329,7 +332,7 @@ fun EditTransactionSheet(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(
-                        text = if (amountExpression.isNotBlank()) amountExpression else "Toca para ingresar monto",
+                        text = if (amountExpression.isNotBlank()) amountExpression else stringResource(R.string.tx_tap_amount),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -348,8 +351,8 @@ fun EditTransactionSheet(
                     OutlinedTextField(
                         value = conceptText,
                         onValueChange = { conceptText = it },
-                        label = { Text("Concepto") },
-                        placeholder = { Text("Nombre o concepto del movimiento") },
+                        label = { Text(stringResource(R.string.tx_concept)) },
+                        placeholder = { Text(stringResource(R.string.tx_concept_hint)) },
                         singleLine = true,
                         shape = MinicashShapes.Input,
                         keyboardOptions = KeyboardOptions(
@@ -368,8 +371,8 @@ fun EditTransactionSheet(
                     OutlinedTextField(
                         value = noteText,
                         onValueChange = { noteText = it },
-                        label = { Text("Notas") },
-                        placeholder = { Text("Escribe una nota") },
+                        label = { Text(stringResource(R.string.tx_notes)) },
+                        placeholder = { Text(stringResource(R.string.tx_notes_hint)) },
                         singleLine = false,
                         minLines = 2,
                         maxLines = 4,
@@ -440,7 +443,7 @@ fun EditTransactionSheet(
                                 }
                             }
                             Text(
-                                text = "De: ${selectedAccount?.name ?: "Origen"}",
+                                text = stringResource(R.string.tx_from, selectedAccount?.name ?: stringResource(R.string.tx_origin)),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -498,7 +501,7 @@ fun EditTransactionSheet(
                                 }
                             }
                             Text(
-                                text = "A: ${selectedDestAccount?.name ?: "Destino"}",
+                                text = stringResource(R.string.tx_to, selectedDestAccount?.name ?: stringResource(R.string.tx_destination)),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -559,7 +562,7 @@ fun EditTransactionSheet(
                                 }
                             }
                             Text(
-                                text = selectedCategory?.name ?: "Categoría",
+                                text = selectedCategory?.name ?: stringResource(R.string.tx_category),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -615,7 +618,7 @@ fun EditTransactionSheet(
                                 }
                             }
                             Text(
-                                text = selectedAccount?.name ?: "Cuenta",
+                                text = selectedAccount?.name ?: stringResource(R.string.tx_account),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -655,11 +658,11 @@ fun EditTransactionSheet(
                 // Qué falta para guardar, siempre visible sobre el botón
                 if (!canSave) {
                     val missing = when {
-                        rawAmount <= 0L -> "Ingresa un monto"
-                        isTransfer -> "Elige dos cuentas distintas"
-                        conceptText.isBlank() -> "Falta el concepto"
-                        selectedCategory == null -> "Falta elegir la categoría"
-                        else -> "Falta elegir la cuenta"
+                        rawAmount <= 0L -> stringResource(R.string.tx_missing_amount)
+                        isTransfer -> stringResource(R.string.tx_missing_two_accounts)
+                        conceptText.isBlank() -> stringResource(R.string.tx_missing_concept)
+                        selectedCategory == null -> stringResource(R.string.tx_missing_category)
+                        else -> stringResource(R.string.tx_missing_account)
                     }
                     Text(
                         text = missing,
@@ -677,7 +680,7 @@ fun EditTransactionSheet(
                                     conceptText.isNotBlank() && noteText.isNotBlank() -> "$conceptText • $noteText"
                                     conceptText.isNotBlank() -> conceptText
                                     noteText.isNotBlank() -> noteText
-                                    else -> if (type == TransactionType.TRANSFER) "Transferencia entre cuentas" else null
+                                    else -> if (type == TransactionType.TRANSFER) AppStrings.get(R.string.tx_transfer_note) else null
                                 }
 
                                 val sourceId = selectedAccountId ?: accounts.firstOrNull()?.id ?: return@MinicashFilledButton
@@ -705,7 +708,7 @@ fun EditTransactionSheet(
                                 .heightIn(min = 48.dp)
                         ) {
                             Text(
-                                text = "Guardar cambios",
+                                text = stringResource(R.string.tx_save_changes),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
@@ -730,7 +733,7 @@ fun EditTransactionSheet(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Eliminar movimiento",
+                                    text = stringResource(R.string.tx_delete),
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -742,8 +745,8 @@ fun EditTransactionSheet(
     if (showDeleteConfirm && onDeleteTransaction != null) {
         MinicashAlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("¿Eliminar movimiento?") },
-            text = { Text("Se quitará el movimiento y el saldo de la cuenta se ajusta. Podrás deshacerlo unos segundos.") },
+            title = { Text(stringResource(R.string.tx_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.tx_delete_confirm_text)) },
             confirmButton = {
                 MinicashFilledButton(
                     onClick = {
@@ -756,10 +759,10 @@ fun EditTransactionSheet(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     )
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.common_delete)) }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.common_cancel)) }
             }
         )
     }
@@ -777,11 +780,11 @@ fun EditTransactionSheet(
                         showDatePicker = false
                     }
                 ) {
-                    Text("Aceptar", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_accept), fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
-                MinicashTextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+                MinicashTextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.common_cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)

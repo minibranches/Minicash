@@ -1,5 +1,7 @@
 package com.uramos.minicash.data.local.backup
 
+import com.uramos.minicash.ui.utils.AppStrings
+import com.uramos.minicash.R
 import android.content.Context
 import com.uramos.minicash.data.util.CsvRange
 import com.uramos.minicash.data.util.buildTransactionsCsv
@@ -39,7 +41,7 @@ class BackupManager(
             context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                 outputStream.write(jsonString.toByteArray(Charsets.UTF_8))
                 outputStream.flush()
-            } ?: throw IOException("No se pudo abrir el archivo para escritura.")
+            } ?: throw IOException(AppStrings.get(R.string.set_err_open_write))
         }
     }
 
@@ -47,16 +49,16 @@ class BackupManager(
         runCatching {
             val jsonString = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            } ?: throw IOException("No se pudo abrir el archivo para lectura.")
+            } ?: throw IOException(AppStrings.get(R.string.set_err_open_read))
 
             val backup = try {
                 gson.fromJson(jsonString, MinicashBackup::class.java)
             } catch (_: Exception) {
-                throw IllegalArgumentException("El archivo de respaldo no tiene un formato válido para Minicash.")
+                throw IllegalArgumentException(AppStrings.get(R.string.set_msg_invalid_backup))
             }
 
             if (!validateBackupStructure(backup)) {
-                throw IllegalArgumentException("El archivo de respaldo no tiene un formato válido para Minicash.")
+                throw IllegalArgumentException(AppStrings.get(R.string.set_msg_invalid_backup))
             }
 
             // Red de seguridad: copia de los datos actuales antes de reemplazarlos.
@@ -133,12 +135,16 @@ class BackupManager(
             val today = java.time.LocalDate.now(zone)
             val transactions = database.transactionDao().getAllTransactionsList()
                 .filter { range.contains(it.date, today, zone) }
-            val csv = buildTransactionsCsv(transactions, accounts, categories, zone)
+            val csv = buildTransactionsCsv(
+                transactions, accounts, categories, zone,
+                header = com.uramos.minicash.ui.utils.AppStrings.get(com.uramos.minicash.R.string.csv_header),
+                typeLabel = { it.displayName }
+            )
             context.contentResolver.openOutputStream(uri)?.use { out ->
                 out.write(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte())) // BOM para que Excel lea UTF-8
                 out.write(csv.toByteArray(Charsets.UTF_8))
                 out.flush()
-            } ?: throw IOException("No se pudo abrir el archivo para escritura.")
+            } ?: throw IOException(AppStrings.get(R.string.set_err_open_write))
             transactions.size
         }
     }

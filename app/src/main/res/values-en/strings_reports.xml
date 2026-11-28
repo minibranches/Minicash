@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reports_months">%1$d months</string>
+    <string name="reports_empty_sub">There is no income or expenses in these months yet.</string>
+    <string name="reports_savings">Savings</string>
+    <string name="reports_income_vs_expenses">Income vs expenses by month</string>
+    <string name="reports_where_you_spend">Where you spend</string>
+    <string name="reports_cumulative">Cumulative balance</string>
+    <string name="reports_month_by_month">Month by month</string>
+    <string name="reports_balance_last">Balance of the last %1$d months</string>
+    <string name="reports_no_income">No income in the period</string>
+    <string name="reports_best_month">Best month</string>
+    <string name="reports_avg_income">Average income</string>
+    <string name="reports_avg_expense">Average expense</string>
+    <string name="reports_monthly_savings">Monthly savings</string>
+    <string name="reports_income_amount">Income %1$s</string>
+    <string name="reports_expense_amount">Expenses %1$s</string>
+    <string name="reports_saved">You saved %1$d %% of your income</string>
+    <string name="reports_overspent">You spent %1$d %% more than you earned</string>
+</resources>

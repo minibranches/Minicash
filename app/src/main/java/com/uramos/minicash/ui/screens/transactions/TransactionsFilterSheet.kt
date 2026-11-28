@@ -1,5 +1,9 @@
 package com.uramos.minicash.ui.screens.transactions
 
+import com.uramos.minicash.ui.utils.AppStrings
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.components.MinicashFilterChip
 import com.uramos.minicash.ui.theme.sheetBackground
 import com.uramos.minicash.ui.utils.rememberMinicashHaptics
@@ -80,7 +84,7 @@ fun TransactionsFilterSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Filtros de movimientos",
+                    text = stringResource(R.string.tx_filters_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -95,7 +99,7 @@ fun TransactionsFilterSheet(
                         }
                     ) {
                         Text(
-                            text = "Limpiar filtros",
+                            text = stringResource(R.string.tx_filters_clear),
                             color = MaterialTheme.colorScheme.primary,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold
@@ -106,7 +110,7 @@ fun TransactionsFilterSheet(
 
             // 1. Filtro por Tipo de Movimiento
             Text(
-                text = "Tipo de movimiento",
+                text = stringResource(R.string.tx_filter_type),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -121,10 +125,10 @@ fun TransactionsFilterSheet(
                 },
                 label = {
                     when (it) {
-                        null -> "Todos"
-                        TransactionType.EXPENSE -> "Gasto"
-                        TransactionType.INCOME -> "Ingreso"
-                        TransactionType.TRANSFER -> "Transferencia"
+                        null -> AppStrings.get(R.string.common_all)
+                        TransactionType.EXPENSE -> AppStrings.get(R.string.tx_type_expense)
+                        TransactionType.INCOME -> AppStrings.get(R.string.tx_type_income)
+                        TransactionType.TRANSFER -> AppStrings.get(R.string.tx_type_transfer)
                     }
                 }
             )
@@ -134,7 +138,7 @@ fun TransactionsFilterSheet(
             // 2. Filtro por Cuenta
             if (accounts.isNotEmpty()) {
                 Text(
-                    text = "Cuenta",
+                    text = stringResource(R.string.tx_account),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -152,7 +156,7 @@ fun TransactionsFilterSheet(
                                 haptics.tick()
                                 onSelectAccountFilter(null)
                             },
-                            label = { Text("Todas las cuentas") },
+                            label = { Text(stringResource(R.string.tx_all_accounts)) },
                             leadingIcon = if (isSelected) {
                                 { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp)) }
                             } else null)
@@ -195,7 +199,7 @@ fun TransactionsFilterSheet(
             val visibleCategories = categories.filter { selectedTypeFilter == null || it.type == selectedTypeFilter }
             if (visibleCategories.isNotEmpty()) {
                 Text(
-                    text = "Categoría",
+                    text = stringResource(R.string.tx_category),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -224,9 +228,8 @@ fun TransactionsFilterSheet(
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = when (selectedCategoryIds.size) {
-                                0 -> "Todas las categorías"
-                                1 -> "1 categoría seleccionada"
-                                else -> "${selectedCategoryIds.size} categorías seleccionadas"
+                                0 -> stringResource(R.string.tx_all_categories)
+                                else -> pluralStringResource(R.plurals.ob_categories_selected, selectedCategoryIds.size, selectedCategoryIds.size)
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
@@ -257,7 +260,7 @@ fun TransactionsFilterSheet(
                                 },
                                 label = { Text(category.name) },
                                 trailingIcon = {
-                                    Icon(Icons.Default.Close, contentDescription = "Quitar", modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.common_remove), modifier = Modifier.size(16.dp))
                                 },
                                 shape = CircleShape
                             )
@@ -275,7 +278,7 @@ fun TransactionsFilterSheet(
                     .heightIn(min = 48.dp)
             ) {
                 Text(
-                    text = "Aplicar filtros",
+                    text = stringResource(R.string.tx_filters_apply),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

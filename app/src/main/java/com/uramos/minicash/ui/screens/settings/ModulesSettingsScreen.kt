@@ -1,5 +1,7 @@
 package com.uramos.minicash.ui.screens.settings
 
+import androidx.compose.ui.res.stringResource
+import com.uramos.minicash.R
 import com.uramos.minicash.ui.theme.screenBackground
 import com.uramos.minicash.ui.theme.MinicashShapes
 import com.uramos.minicash.ui.theme.sheetBackground
@@ -46,7 +48,7 @@ fun ModulesSettingsScreen(
         containerColor = MaterialTheme.colorScheme.screenBackground,
         topBar = {
             MinicashSubScreenTopBar(
-                title = "Mostrar módulos",
+                title = stringResource(R.string.set_modules_title),
                 onBack = onBackClick,
                 scrollBehavior = scrollBehavior
             )
@@ -56,126 +58,32 @@ fun ModulesSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = spacing.standard, vertical = spacing.small),
+                .padding(horizontal = spacing.screen, vertical = spacing.small),
             verticalArrangement = Arrangement.spacedBy(spacing.medium)
         ) {
-            MinicashCard(
-                level = CardTonalLevel.LOW,
-                shape = MinicashShapes.Card,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(spacing.standard),
-                    verticalArrangement = Arrangement.spacedBy(spacing.medium)
-                ) {
-                    // Fila 1: Gastos fijos
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccountBalanceWallet,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(spacing.medium))
-                            Column {
-                                Text(
-                                    text = "Gastos fijos",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Módulo de presupuesto y quincenas",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Switch(
-                            checked = state.showBudgetTab,
-                            thumbContent = if (state.showBudgetTab) {
-                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-                            } else null,
-                            onCheckedChange = { checked ->
-                                haptics.click()
-                                viewModel.setShowBudgetTab(checked)
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(spacing.small))
-
-                    // Fila 2: Créditos
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.CreditCard,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.width(spacing.medium))
-                            Column {
-                                Text(
-                                    text = "Créditos",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = "Módulo de compras a meses",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Switch(
-                            checked = state.showCreditsTab,
-                            thumbContent = if (state.showCreditsTab) {
-                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
-                            } else null,
-                            onCheckedChange = { checked ->
-                                haptics.click()
-                                viewModel.setShowCreditsTab(checked)
-                            }
-                        )
-                    }
-                }
+            SettingsGroup {
+                SettingsSwitchItem(
+                    title = stringResource(R.string.nav_budget),
+                    subtitle = stringResource(R.string.set_module_budget_sub),
+                    icon = Icons.Default.AccountBalanceWallet,
+                    checked = state.showBudgetTab,
+                    onCheckedChange = { checked ->
+                        haptics.click()
+                        viewModel.setShowBudgetTab(checked)
+                    },
+                    index = 0, count = 2
+                )
+                SettingsSwitchItem(
+                    title = stringResource(R.string.nav_credits),
+                    subtitle = stringResource(R.string.set_module_credits_sub),
+                    icon = Icons.Default.CreditCard,
+                    checked = state.showCreditsTab,
+                    onCheckedChange = { checked ->
+                        haptics.click()
+                        viewModel.setShowCreditsTab(checked)
+                    },
+                    index = 1, count = 2
+                )
             }
         }
     }
