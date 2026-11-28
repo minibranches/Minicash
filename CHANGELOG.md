@@ -2,6 +2,19 @@
 
 Las versiones siguen [SemVer](https://semver.org/lang/es/). Cada versión se publica como *release* en GitHub con su tag `vX.Y.Z`.
 
+## 1.6.0
+
+### Novedades
+- **Inglés.** La interfaz completa está en español (predeterminado) e inglés. Se elige en el primer paso del asistente de bienvenida o en Ajustes → Preferencias → Idioma, y también desde los ajustes de idioma por app del sistema (Android 13 o superior). Montos y fechas siguen el idioma (en inglés, formato en-US). Las notificaciones, los widgets, los accesos directos y el CSV exportado también salen en el idioma elegido; las categorías y la cuenta iniciales se crean en ese idioma.
+- **«Gastos fijos» ahora es «Quincenas»** y cada elemento es un **«planeado»** (en inglés, «Paydays» y «planned item»). Cambia solo el texto: los datos y las copias de seguridad siguen siendo compatibles.
+- **Ítems homologados.** Todas las listas toman las medidas de Inicio y Movimientos: filas de 72 dp como mínimo, esquinas segmentadas, 4 dp entre filas, ícono festoneado de 40 dp, título de una línea y subtítulo bajo él. Se alinean Ajustes y todas sus subpantallas (Copias de seguridad, Acerca de, Apariencia, Módulos, Cuentas, Categorías, Tarjetas e instituciones); los interruptores responden en toda la fila y el margen lateral es de 20 dp.
+- Las filas de Ajustes que llevan a otra pantalla muestran solo la flecha a la derecha.
+
+### Interno
+- Textos en `res/values` y `res/values-en`, con una prueba que exige las mismas claves en ambos. `AppCompatActivity` y `AppCompat` para el idioma por app; `AppStrings` y `appLocale()` para textos y formatos fuera de Compose.
+- `MinicashListRow` y `MinicashRowGroup` como único juego de filas de lista.
+- No cambia el formato de datos ni la base de datos.
+
 ## 1.5.1
 
 Versión de corrección.
